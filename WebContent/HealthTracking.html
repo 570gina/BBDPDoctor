@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport"
+	content="width=device-width, height=device-height, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>BBDP</title>
+
+<!-- Shortcut Icon -->
+<link rel="Shortcut Icon" type="image/x-icon"
+	href="picture/doctor-frame/icon.ico">
+
+<!-- Bootstrap Core CSS -->
+<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- MetisMenu CSS -->
+<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link href="dist/css/sb-admin-2.css" rel="stylesheet">
+
+<!-- Custom Fonts -->
+<link href="vendor/font-awesome/css/font-awesome.min.css"
+	rel="stylesheet" type="text/css">
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+<!-- jQuery -->
+<!-- <script src="vendor/jquery/jquery.min.js"></script> -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Metis Menu Plugin JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/metisMenu/metisMenu.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="dist/js/sb-admin-2.js"></script>
+
+<!-- 醫生端框架css -->
+<link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+
+<!-- 左半邊的 -->
+<script src="js/healthModelFrame.js"></script>
+
+<!-- 健康狀況追蹤模板css -->
+<style type="text/css"> 
+.lattice {	
+	border: 3px solid #f0f0f0;
+}
+/*
+.from-group{
+	width:100%;
+	float:left;
+}
+*/
+/* 右半邊 上面 模組名稱label、分類label、調整位置的沒有值label 
+#modelName, #typeName, #null{
+	width:20%;
+	float:left;
+	vertical-align:middle;
+	font-size:13px;
+	text-align:center;
+}*/
+/* 右半邊 上面 模組名稱input、分類名稱input 
+#modelNameInput, #typeNameInput{
+	width:70%;
+	float:left;
+	font-size:13px;
+	height:30px;
+	padding:5px;
+	line-height:31px;
+	vertical-align:middle;
+	text-align:center;
+}*/
+/* 右半邊 下面 可移動 
+.can_darg{
+	cursor:move;	/*滑鼠標*/
+}
+*/
+
+
+</style>
+
+
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+
+		
+		
+</script>
+
+</head>
+
+<body>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0"></nav>
+
+		<!-- page-wrapper -->
+		<div id="page-wrapper">
+
+			<div class="row">
+			<!-------------------------------------------- 我寫的 -------------------------------------------->				
+				<!-- 左半邊 -->
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px; margin-left:15px;
+							"onclick="location.href='NewHealthTracking.html'">新增健康狀況追蹤模板
+						</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice">
+							<div class="panel-heading" style="border-bottom-width:0px;">							
+								<form>						
+									<select class="form-control" id="healthType1" style="width:80%;" onChange="change1(this.selectedIndex);">
+										<option value="op0">健康狀況追蹤分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="height:75vh;overflow-y:auto;" id="itemDiv">
+								<!-- 
+								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;"
+									id="test1" onclick="itemSelect()">
+									&nbsp;&nbsp;1234
+								</div>
+								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;">
+									&nbsp;&nbsp;1234
+								</div>
+								-->
+							</div>
+						</div>
+
+					</div>
+				</div>
+				
+				
+				<!-- 右半邊 -->
+				<div class = "col-sm-8">						
+				</div>	
+				
+			<!-------------------------------------------- 我寫的 -------------------------------------------->				
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 醫生端框架js -->
+	<script src="js/doctorFrame.js"></script>
+
+</body>
+
+</html>

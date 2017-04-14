@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport"
+	content="width=device-width, height=device-height, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>BBDP</title>
+
+<!-- Shortcut Icon -->
+<link rel="Shortcut Icon" type="image/x-icon"
+	href="picture/doctor-frame/icon.ico">
+
+<!-- Bootstrap Core CSS -->
+<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- MetisMenu CSS -->
+<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link href="dist/css/sb-admin-2.css" rel="stylesheet">
+
+<!-- Custom Fonts -->
+<link href="vendor/font-awesome/css/font-awesome.min.css"
+	rel="stylesheet" type="text/css">
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+<!-- jQuery -->
+<!-- <script src="vendor/jquery/jquery.min.js"></script> -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Metis Menu Plugin JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/metisMenu/metisMenu.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="dist/js/sb-admin-2.js"></script>
+
+<!-- 醫生端框架css -->
+<link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+
+<!-- 左半邊的 -->
+<script src="js/healthModelFrame.js"></script>
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+
+
+//取得下拉選單的值
+$(document).ready(function() {
+	//console.log("hello1" + $("#healthType1").val());
+	//console.log("hello1" + $("#healthType1 :selected").text());
+	//取得存在local storage的doctoeID值並顯示出來
+	var doctorID = window.localStorage.getItem('login');
+	/////////////////////////////////////////////////////////////////////////$("#itemDiv").empty();
+	
+	$.ajax({
+		//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
+		url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+		data : {
+			state : "allItem",
+			doctorID : doctorID
+		},
+		dataType : "json",
+
+		success : function(response) {
+			//取得下拉選單的值
+			for(var number = 0; number < response.typeList.length; number++){
+				var itemType = response.typeList[number];	//項目類別名稱
+				$("#healthType2").append("<option value='op1'>"+itemType+"</option>");
+			}			
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+});
+
+//右上邊//如果有選類別名稱的話，就不給新增類別名稱	//judgement==1表示要輸入新增的分類
+var judgment=1;
+function changeType(){
+	var s =  $('#healthType2 option:selected').val();
+	console.log(s);
+	if(s=="all"){
+		$("#healthTypeInput").val("");		//清空欄位值
+		document.getElementById('healthTypeInput').disabled=false;
+		judgment = 1;
+	}else{
+		judgment = 0;
+		$("#healthTypeInput").val("");		//清空欄位值
+		document.getElementById('healthTypeInput').disabled=true;
+	}
+}
+
+var detailIDLast = 0;	//目前detail新增到幾項了
+var detailIDMax = 10; 	//最多只能有10個detail
+var detailArray = new Array();	//儲存有多少detail
+function deleteDetail(detail){
+	console.log("測試值 : #detail"+detail+"_Div");
+	$("#detail"+detail+"_Div").remove();
+	detailIDMax++;		//因為刪掉，所以把max增加
+	
+	var index=0;
+	for(var index = 0; index<detailArray.length; index++){
+		if(detailArray[index] == detail){
+			//console.log("index : " + detailArray[index]);
+			var remove = detailArray.splice(index, 1);	//移除掉刪除的
+			console.log("remove : " + remove);
+			console.log("刪掉後目前的detailArray : " + detailArray);
+			break;
+		}
+	}
+}
+
+//右下邊//按下新增項目
+function addDetail(){
+	if(detailIDLast<detailIDMax){
+		detailArray.push(detailIDLast);	//把detail存進array裡
+		console.log("新增後目前的 detailArray: " + detailArray);
+		$("#display").append(
+				"<div class='col-sm-12' id='detail"+detailIDLast+"_Div' style='margin-top:20px;'>"+
+				"	<div class='col-sm-10' style='background-color:#F7E56E;'>"+
+				"		<div style='margin-bottom:5px; margin-top:7px;'>"+
+				"			<label style='width:15%;display:inline;text-align:left;float:left;'>項目</label>"+
+				"			<input type='text' class='form-control' style='width:35%;display:inline;' id='detail"+detailIDLast+"_name' placeholder='項目名稱'>"+
+				"		</div>"+
+				"			<div style='margin-bottom:5px;'>"+
+				"			<label style='width:15%;display:inline;text-align:left;float:left;'>單位</label>"+
+				"			<input type='radio' name='unitChecked_"+detailIDLast+"' value='' onClick=yesUnit('"+detailIDLast+"')>有&nbsp;"+
+				"			<input type='text' class='form-control' style='width:35%;display:inline;' id='detail"+detailIDLast+"_unit' disabled>"+
+				"		</div>"+
+				"		<div style='margin-bottom:5px;'>"+
+				"			<label style='width:15%;display:inline;text-align:left;float:left;'>合理範圍</label>"+
+				"			<input type='radio' name='rangeChecked_"+detailIDLast+"' value='' onClick=yesRange('"+detailIDLast+"')>有&nbsp;"+
+				"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+detailIDLast+"_range_1' disabled>&nbsp;到&nbsp;"+
+				"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+detailIDLast+"_range_2' disabled>"+
+				"		</div>"+
+				"		<div style='margin-bottom:5px;'>"+
+				"			<label style='width:15%;display:inline;text-align:left;float:left;'>警示值</label>"+
+				"			<input type='radio' name='warningUpChecked_"+detailIDLast+"' value='' onClick=yesWarningUp('"+detailIDLast+"')>有&nbsp;"+
+				"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+detailIDLast+"_upperLimit' disabled>以上&nbsp;&nbsp;&nbsp;"+
+				"			<input type='radio' name='warningDownChecked_"+detailIDLast+"' value='' onClick=yesWarningDown('"+detailIDLast+"')>有&nbsp;"+
+				"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+detailIDLast+"_lowerLimit' disabled>以下&nbsp;"+
+				"		</div>"+
+				"	</div>"+
+				"	<div class='col-sm-2'><button type='button' class='btn btn-default' style='background-color:#f0f0f0;font-size:13px;'onClick=deleteDetail('"+detailIDLast+"')>刪除</button></div>"+
+				"</div>");
+		detailIDLast++;
+	}
+	else{
+		alert("最多10個項目");
+	}	
+}
+
+
+//右下邊//勾有，才可以輸入單位;
+var selectUnit=1;
+function yesUnit(detail){
+	var inputName = "detail"+detail+"_unit";
+	var radioName = "unitChecked_" + detail;
+	var unitChecked = document.getElementsByName(radioName);
+	
+	if(selectUnit==0){
+		console.log("我沒有勾選false");
+		unitChecked[0].checked=false;
+		selectUnit=1;
+		$("#"+inputName).val("");		//清空欄位值
+		document.getElementById(inputName).disabled=true;	//不可輸入單位
+		//$("#detail0_unit").val("");		//清空欄位值
+		//document.getElementById('detail0_unit').disabled=true;	//不可輸入單位
+	}
+	else{
+		console.log("我有勾選true");
+		selectUnit=0;
+		document.getElementById(inputName).disabled=false;	//可輸入單位
+		//unitChecked[0].checked=true;
+		//document.getElementById('detail0_unit').disabled=false;	//可輸入單位
+	}
+}
+
+//右下邊//勾有，才可以輸入合理範圍
+var selectRange=1;
+function yesRange(detail){
+	var inputName1 = "detail"+detail+"_range_1";
+	var inputName2 = "detail"+detail+"_range_2";
+	var radioName = "rangeChecked_" + detail;
+	var checked = document.getElementsByName(radioName);
+	//console.log("range : " + inputName1 + inputName2 + radioName + checked);
+	
+	if(selectRange==0){
+		console.log("我沒有勾選false");
+		checked[0].checked=false;
+		selectRange=1;
+		$("#"+inputName1).val("");		//清空欄位值1
+		$("#"+inputName2).val("");		//清空欄位值2
+		document.getElementById(inputName1).disabled=true;	//不可輸入範圍1
+		document.getElementById(inputName2).disabled=true;	//不可輸入範圍2
+	}
+	else{
+		console.log("我有勾選true");
+		selectRange=0;
+		document.getElementById(inputName1).disabled=false;	//可輸入範圍1
+		document.getElementById(inputName2).disabled=false;	//可輸入範圍2
+	}
+}
+
+//右下邊//勾有，才可以輸入警示值(以上)
+var selectWarningUp=1;
+function yesWarningUp(detail){
+	var inputName = "detail"+detail+"_upperLimit";
+	var radioName = "warningUpChecked_" + detail;
+	var checked = document.getElementsByName(radioName);
+	
+	if(selectWarningUp==0){
+		console.log("我沒有勾選false");
+		checked[0].checked=false;
+		selectWarningUp=1;
+		$("#"+inputName).val("");		//清空欄位值1
+		document.getElementById(inputName).disabled=true;	//不可輸入警示值(以上)
+	}
+	else{
+		console.log("我有勾選true");
+		selectWarningUp=0;
+		document.getElementById(inputName).disabled=false;	//可輸入警示值(以上)
+	}
+}
+
+//右下邊//勾有，才可以輸入警示值(以下)
+var selectWarningDown=1;
+function yesWarningDown(detail){
+	var inputName = "detail"+detail+"_lowerLimit";
+	var radioName = "warningDownChecked_" + detail;
+	var checked = document.getElementsByName(radioName);
+	
+	if(selectWarningDown==0){
+		console.log("我沒有勾選false");
+		checked[0].checked=false;
+		selectWarningDown=1;
+		$("#"+inputName).val("");		//清空欄位值1
+		document.getElementById(inputName).disabled=true;	//不可輸入警示值(以下)
+	}
+	else{
+		console.log("我有勾選true");
+		selectWarningDown=0;
+		document.getElementById(inputName).disabled=false;	//可輸入警示值(以下)
+	}
+}
+
+//按下儲存
+$(document).ready(function() {
+	$("#storage").click(function(){
+		var flag = true;
+		var doctorID = window.localStorage.getItem('login');
+		var modelName = $("#modelName").val();
+		var cycle = $('#cycle option:selected').val();
+		var typeName;
+
+		console.log("modelName : " + modelName);
+		console.log("judgment : " + judgment);
+		console.log("cycle : " + cycle);
+		
+		//是否已經輸入模板名稱
+		if(modelName == ""){
+			alert("請輸入模板名稱");
+			flag = false;
+			console.log("flag : " + flag);
+		}
+		else{
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		if(judgment == 1){
+			//分類為自行輸入的名稱
+			typeName = $("#healthTypeInput").val();
+			console.log("typeName : " + typeName);
+			if(typeName == ""){
+				alert("請輸入要新增的分類名稱");
+				flag = false;
+			}
+			else{
+				flag = true;
+			}
+			console.log("flag : " + flag);
+		}
+		else {
+			//分類為選擇已有的分類
+			typeName = $("#healthType2 :selected").text();
+			console.log("typeName : " + typeName);
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		
+		var nameList = new Array();
+		var unitList = new Array();
+		var range_1_List = new Array();
+		var range_2_List = new Array();
+		var upperLimitList = new Array();
+		var lowerLimitList = new Array();
+		//var cycleList = new Array();
+		
+		console.log("detailArray : " + detailArray);
+		for(var index = 0; index < detailArray.length; index++){
+			if($("#detail"+detailArray[index]+"_name").val() == ""){
+				alert("請輸入項目名稱");
+				flag = false;
+				console.log("flag : " + flag);
+				break;
+			}
+			nameList.push($("#detail"+detailArray[index]+"_name").val());
+			unitList.push($("#detail"+detailArray[index]+"_unit").val());
+			range_1_List.push($("#detail"+detailArray[index]+"_range_1").val());
+			range_2_List.push($("#detail"+detailArray[index]+"_range_2").val());
+			upperLimitList.push($("#detail"+detailArray[index]+"_upperLimit").val());
+			lowerLimitList.push($("#detail"+detailArray[index]+"_lowerLimit").val());
+			//cycleList.push($("#detail"+detailArray[index]+"_cycle").val());
+			
+		}
+		console.log("nameList : " + nameList);
+		console.log("unitList : " + unitList);
+		console.log("range_1_List : " + range_1_List);
+		console.log("range_2_List : " + range_2_List);
+		console.log("upperLimitList : " + upperLimitList);
+		console.log("lowerLimitList : " + lowerLimitList);
+		//console.log("cycleList : " + cycleList);
+		
+		
+		if(flag == true){
+			$.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+				data : {
+					state : "storage",
+					doctorID : doctorID,
+					modelName : modelName,
+					typeName : typeName,
+					nameList : nameList,
+					unitList : unitList,
+					range_1_List : range_1_List,
+					range_2_List : range_2_List,
+					upperLimitList : upperLimitList,
+					lowerLimitList : lowerLimitList,
+					cycle : cycle
+				},
+				dataType : "json",
+	
+				success : function(response) {
+					window.location.href = 'HealthTracking.html';
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
+	});
+});
+
+</script>
+
+</head>
+
+<body>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0"></nav>
+
+		<!-- page-wrapper -->
+		<div id="page-wrapper">
+			<div class="row">
+			<!-------------------------------------------- 我寫的 -------------------------------------------->				
+				<!-- 左半邊 -->
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px; margin-left:15px;
+							"onclick="location.href='NewHealthTracking.html'">新增健康狀況追蹤模板
+						</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice">
+							<div class="panel-heading" style="border-bottom-width:0px;">							
+								<form>						
+									<select class="form-control" id="healthType1" style="width:80%;" onChange="change1(this.selectedIndex);">
+										<option value="op0">健康狀況追蹤分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="height:75vh;overflow-y:auto;" id="itemDiv">
+								<!-- 
+								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;"
+									id="test1" onclick="itemSelect()">
+									&nbsp;&nbsp;1234
+								</div>
+								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;">
+									&nbsp;&nbsp;1234
+								</div>
+								-->
+							</div>
+						</div>
+
+					</div>
+				</div>
+				
+				
+				<!-- 右半邊 -->
+				<div class = "col-sm-8">
+				
+					
+					<br>
+					<form>
+					<div>
+						<input type="button" id="storage" class="btn btn-default" value="儲存" 
+							style="background-color:#f0f0f0;font-size:13px;float:right;">
+					</div>	
+					<!-- 右半邊 上面 -->
+					<div style="height:52px;"></div>
+				    <div class="panel panel-default lattice">
+						<div class="panel-heading" style="background-color:#FFFFFF;">										
+							<h5>模板名稱</h5>
+							<input type="text" class="form-control" id="modelName" placeholder="請輸入模板名稱...">	
+							<h5>分類</h5>
+							<select class="form-control" id="healthType2" style="width:35%;display:inline;"onChange="changeType()";>
+								<option value="all">健康狀況追蹤分類</option>
+							</select>
+							<h5 style="display:inline;">&nbsp;或&nbsp;</h5>
+							<input type="text" class="form-control" style="width:35%;display:inline;" id="healthTypeInput" placeholder="請輸入要新增的分類名稱...">	
+							
+							<h5>紀錄單位</h5>
+							<select class="form-control" id="cycle" style="width:35%;display:inline;">
+									<option value="0">隨時新增紀錄</option>
+									<option value="1">一天一次</option>
+									<option value="2">兩天一次</option>
+									<option value="3">三天一次</option>
+									<option value="7">一周一次</option>
+							</select>
+						</div>
+						
+					<!-- 右半邊 下面-->		
+						<div class="panel-body" style="height:60vh;overflow-y:auto;">	
+							<div id="display">	
+								<!--  移到右上的紀錄單位
+								<div style="margin-bottom:5px;">
+									<label style="width:15%;display:inline;text-align:left;float:left;">紀錄單位</label>
+									<select class="form-control" id="detail"+detailIDLast+"_cycle" style="width:35%;display:inline;"onChange="changeType()";>
+										<option value="0">隨時新增紀錄</option>
+										<option value="1">一天一次</option>
+										<option value="2">兩天一次</option>
+										<option value="3">三天一次</option>
+										<option value="7">一周一次</option>
+									</select>
+								</div>
+								-->										
+							</div>
+							<div class="col-sm-12">
+								<br>
+								<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onClick="addDetail()" id="newDetail" >新增項目</button>
+							</div>				
+							
+						</div>
+					</div>
+					</form>	
+	
+	
+	
+						
+				</div>	
+				
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 醫生端框架js -->
+	<script src="js/doctorFrame.js"></script>
+
+</body>
+
+</html>

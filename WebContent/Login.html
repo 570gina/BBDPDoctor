@@ -1,0 +1,94 @@
+<html>
+<head>
+<title>BBDP醫生端系統</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- Shortcut Icon -->
+<link rel="Shortcut Icon" type="image/x-icon"
+	href="picture/doctor-frame/icon.ico">
+<style type="text/css">
+* {
+  font-family: 微軟正黑體;
+}
+#loginFail {
+	color: red;
+	text-align:center;
+}
+</style>
+<script>
+	$(document).ready(function() {
+		$("#loginId").click(function(e) {
+			e.preventDefault();
+			$.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/LoginVerificationServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/LoginVerificationServlet",
+				data : {
+					account : $("#account").val(),
+					password : $("#password").val()
+				},
+				dataType : "json",
+
+				success : function(response) {		
+					
+					if (response.result == "登入成功") {
+						window.location.href = 'Homepage.html';
+						localStorage.setItem("login", response.doctorID);
+					}
+					else {
+						$("#loginFail").empty();
+						//$("#loginFail").append(response.result);
+						
+						//var str="test";
+						//document.getElementById("loginFail").innerHTML+=str;  
+						
+						alert(response.result);
+					}
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		});
+	});
+</script>
+</head>
+<body>
+	<div class="col-sm-12">
+		<!-- ======================================================================================================================================================= -->
+		<div style="text-align: center;">
+			<img src="picture/logo.png" style="width: 50%; height: 192;">
+		</div>
+		<h1 class="text-center" style="color: #2e2d4d">
+			<strong>BBDP醫生端系統</strong>
+		</h1>
+		<h3 class="text-center" style="color: #2e2d4d">登入</h3>
+		<br>
+		<form class="form-horizontal" role="form">
+			<div class="form-group">
+				<div class="col-sm-offset-4 col-sm-4">
+					<input type="text" class="form-control" id="account"
+						placeholder="帳號" autofocus />
+						<br> 
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-4 col-sm-4">
+						<input type="password"
+						class="form-control" id="password" placeholder="密碼" />
+						<br>								
+				</div>
+			</div>
+			<button type="submit" class="btn btn-default center-block"
+					id="loginId" >登入</button>
+		</form>
+		<div id="loginFail"></div>
+		<!-- ======================================================================================================================================================= -->
+	</div>
+</body>
+</html>

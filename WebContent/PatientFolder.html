@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport"
+	content="width=device-width, height=device-height, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>BBDP</title>
+
+<!-- Shortcut Icon -->
+<link rel="Shortcut Icon" type="image/x-icon"
+	href="picture/doctor-frame/icon.ico">
+
+<!-- Bootstrap Core CSS -->
+<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- MetisMenu CSS -->
+<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link href="dist/css/sb-admin-2.css" rel="stylesheet">
+
+<!-- Custom Fonts -->
+<link href="vendor/font-awesome/css/font-awesome.min.css"
+	rel="stylesheet" type="text/css">
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+<!-- jQuery -->
+<!-- <script src="vendor/jquery/jquery.min.js"></script> -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Metis Menu Plugin JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/metisMenu/metisMenu.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="dist/js/sb-admin-2.js"></script>
+
+<!-- 醫生端框架css -->
+<link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+$(document).ready(function() {
+	if(!(window.localStorage.getItem('login'))){
+		alert("您尚未登入!跳轉至登入頁面中...");
+		window.location.href = 'Login.html';
+	}
+})
+</script>
+
+<script type="text/JavaScript">
+	
+	var patientID;
+	var doctorID = window.localStorage.getItem('login');
+	var imgArray = [];
+	var videoArray = [];
+	var timeArray = [];
+	var descriptionArray = [];
+	//var serverURL = "http://localhost:8080/BBDPDoctor/PatientFolderServlet";
+	var serverURL = "http://140.121.197.130:8000/BBDPDoctor/PatientFolderServlet";
+	
+	function showVideo(i) {
+			//alert(videoArray[i]);
+			var output;
+			$("#rightDiv").html("");
+			output = "<div class='panel panel-default lattice '>"+
+						//影片
+						"<div class='panel-heading' style='height:70vh;border-bottom-width:0px;'align='center'>"+	
+							"<video margin-top='10px;' width='100%'  controls webkit-playsinline>" + 
+								"<source src='" + serverURL + "?option=getVideo&video=" + videoArray[i] + "'>"+
+								"Your browser does not support the video tag."+
+						"</video>"+"<br><br>"+
+						"</div>"+
+						//字							
+						"<div class='panel-body' style='height:18vh;overflow-y:auto;'>"+
+						timeArray[i]+
+						"<br>"+
+						descriptionArray[i]+
+						"</div>"+
+					"</div>";
+			$("#rightDiv").html(output);
+
+        }
+		
+	function showPhoto(i) {
+			//alert(descriptionArray[i]);
+			var output;
+			$("#rightDiv").html("");
+			output = "<div class='panel panel-default lattice '>"+
+						//圖
+						"<div class='panel-heading' style='height:70vh;border-bottom-width:0px;'align='center'>"+	
+							"<img src='"+imgArray[i]+"' style='max-width: 90%;max-height: 90%;height: auto;'>"+
+						"</div>"+
+						//字							
+						"<div class='panel-body' style='height:18vh;overflow-y:auto;'>"+
+						timeArray[i]+
+						"<br>"+
+						descriptionArray[i]+
+						"</div>"+
+					"</div>";
+			$("#rightDiv").html(output);
+        }
+		
+	//顯示所有檔案
+	$(document).ready(function(){		
+		$.ajax({
+			type: "GET",
+			url: serverURL,	 
+			data: {doctorID:doctorID, option:"getDoctorFileInfo"},
+			dataType: "json",
+												
+ 			success : function(response){
+				var jsonString="";
+ 				$("#output").html("");
+				var output = "";
+                   for(var i = 0; i<response.length; i++){ 
+						patientID = response[i]["patientID"];
+						timeArray[i] = response[i]["time"];
+						descriptionArray[i] = response[i]["description"];
+						imgArray[i] = serverURL+"?patientID=" + patientID + "&time=" + timeArray[i] + "&option=getPhoto";
+						videoArray[i] = response[i]["video"];
+																
+						output += "<div id='item'><div class='col-sm-3'>";
+						
+						//alert(imgArray[i]);						
+						if(videoArray[i]=='null'||videoArray[i]==''){		//顯示照片
+							output += "<a href='#' onclick = 'showPhoto("+i+")'><img id='photo' src='" + imgArray[i] + "'></a>";
+						}else{	//顯示影片
+							output += "<a href='#' onclick = 'showVideo("+i+")'><img id='videoIcon' src='picture/videoIcon.png'></a>";
+						}
+						//描述
+						output += "</div>"+
+									"<div class='col-sm-9'>"+
+										"<div style='font-weight:bold;font-size:10px;margin-top:0px;margin-bottom:0px;'>"+
+										timeArray[i]+
+										"</div>"+									
+											descriptionArray[i]+									
+									"</div></div>";
+						
+						
+						
+						jsonString += "patientID:"+patientID+ " time:" +response[i]["time"]+"\n"
+						+ "video:" +response[i]["video"]+"\n";
+                    }
+					
+					//alert(jsonString);
+					$("#output").html(output);
+                    
+				},
+ 
+				error : function(){
+					alert("server沒有回應");
+				}
+			});           
+        });
+		
+		
+		
+		
+
+</script>
+		<style type="text/css">
+		
+		
+		#item{
+			height:70px;
+			margin-bottom:10px;
+			text-align:left;
+			width:100%;
+			background-color:#dabfff;
+			vertical-align:middle;
+			font-size:15px;
+			border:none;
+			text-overflow: ellipsis;
+		}
+		
+		.col-sm-3{
+		height:70px;
+		
+		}
+		
+		.col-sm-9{
+			text-overflow: ellipsis;
+			overflow : hidden;
+			margin-top:10px;
+		}
+		
+		#photo{
+			margin-top:5px;
+			width: 60px;
+			height: 60px;
+			object-fit: cover;
+		}
+		
+		
+		
+		#videoIcon{
+			margin-top:5px;
+			max-width: 60px;
+			max-height: 60px;
+		}
+		
+		
+		</style>
+
+</head>
+
+<body>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0"></nav>
+
+		<!-- page-wrapper -->
+		<div id="page-wrapper">
+			<div class="row">
+				<div class = "col-sm-4">
+						<br>
+						<div class = "col-sm-12">
+							<div class="panel panel-default lattice">
+								<div class="panel-heading" style="border-bottom-width:0px;">							
+									<form>						
+										<select class="form-control" id="select1" style="width:27%; margin-bottom:10px;">
+											<option value="">全部</option>
+										</select>
+										<select class="form-control" id="select2" style="width:25%; margin-bottom:10px; margin-right:10px; float:left;">
+											<option value="">年</option>
+										</select>
+										<select class="form-control" id="select3" style="width:30%;">
+											<option value="">2017</option>
+										</select>
+									</form>
+								</div>
+								
+								<div id="output" class="panel-body" style="height:75vh;overflow-y:auto;">
+								
+									
+								
+								
+								
+								</div>
+							</div>
+
+						</div>
+				</div>
+				<!---------------------右邊------------------------------------->
+				<br>
+				<div id="rightDiv" class = "col-sm-8">
+					<div class="panel panel-default lattice">
+						<div class="panel-heading" style="height:70vh;border-bottom-width:0px;"align="center">							
+						</div>						
+						<div class="panel-body" style="height:20vh;overflow-y:auto;">	
+						</div>
+					</div>
+				</div>	
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 醫生端框架js -->
+	<script src="js/doctorFrame.js"></script>
+
+	<!-- 醫生端病患資訊框架js -->
+	<script src="js/patientInformationFrame.js"></script>
+
+</body>
+
+</html>

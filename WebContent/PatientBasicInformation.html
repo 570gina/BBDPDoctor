@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport"
+	content="width=device-width, height=device-height, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>BBDP</title>
+
+<!-- Shortcut Icon -->
+<link rel="Shortcut Icon" type="image/x-icon"
+	href="picture/doctor-frame/icon.ico">
+
+<!-- Bootstrap Core CSS -->
+<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- MetisMenu CSS -->
+<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link href="dist/css/sb-admin-2.css" rel="stylesheet">
+
+<!-- Custom Fonts -->
+<link href="vendor/font-awesome/css/font-awesome.min.css"
+	rel="stylesheet" type="text/css">
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+<!-- jQuery -->
+<!-- <script src="vendor/jquery/jquery.min.js"></script> -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Metis Menu Plugin JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/metisMenu/metisMenu.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="dist/js/sb-admin-2.js"></script>
+
+<!-- 醫生端框架css -->
+<link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+
+<!-- 醫生端 病患資訊 基本資料css -->
+<link href="css/patientBasicInformation.css" rel="stylesheet" type="text/css">
+
+<!-- C3.js相關 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0"></nav>
+
+		<!-- page-wrapper -->
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="row-md-4">
+					<div class="col-md-4" style="padding-top: 20px; padding-left: 40px;">
+						<div class="panel panel-default" style="margin-bottom: 0px;">
+							<div class="panel-heading" style="background-color: white; height: 70px">
+								<img class="img-responsive" style="float: left" src="picture/patientBasicInformation/photo.png" />
+								<h3 id="patientName"></h3>
+							</div>
+							<div class="panel-body">
+								<div class="table-responsive">
+									<table class="table table-hover table-bordered">
+										<tbody>
+											<tr>
+												<td class="patientBasicInfoTd" style="border-color: white;">出生日期</td>
+												<td id="patientBirth" style="border-color: #c2eabd;"></td>
+											</tr>
+											<tr>
+												<td class="patientBasicInfoTd" style="border-color: white;">年齡</td>
+												<td id="patientAge" style="border-color: #c2eabd;"></td>
+											</tr>
+											<tr>
+												<td class="patientBasicInfoTd" style="border-color: white;">身分證字號</td>
+												<td id="patientIdentityNumber" style="border-color: #c2eabd;"></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-8" style="padding-top: 20px; padding-left: 20px;">
+						<div class="panel panel-default">
+							<div id="patientBasicMedicalRecordDate" class="panel-heading"
+								style="background-color: white"></div>
+							<div id="patientBasicMedicalRecordContent" class="panel-body" style="min-height: 170px; max-height: 170px; overflow-y: scroll;"></div>
+						</div>
+					</div>
+				</div>
+				<div class="row-md-8">
+					<div class="col-md-2" style="padding-top: 20px; padding-left: 20px; margin-left: 20px;">
+						<div class="panel panel-default">
+							<div class="panel-heading" style="background-color: white">最近一個月的問卷</div>
+							<div class="panel-body" style="background-color: white">
+								<div class="row">
+									<div>
+										<b id="recentQuestionnaireNum" style="padding-left: 20px; color: #ed254e; font-size: 600%;"></b>
+										<span class="text-right" >份問卷</span>
+									</div>
+								</div>
+							</div>
+							<a href="PatientQuestionnaire.html">
+								<div class="panel-footer" style="background-color: white;">
+									<span class="pull-left" style="color: black;">詳細資料</span>
+									<span class="pull-right" style="color: black;"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-md-2" style="padding-top: 20px; padding-left: 20px;">
+						<div class="panel panel-default">
+							<div class="panel-heading" style="background-color: white">最近一個月的檔案夾</div>
+							<div class="panel-body" style="background-color: white">
+								<div class="row">
+									<div>
+										<b id="recentFolderNum" style="padding-left: 20px; color: #f9dc5c; font-size: 600%;"></b>
+										<span class="text-right" >個檔案</span>
+									</div>
+								</div>
+							</div>
+							<a href="PatientFolder.html">
+								<div class="panel-footer" style="background-color: white;">
+									<span class="pull-left" style="color: black;">詳細資料</span>
+									<span class="pull-right" style="color: black;"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-md-6" style="padding-top: 20px; padding-left: 20px;">
+						<div class="panel panel-default">
+							<div class="panel-heading" style="background-color: white">
+								最近一個月的健康狀況追蹤
+								<select id="recentHealthTrackingName" class="pull-right"></select>
+							</div>
+							<div id="healthTrackingBody" class="panel-body" style="background-color: white">
+								<div id="chart"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 醫生端框架js -->
+	<script src="js/doctorFrame.js"></script>
+
+	<!-- 醫生端病患資訊框架js -->
+	<script src="js/patientInformationFrame.js"></script>
+	
+	<!-- 醫生端病患資訊-基本資料js -->
+	<script src="js/patientBasicInformation.js"></script>
+	
+</body>
+
+</html>
