@@ -19,7 +19,7 @@ public class PatientFolderServer {
 		String jsonString = "";
 		 try {
 	            // queries the database
-	            String sql = "SELECT * FROM file WHERE patientID = ? AND doctorID = ? ORDER BY time";
+	            String sql = "SELECT * FROM file WHERE patientID = ? AND doctorID = ? ORDER BY time DESC";
 	            
 	            PreparedStatement statement = conn.prepareStatement(sql);
 	            statement.setString(1, patientID);

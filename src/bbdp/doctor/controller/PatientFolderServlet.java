@@ -22,16 +22,15 @@ public class PatientFolderServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
     	response.setContentType("application/json;charset=UTF-8");
-    	HttpSession session = request.getSession();
-		System.out.println("檔案夾patientID(session內容) : " + (String) session.getAttribute("patientID"));
-		//String patientID = (String) session.getAttribute("patientID");
-		String patientID = "1000";
-    	
+    	HttpSession session = request.getSession();		
+		String patientID = (String) session.getAttribute("patientID");
+		//String patientID = "1000";
 		String option = request.getParameter("option");     
         String time = request.getParameter("time");
         String doctorID = request.getParameter("doctorID");
         String video = request.getParameter("video");
-        
+       
+        System.out.println("檔案夾patientID(session內容) : " +patientID);
         System.out.println("收到的doctorID:" + doctorID);
         System.out.println("收到的time:" + time);
         

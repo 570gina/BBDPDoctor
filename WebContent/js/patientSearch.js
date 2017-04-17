@@ -28,8 +28,8 @@ $(document).ready(function() {
 		else{
 			$.ajax({
 				type: "POST",	//指定http參數傳輸格式
-				//url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
-				url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
+				url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
+				//url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
 				data: {option : "search", account: $('#patientID').val()}, //要傳給目標的data
 				dataType: "json",              //目標url處理完後回傳的值之type
 						
@@ -70,8 +70,8 @@ function searchConfirm(i) {
 	
 	$.ajax({
 		type: "POST",	
-		//url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
-		url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
+		url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
+		//url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
 		data: {option : "select", selectPatient : selecrPatientID[i]},
 		success : function(response){
 			window.location.href='PatientBasicInformation.html';
