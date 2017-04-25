@@ -10,7 +10,7 @@ $.ajax({
 	success : function(response) {
 		$("#notificationUl").empty();
 		for(var i=0; i<response.length; i++) {
-			$("#notificationUl").append("<li class='divider'></li><li><a href='javascript: notificationOnclick(" + response[i].patientID + ");'><span class='chat-img pull-left' style='margin-right: 10px;'><img src='picture/patientBasicInformation/photo.png' /></span><div><strong>診間推播</strong><span class='pull-right text-muted'><small>" + response[i].time.substring(0, 16) + "</small></span></div><div>" + response[i].content + "</div></a></li>");
+			$("#notificationUl").append("<li class='divider'></li><li><a href='javascript: notificationOnclick(" + response[i].patientID + ", \"" + response[i].hyperlink + "\");'><span class='chat-img pull-left' style='margin-right: 10px;'><img src='picture/patientBasicInformation/photo.png' /></span><div><strong>" + response[i].title + "</strong><span class='pull-right text-muted'><small>" + response[i].time.substring(0, 16) + "</small></span></div><div>" + response[i].body + "</div></a></li>");
 		}
 		$("#notificationUl").prepend("<li><a href='javascript: clearAllNotification();' align='right'><big><i class='fa fa-trash-o'></i></big>&nbsp;&nbsp;清除所有通知</a></li>");
 	},
@@ -40,7 +40,7 @@ function clearAllNotification() {
 	});
 }
 
-function notificationOnclick(patientID) {
+function notificationOnclick(patientID, hyperlink) {
 	$.ajax({
 		type : "POST",
 		//url : "http://localhost:8080/BBDPDoctor/NotificationServlet",
@@ -51,7 +51,7 @@ function notificationOnclick(patientID) {
 		},
 		dataType : "text",
 		success : function(response) {
-			window.location.href = "PatientBasicInformation.html";
+			window.location.href = hyperlink;
 		},
 		error : function() {
 			console.log("notificationOnclick error");

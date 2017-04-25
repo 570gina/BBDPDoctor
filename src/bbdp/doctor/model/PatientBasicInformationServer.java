@@ -26,6 +26,7 @@ public class PatientBasicInformationServer {
 				System.out.println("getPatientName empty");
 				result = "病患姓名";
 			}
+			if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
 			System.out.println("getPatientName SQLException: " + e);
@@ -48,6 +49,7 @@ public class PatientBasicInformationServer {
 			if(result.equals("")) {
 				result = "\"patientName\": " + "\"資料空白\"" + ", \"birth\": " + "\"資料空白\"" + ", \"age\": " + "\"資料空白\"" + ", \"account\": " + "\"資料空白\"";
 			}
+			if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
 			System.out.println("getPatientBasicInformation SQLException");
@@ -65,10 +67,11 @@ public class PatientBasicInformationServer {
 				if(isRecent(resultSet.getString("date"))) countRecentQuestionnireNum++;
 			}
 			result = "\"QNum\": " + countRecentQuestionnireNum;
+			if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
 			System.out.println("getRecentQuestionnaire SQLException");
-			result = "\"QNum\": " + "\"取得資料失敗\"";
+			result = "\"QNum\": " + "0";
 			return result;
 		}
 	}
@@ -82,10 +85,11 @@ public class PatientBasicInformationServer {
 				if(isRecent(resultSet.getString("time").substring(0, 10))) countRecentFolderNum++;
 			}
 			result = "\"FNum\": " + countRecentFolderNum;
+			if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
 			System.out.println("getRecentFolder SQLException");
-			result = "\"FNum\": " + "\"取得資料失敗\"";
+			result = "\"FNum\": " + "0";
 			return result;
 		}
 	}
@@ -101,6 +105,7 @@ public class PatientBasicInformationServer {
 			if(result.equals("")) {
 				result = "\"MRDate\": " + "\"資料空白\"" + ", \"MRContent\": " + "\"資料空白\"";
 			}
+			if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
 			System.out.println("getLatestMedicalRecord SQLException: " + e);
@@ -156,6 +161,7 @@ public class PatientBasicInformationServer {
 			if(result.equals("") || result.equals("\"healthTracking\": []")) {
 				result = "\"healthTracking\": " + "\"資料空白\"";
 			}
+			if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
 			System.out.println("getRecentHealthTracking SQLException: " + e);
@@ -165,7 +171,7 @@ public class PatientBasicInformationServer {
 			System.out.println("getRecentHealthTracking JSONException: " + e);
 			result = "\"healthTracking\": " + "\"取得資料失敗\"";
 			return result;
-		} 
+		}
 	}
 	
 	private static int calculateAge(String birth) {		//計算年齡

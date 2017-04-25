@@ -1,1 +1,204 @@
-!Templates.html5.content!
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport"
+	content="width=device-width, height=device-height, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>BBDP</title>
+
+<!-- Shortcut Icon -->
+<link rel="Shortcut Icon" type="image/x-icon"
+	href="picture/doctor-frame/icon.ico">
+
+<!-- Bootstrap Core CSS -->
+<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- MetisMenu CSS -->
+<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link href="dist/css/sb-admin-2.css" rel="stylesheet">
+
+<!-- Custom Fonts -->
+<link href="vendor/font-awesome/css/font-awesome.min.css"
+	rel="stylesheet" type="text/css">
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+<!-- jQuery -->
+<!-- <script src="vendor/jquery/jquery.min.js"></script> -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Metis Menu Plugin JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="vendor/metisMenu/metisMenu.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<!-- 有關下拉式選單 -->
+<script src="dist/js/sb-admin-2.js"></script>
+
+<!-- 醫生端框架css -->
+<link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+
+<!-- 門診時間css -->
+<link href="css/clinicHours.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0"></nav>
+
+		<!-- page-wrapper -->
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="col-md-12" style="margin-top: 3vh; margin-bottom: 2vh;">
+					<span class="lead"><b>帳戶設定</b></span>
+				</div>
+			</div>
+			<div class="row" style="padding-left: 1vw; padding-right: 1vw;">
+				<div class="col-md-12">
+					<div class="panel panel-default" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color: white;">
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-12">
+									<h5><b>姓名</b></h5>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-6">
+									<div class="input-group" style="margin-bottom: 1vh;">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+										<input id="name" type="text" class="form-control" placeholder="請輸入姓名..." />
+									</div>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-12">
+									<h5><b>所屬醫院</b></h5>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-6">
+									<div class="input-group" style="margin-bottom: 1vh;">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-header"></i></span>
+										<input id="hospital" type="text" class="form-control" placeholder="請輸入所屬醫院..." disabled />
+									</div>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-12">
+									<h5><b>所屬科別</b></h5>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-6">
+									<div class="input-group" style="margin-bottom: 1vh;">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-plus"></i></span>
+										<input id="department" type="text" class="form-control" placeholder="請輸入所屬科別..." />
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="panel-body">
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-12">
+									<h5><b>帳號</b></h5>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-6">
+									<div class="input-group" style="margin-bottom: 1vh;">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+										<input id="account" type="text" class="form-control" placeholder="請輸入帳號..." disabled />
+									</div>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-12">
+									<h5><b>密碼</b>&nbsp&nbsp(介於6~15字元間)</h5>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-6">
+									<div class="input-group" style="margin-bottom: 1vh;">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+										<input  id="password" type="password" class="form-control" placeholder="請輸入密碼..." />
+									</div>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-12">
+									<h5><b>確認密碼</b></h5>
+								</div>
+							</div>
+							<div class="row" style="margin-left: 0.5vw;">
+								<div class="col-md-6">
+									<div class="input-group" style="margin-bottom: 1vh;">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-ok-sign"></i></span>
+										<input id="passwordCheck" type="password" class="form-control" placeholder="請再輸入一次密碼..." />
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="panel-footer" style="background-color: white;">
+							<div class="row">
+								<div class="col-md-6">
+									<a id="modal-395003" href="#modal-container-395003" role="button" class="btn" data-toggle="modal" >
+										<button id="change" type="button" class="btn btn-default" style="background-color: #f0f0f0;" onclick="">提交</button>
+									</a>
+									<div class='modal fade' id='modal-container-395003' role='dialog' aria-labelledby='myModalLabel' aria-hidden='true'>
+										<div class='modal-dialog'>
+											<div class='modal-content'>
+												<div class='modal-header'>
+													<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>×</button>
+													<h4 class='modal-title' id='myModalLabel'>帳戶設定修改</h4>
+												</div>
+												<div class='modal-body'>
+													<div id='display'></div>
+												</div>
+												<div class='modal-footer'>
+													<button type='button' class='btn btn-default' data-dismiss='modal'>關閉</button>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 醫生端框架js -->
+	<script src="js/doctorFrame.js"></script>
+
+	<!-- 帳戶設定js -->
+	<script src="js/setting.js"></script>
+
+</body>
+
+</html>

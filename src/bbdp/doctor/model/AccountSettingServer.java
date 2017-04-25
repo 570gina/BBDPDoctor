@@ -7,6 +7,7 @@ import java.util.HashMap;
 import bbdp.db.model.DBConnection;
 
 public class AccountSettingServer {
+	//已關資料庫
 	public HashMap settingDefault(DBConnection conn, String doctorID) {
 		HashMap accountInfo = new HashMap();
 		try {
@@ -27,6 +28,8 @@ public class AccountSettingServer {
 					break;
 				}
 			}
+			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}//關閉resultSet
+
 			accountInfo.put("name", name);
 			accountInfo.put("account", account);
 			accountInfo.put("hospital", hospital);
@@ -40,6 +43,7 @@ public class AccountSettingServer {
 		return accountInfo;
 	}
 
+	//不須關資料庫
 	public String settingChange(DBConnection conn, String account, String password, String passwordCheck, String name,
 			String hospital, String department) {
 		try {

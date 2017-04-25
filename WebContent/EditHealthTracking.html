@@ -56,6 +56,519 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- 左半邊的 -->
+<script src="js/healthModelFrame.js"></script>
+
+<style type="text/css">
+h5 {
+	font-weight:bold;
+}
+</style>
+
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if (!(window.localStorage.getItem('login'))) {
+			alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+		}
+	});	
+</script>
+
+<script>
+var url = window.location.href;
+var urlparts = url.split("?");
+var IDparts = urlparts[1].split("=");
+var itemID = IDparts[1];
+
+console.log("url : " + url);
+console.log("urlparts : " + urlparts);
+console.log("IDparts : " + IDparts);
+console.log("itemID : " + itemID);
+
+//取得編輯前所有欄位的值
+var typeName;	//分類名稱
+var detailArray = new Array();	//儲存有哪些detailID
+$(document).ready(function() {
+	//取得存在local storage的doctoeID值並顯示出來
+	var doctorID = window.localStorage.getItem('login');
+	
+	$.ajax({
+		//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
+		url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+		data : {
+			state : "editDefault",
+			itemID : itemID,
+			doctorID : doctorID
+		},
+		dataType : "json",
+
+		success : function(response) {
+			detailArray = response.detailIDList;	//儲存update的時候用
+		
+			$("#modelName").val(response.modelName);
+			typeName = response.type;
+			
+			//取得下拉選單的值
+			$.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+				data : {
+					state : "allItem",
+					doctorID : doctorID
+				},
+				dataType : "json",
+
+				success : function(response) {
+					//取得下拉選單的值
+					for(var number = 0; number < response.typeList.length; number++){
+						var itemType = response.typeList[number];	//項目類別名稱
+						
+						if(itemType == typeName){
+							$("#healthType2").append("<option selected value='op1'>"+itemType+"</option>");	//資料庫裡的值
+						}
+						else
+							$("#healthType2").append("<option value='op1'>"+itemType+"</option>");	//其他值
+					}			
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+			
+			
+			$("#cycle").val(response.cycle);	
+
+			//console.log("detailIDList : " + response.detailIDList);
+			//console.log("nameList : " + response.nameList);
+			//console.log("unitList : " + response.unitList);
+			//console.log("range_1_List : " + response.range_1_List);
+			//console.log("range_2_List : " + response.range_2_List);
+			//console.log("upperLimitList : " + response.upperLimitList);
+			//console.log("lowerLimitList : " + response.lowerLimitList);
+			//console.log("長度 : " + response.nameList.length);
+			//console.log("長度 : " + response.nameList[0]);
+			
+			for(var i = 0; i < response.detailIDList.length; i++){
+				$("#display").append(
+						"<div class='col-sm-12' id='detail"+response.detailIDList[i]+"_Div' style='margin-top:20px;'>"+
+						"	<div class='col-sm-10' style='background-color:#F7E56E;border-radius:5px;'>"+
+						"		<div style='margin-bottom:5px; margin-top:7px;'>"+
+						"			<label style='width:15%;display:inline;text-align:left;float:left;'>項目</label>"+
+						"			<input type='text' class='form-control' style='width:35%;display:inline;' id='detail"+response.detailIDList[i]+"_name' placeholder='項目名稱'>"+
+						"		</div>"+
+						"			<div style='margin-bottom:5px;'>"+
+						"			<label style='width:15%;display:inline;text-align:left;float:left;'>單位</label>"+
+						"			<input type='radio' name='unitChecked_"+response.detailIDList[i]+"' value='' onClick=yesUnit('"+response.detailIDList[i]+"')>有&nbsp;"+
+						"			<input type='text' class='form-control' style='width:35%;display:inline;' id='detail"+response.detailIDList[i]+"_unit' disabled>"+
+						"		</div>"+
+						"		<div style='margin-bottom:5px;'>"+
+						"			<label style='width:15%;display:inline;text-align:left;float:left;'>合理範圍</label>"+
+						"			<input type='radio' name='rangeChecked_"+response.detailIDList[i]+"' value='' onClick=yesRange('"+response.detailIDList[i]+"')>有&nbsp;"+
+						"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+response.detailIDList[i]+"_range_1' disabled>&nbsp;到&nbsp;"+
+						"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+response.detailIDList[i]+"_range_2' disabled>"+
+						"		</div>"+
+						"		<div style='margin-bottom:5px;'>"+
+						"			<label style='width:15%;display:inline;text-align:left;float:left;'>警示值</label>"+
+						"			<input type='radio' name='warningUpChecked_"+response.detailIDList[i]+"' value='' onClick=yesWarningUp('"+response.detailIDList[i]+"')>有&nbsp;"+
+						"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+response.detailIDList[i]+"_upperLimit' disabled>以上&nbsp;&nbsp;&nbsp;"+
+						"			<input type='radio' name='warningDownChecked_"+response.detailIDList[i]+"' value='' onClick=yesWarningDown('"+response.detailIDList[i]+"')>有&nbsp;"+
+						"			<input type='text' class='form-control' style='width:15%;display:inline;' id='detail"+response.detailIDList[i]+"_lowerLimit' disabled>以下&nbsp;"+
+						"		</div>"+
+						"	</div>"+
+						"</div>");
+			}
+			for(var i = 0; i < response.detailIDList.length; i++){
+				var nameInput = "#detail"+response.detailIDList[i]+"_name";
+				var unitInput = "#detail"+response.detailIDList[i]+"_unit";
+				var range_1Input = "#detail"+response.detailIDList[i]+"_range_1";
+				var range_2Input = "#detail"+response.detailIDList[i]+"_range_2";
+				var upperLimitInput = "#detail"+response.detailIDList[i]+"_upperLimit";
+				var lowerLimitInput = "#detail"+response.detailIDList[i]+"_lowerLimit";
+				
+				var unitChecked = document.getElementsByName("unitChecked_" + response.detailIDList[i]);
+				var rangeChecked = document.getElementsByName("rangeChecked_" + response.detailIDList[i]);
+				var warningUpChecked = document.getElementsByName("warningUpChecked_" + response.detailIDList[i]);
+				var warningDownChecked = document.getElementsByName("warningDownChecked_" + response.detailIDList[i]);
+							
+				$(nameInput).val(response.nameList[i]);
+				if(response.unitList[i] == "NULL")	$(unitInput).val("");
+				else{	
+					$(unitInput).val(response.unitList[i]);
+					document.getElementById("detail"+response.detailIDList[i]+"_unit").disabled=false;	//可輸入單位
+					unitChecked[0].checked=true;	//打勾
+				}
+				
+				if(response.range_1_List[i] == "NULL")	$(range_1Input).val("");
+				else{
+					$(range_1Input).val(response.range_1_List[i]);
+					document.getElementById("detail"+response.detailIDList[i]+"_range_1").disabled=false;	//可輸入範圍1
+					document.getElementById("detail"+response.detailIDList[i]+"_range_2").disabled=false;	//可輸入範圍2
+					rangeChecked[0].checked=true;	//打勾
+				}
+							
+				if(response.range_2_List[i] == "NULL")	$(range_2Input).val("");
+				else{
+					$(range_2Input).val(response.range_2_List[i]);
+					document.getElementById("detail"+response.detailIDList[i]+"_range_1").disabled=false;	//可輸入範圍1
+					document.getElementById("detail"+response.detailIDList[i]+"_range_2").disabled=false;	//可輸入範圍2
+					rangeChecked[0].checked=true;	//打勾
+				}
+							
+				if(response.upperLimitList[i] == "NULL")	$(upperLimitInput).val("");
+				else{
+					$(upperLimitInput).val(response.upperLimitList[i]);
+					document.getElementById("detail"+response.detailIDList[i]+"_upperLimit").disabled=false;	//可輸入警戒值(以上)
+					warningUpChecked[0].checked=true;	//打勾
+				}
+		
+				if(response.lowerLimitList[i] == "NULL")	$(lowerLimitInput).val("");
+				else{
+					$(lowerLimitInput).val(response.lowerLimitList[i]);
+					document.getElementById("detail"+response.detailIDList[i]+"_lowerLimit").disabled=false;	//可輸入警戒值(以下)
+					warningDownChecked[0].checked=true;	//打勾
+				}
+			}
+			
+			
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+});
+
+//右上邊//如果有選類別名稱的話，就不給新增類別名稱	//judgement==1表示要輸入新增的分類
+var judgment=0;
+function changeType(){
+	var s =  $('#healthType2 option:selected').val();
+	console.log(s);
+	if(s=="all"){
+		$("#healthTypeInput").val("");		//清空欄位值
+		document.getElementById('healthTypeInput').disabled=false;
+		judgment = 1;
+	}else{
+		judgment = 0;
+		$("#healthTypeInput").val("");		//清空欄位值
+		document.getElementById('healthTypeInput').disabled=true;
+	}
+}
+
+//右下邊//勾有，才可以輸入單位;
+var selectUnit=1;
+function yesUnit(detail){
+	var inputName = "detail"+detail+"_unit";
+	var radioName = "unitChecked_" + detail;
+	var unitChecked = document.getElementsByName(radioName);
+	
+	if(selectUnit==0){
+		console.log("我沒有勾選false");
+		unitChecked[0].checked=false;
+		selectUnit=1;
+		$("#"+inputName).val("");		//清空欄位值
+		document.getElementById(inputName).disabled=true;	//不可輸入單位
+		//$("#detail0_unit").val("");		//清空欄位值
+		//document.getElementById('detail0_unit').disabled=true;	//不可輸入單位
+	}
+	else{
+		console.log("我有勾選true");
+		selectUnit=0;
+		document.getElementById(inputName).disabled=false;	//可輸入單位
+		//unitChecked[0].checked=true;
+		//document.getElementById('detail0_unit').disabled=false;	//可輸入單位
+	}
+}
+
+//右下邊//勾有，才可以輸入合理範圍
+var selectRange=1;
+function yesRange(detail){
+	var inputName1 = "detail"+detail+"_range_1";
+	var inputName2 = "detail"+detail+"_range_2";
+	var radioName = "rangeChecked_" + detail;
+	var checked = document.getElementsByName(radioName);
+	//console.log("range : " + inputName1 + inputName2 + radioName + checked);
+	
+	if(selectRange==0){
+		console.log("我沒有勾選false");
+		checked[0].checked=false;
+		selectRange=1;
+		$("#"+inputName1).val("");		//清空欄位值1
+		$("#"+inputName2).val("");		//清空欄位值2
+		document.getElementById(inputName1).disabled=true;	//不可輸入範圍1
+		document.getElementById(inputName2).disabled=true;	//不可輸入範圍2
+	}
+	else{
+		console.log("我有勾選true");
+		selectRange=0;
+		document.getElementById(inputName1).disabled=false;	//可輸入範圍1
+		document.getElementById(inputName2).disabled=false;	//可輸入範圍2
+	}
+}
+
+//右下邊//勾有，才可以輸入警示值(以上)
+var selectWarningUp=1;
+function yesWarningUp(detail){
+	var inputName = "detail"+detail+"_upperLimit";
+	var radioName = "warningUpChecked_" + detail;
+	var checked = document.getElementsByName(radioName);
+	
+	if(selectWarningUp==0){
+		console.log("我沒有勾選false");
+		checked[0].checked=false;
+		selectWarningUp=1;
+		$("#"+inputName).val("");		//清空欄位值1
+		document.getElementById(inputName).disabled=true;	//不可輸入警示值(以上)
+	}
+	else{
+		console.log("我有勾選true");
+		selectWarningUp=0;
+		document.getElementById(inputName).disabled=false;	//可輸入警示值(以上)
+	}
+}
+
+//右下邊//勾有，才可以輸入警示值(以下)
+var selectWarningDown=1;
+function yesWarningDown(detail){
+	var inputName = "detail"+detail+"_lowerLimit";
+	var radioName = "warningDownChecked_" + detail;
+	var checked = document.getElementsByName(radioName);
+	
+	if(selectWarningDown==0){
+		console.log("我沒有勾選false");
+		checked[0].checked=false;
+		selectWarningDown=1;
+		$("#"+inputName).val("");		//清空欄位值1
+		document.getElementById(inputName).disabled=true;	//不可輸入警示值(以下)
+	}
+	else{
+		console.log("我有勾選true");
+		selectWarningDown=0;
+		document.getElementById(inputName).disabled=false;	//可輸入警示值(以下)
+	}
+}
+
+//修改後按下儲存
+$(document).ready(function() {
+	$("#update").click(function(){
+		var flag = true;
+		var doctorID = window.localStorage.getItem('login');
+		var modelName = $("#modelName").val();
+		var cycle = $('#cycle option:selected').val();
+		var typeName;
+
+		console.log("itemID : " + itemID);
+		console.log("modelName : " + modelName);
+		console.log("judgment : " + judgment);
+		console.log("cycle : " + cycle);
+		
+		//是否已經輸入模板名稱
+		if(modelName == ""){
+			alert("請輸入模板名稱");
+			flag = false;
+			console.log("flag : " + flag);
+		}
+		else{
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		if(judgment == 1){
+			//分類為自行輸入的名稱
+			typeName = $("#healthTypeInput").val();
+			console.log("typeName : " + typeName);
+			if(typeName == ""){
+				alert("請輸入要新增的分類名稱");
+				flag = false;
+			}
+			else{
+				flag = true;
+			}
+			console.log("flag : " + flag);
+		}
+		else {
+			//分類為選擇已有的分類
+			typeName = $("#healthType2 :selected").text();
+			console.log("typeName : " + typeName);
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		
+		var nameList = new Array();
+		var unitList = new Array();
+		var range_1_List = new Array();
+		var range_2_List = new Array();
+		var upperLimitList = new Array();
+		var lowerLimitList = new Array();
+		
+		console.log("detailArray : " + detailArray);
+		for(var index = 0; index < detailArray.length; index++){
+			if($("#detail"+detailArray[index]+"_name").val() == ""){
+				alert("請輸入項目名稱");
+				flag = false;
+				console.log("flag : " + flag);
+				break;
+			}
+			nameList.push($("#detail"+detailArray[index]+"_name").val());
+			unitList.push($("#detail"+detailArray[index]+"_unit").val());
+			range_1_List.push($("#detail"+detailArray[index]+"_range_1").val());
+			range_2_List.push($("#detail"+detailArray[index]+"_range_2").val());
+			upperLimitList.push($("#detail"+detailArray[index]+"_upperLimit").val());
+			lowerLimitList.push($("#detail"+detailArray[index]+"_lowerLimit").val());
+			
+		}
+		console.log("nameList : " + nameList);
+		console.log("unitList : " + unitList);
+		console.log("range_1_List : " + range_1_List);
+		console.log("range_2_List : " + range_2_List);
+		console.log("upperLimitList : " + upperLimitList);
+		console.log("lowerLimitList : " + lowerLimitList);
+		
+		
+		if(flag == true){
+			$.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+				data : {
+					state : "update",
+					doctorID : doctorID,
+					itemID : itemID,
+					detailArray : detailArray,
+					modelName : modelName,
+					typeName : typeName,
+					nameList : nameList,
+					unitList : unitList,
+					range_1_List : range_1_List,
+					range_2_List : range_2_List,
+					upperLimitList : upperLimitList,
+					lowerLimitList : lowerLimitList,
+					cycle : cycle
+				},
+				dataType : "json",
+	
+				success : function(response) {
+					window.location.href = 'EditHealthTracking.html?itemID='+ itemID;
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
+	});
+});
+
+//刪除
+$(document).ready(function() {
+	$("#delete").click(function(){
+		var flag = true;
+		var doctorID = window.localStorage.getItem('login');
+		var modelName = $("#modelName").val();
+		var cycle = $('#cycle option:selected').val();
+		var typeName;
+
+		console.log("itemID : " + itemID);
+		console.log("modelName : " + modelName);
+		console.log("judgment : " + judgment);
+		console.log("cycle : " + cycle);
+		
+		//是否已經輸入模板名稱
+		if(modelName == ""){
+			alert("請輸入模板名稱");
+			flag = false;
+			console.log("flag : " + flag);
+		}
+		else{
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		if(judgment == 1){
+			//分類為自行輸入的名稱
+			typeName = $("#healthTypeInput").val();
+			console.log("typeName : " + typeName);
+			if(typeName == ""){
+				alert("請輸入要新增的分類名稱");
+				flag = false;
+			}
+			else{
+				flag = true;
+			}
+			console.log("flag : " + flag);
+		}
+		else {
+			//分類為選擇已有的分類
+			typeName = $("#healthType2 :selected").text();
+			console.log("typeName : " + typeName);
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		
+		var nameList = new Array();
+		var unitList = new Array();
+		var range_1_List = new Array();
+		var range_2_List = new Array();
+		var upperLimitList = new Array();
+		var lowerLimitList = new Array();
+		
+		console.log("detailArray : " + detailArray);
+		for(var index = 0; index < detailArray.length; index++){
+			if($("#detail"+detailArray[index]+"_name").val() == ""){
+				alert("請輸入項目名稱");
+				flag = false;
+				console.log("flag : " + flag);
+				break;
+			}
+			nameList.push($("#detail"+detailArray[index]+"_name").val());
+			unitList.push($("#detail"+detailArray[index]+"_unit").val());
+			range_1_List.push($("#detail"+detailArray[index]+"_range_1").val());
+			range_2_List.push($("#detail"+detailArray[index]+"_range_2").val());
+			upperLimitList.push($("#detail"+detailArray[index]+"_upperLimit").val());
+			lowerLimitList.push($("#detail"+detailArray[index]+"_lowerLimit").val());
+			
+		}
+		console.log("nameList : " + nameList);
+		console.log("unitList : " + unitList);
+		console.log("range_1_List : " + range_1_List);
+		console.log("range_2_List : " + range_2_List);
+		console.log("upperLimitList : " + upperLimitList);
+		console.log("lowerLimitList : " + lowerLimitList);
+		
+		
+		if(flag == true){
+			$.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+				data : {
+					state : "deleteItem",
+					doctorID : doctorID,
+					itemID : itemID,
+					detailArray : detailArray,
+					modelName : modelName,
+					typeName : typeName,
+					nameList : nameList,
+					unitList : unitList,
+					range_1_List : range_1_List,
+					range_2_List : range_2_List,
+					upperLimitList : upperLimitList,
+					lowerLimitList : lowerLimitList,
+					cycle : cycle
+				},
+				dataType : "json",
+	
+				success : function(response) {
+					window.location.href = 'HealthTracking.html';
+					alert(response.result);
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
+	});
+});
+
+</script>
+
 </head>
 
 <body>
@@ -68,7 +581,107 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+			<!-------------------------------------------- 我寫的 -------------------------------------------->				
+				<!-- 左半邊 -->
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px; margin-left:15px;
+							"onclick="location.href='NewHealthTracking.html'">新增健康狀況追蹤模板
+						</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="healthType1" style="width:80%;" onChange="change1(this.selectedIndex);">
+										<option value="op0">健康狀況追蹤分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="itemDiv">
+								<!-- 
+								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;"
+									id="test1" onclick="itemSelect()">
+									&nbsp;&nbsp;1234
+								</div>
+								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;">
+									&nbsp;&nbsp;1234
+								</div>
+								-->
+							</div>
+						</div>
+
+					</div>
+				</div>
+				
+				
+				<!-- 右半邊 -->
+				<div class = "col-sm-8">
+				
+					
+					<br>
+					<form>
+					<div>
+						
+						<input type="button" id="update" class="btn btn-default" value="儲存" 
+							style="background-color:#f0f0f0;font-size:13px;float:right;">
+						<input type="button" id="delete" class="btn btn-default" value="刪除" 
+							style="background-color:#f0f0f0;font-size:13px;float:right;margin-right:15px;">
+					</div>	
+					<!-- 右半邊 上面 -->
+					<div style="height:52px;"></div>
+				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color:#FFFFFF;">										
+							<h5>模板名稱</h5>
+							<input type="text" class="form-control" id="modelName" placeholder="請輸入模板名稱...">	
+							<h5>分類</h5>
+							<select class="form-control" id="healthType2" style="width:35%;display:inline;"onChange="changeType()";>
+								<option value="all">健康狀況追蹤分類</option>
+							</select>
+							<h5 style="display:inline;">&nbsp;或&nbsp;</h5>
+							<input type="text" class="form-control" style="width:35%;display:inline;" id="healthTypeInput" placeholder="請輸入要新增的分類名稱..." disabled>	
+							
+							<h5>紀錄單位</h5>
+							<select class="form-control" id="cycle" style="width:35%;display:inline;">
+									<option value="0">隨時新增紀錄</option>
+									<option value="1">一天一次</option>
+									<option value="2">兩天一次</option>
+									<option value="3">三天一次</option>
+									<option value="7">一周一次</option>
+							</select>
+						</div>
+						
+					<!-- 右半邊 下面-->		
+						<div class="panel-body" style="min-height: 46.5vh; max-height: 46.5vh; overflow-y: auto;">	
+							<div id="display">	
+								<!--  移到右上的紀錄單位
+								<div style="margin-bottom:5px;">
+									<label style="width:15%;display:inline;text-align:left;float:left;">紀錄單位</label>
+									<select class="form-control" id="detail"+detailIDLast+"_cycle" style="width:35%;display:inline;"onChange="changeType()";>
+										<option value="0">隨時新增紀錄</option>
+										<option value="1">一天一次</option>
+										<option value="2">兩天一次</option>
+										<option value="3">三天一次</option>
+										<option value="7">一周一次</option>
+									</select>
+								</div>
+								-->										
+							</div>
+							
+						</div>
+					</div>
+					</form>	
+	
+	
+	
+						
+				</div>	
+				
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+			</div>
 		</div>
 
 	</div>

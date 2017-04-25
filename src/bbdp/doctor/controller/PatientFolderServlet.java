@@ -32,48 +32,73 @@ public class PatientFolderServlet extends HttpServlet {
        
         System.out.println("檔案夾patientID(session內容) : " +patientID);
         System.out.println("收到的doctorID:" + doctorID);
-        System.out.println("收到的time:" + time);
         
         DBConnection db = (DBConnection) getServletContext().getAttribute("db");
-        Connection conn = db.getConnection(); 
-        //回傳特定醫生檔案資訊
-        if(option.equals("getDoctorFileInfo")){	
+        Connection conn = db.getConnection();
+        
+        //特定醫生檔案列表
+        if(option.equals("getDoctorFileInfo")){
         	response.setContentType("application/json;charset=UTF-8");
         	String jsonString = PatientFolderServer.getDoctorFileInfo(conn, patientID, doctorID);
-            System.out.println(jsonString);
-            response.getWriter().println(jsonString);	//輸出json至前端
+            response.getWriter().write(jsonString);
         }
         //顯示圖片
-        if(option.equals("getPhoto")){	
-        	response.setContentType("image/*"); //設置返回的文件類型
-        	InputStream inputStream = PatientFolderServer.getPhoto(conn, patientID, time);
-        	OutputStream outStream = response.getOutputStream();
-        	byte[] buffer = new byte[BUFFER_SIZE];
-        	int bytesRead = -1;
-                 
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outStream.write(buffer, 0, bytesRead);
-            }
-            inputStream.close();
-            outStream.close(); 
+        else if(option.equals("getPhoto")){	
+        	response.setContentType("image/*");
+        	
+        	InputStream inputStream = null;
+        	OutputStream outStream = null;
+        	
+        	try{
+	        	inputStream = PatientFolderServer.getPhoto(conn, patientID, time);
+	        	outStream = response.getOutputStream();
+	        	byte[] buffer = new byte[BUFFER_SIZE];
+	        	int bytesRead = -1;
+	                 
+	            while ((bytesRead = inputStream.read(buffer)) != -1) {
+	                    outStream.write(buffer, 0, bytesRead);
+	            }
+        	}
+        	finally {
+        		if (inputStream != null){
+        			inputStream.close(); 
+        			System.out.println("顯示圖片後關閉inputStream");
+        	    }
+        	    if (outStream != null) {
+        	    	outStream.close();
+        	    	System.out.println("顯示圖片後關閉outputStream");
+        	    }
+        	}
         }
         
       //顯示影片
         if(option.equals("getVideo")){
         	System.out.println("顯示病患影片");
             
-            FileInputStream inStream = PatientFolderServer.getVideo(video);             
-            OutputStream outStream = response.getOutputStream();
-             
-            byte[] buffer = new byte[4096];
-            int bytesRead = -1;
-             
-            while ((bytesRead = inStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, bytesRead);
+        	FileInputStream inputStream = null;             
+            OutputStream outStream = null;
+        	
+            try{
+	            inputStream = PatientFolderServer.getVideo(video);             
+	            outStream = response.getOutputStream();
+	             
+	            byte[] buffer = new byte[4096];
+	            int bytesRead = -1;
+	             
+	            while ((bytesRead = inputStream.read(buffer)) != -1) {
+	                outStream.write(buffer, 0, bytesRead);
+	            }
             }
-             
-            inStream.close();
-            outStream.close();   
+            finally {
+	    	    if (inputStream != null){
+	    	    	inputStream.close(); 
+	    	    	System.out.println("顯示影片後關閉inputStream");
+	    	    }
+	    	    if (outStream != null) {
+	    	    	outStream.close();
+	    	    	System.out.println("顯示影片後關閉outputStream");
+	    	    }
+            }    
         } 
         
         

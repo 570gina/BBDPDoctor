@@ -25,9 +25,9 @@ $("nav").append("<!-- navbar-header -->"
 	+ "<i class='fa fa-caret-down' style='color:white'></i>"
 	+ "</a>"
 	+ "<ul class='dropdown-menu dropdown-user'>"
-	+ "<li><a id='setting'><i class='fa fa-gear fa-fw'></i>帳戶設定</a></li>"
+	+ "<li><a href='AccountSetting.html' id='setting' style='cursor: pointer;'><i class='fa fa-gear fa-fw'></i>帳戶設定</a></li>"
 	+ "<li class='divider'></li>"
-	+ "<li><a id='logout'><i class='fa fa-sign-out fa-fw'></i>登出</a></li>"
+	+ "<li><a id='logout' style='cursor: pointer;'><i class='fa fa-sign-out fa-fw'></i>登出</a></li>"
 	+ "</ul>"
 	+ "</li>"
 	+ "</ul>"
@@ -62,6 +62,10 @@ $("nav").append("<!-- navbar-header -->"
 	+ "<li><a href='Notice.html' style='color:#2e2d4d'><b>注意事項</b></a></li>"
 	+ "</ul>" + "</div>" + "</div>");
 
+/*設定畫面高度，防止畫面下面是白的或灰的*/
+$("html").attr("style", "min-height: " + ($(window).height() - $(".navbar-static-top").height()) + "px; max-height: " + ($(window).height() - $(".navbar-static-top").height()) + "px;");
+$("div#page-wrapper").attr("style", "min-height: " + ($(window).height() - $(".navbar-static-top").height() - 2) + "px; max-height: " + ($(window).height() - $(".navbar-static-top").height() - 2) + "px;");
+
 $(document).ready(function() {
 	// 通知欄
 	$("#notification").click(function() {
@@ -70,13 +74,13 @@ $(document).ready(function() {
 	// Websocket
 	$.getScript("js/NotificationPushHandler.js");
 	// 設定
-	$("#setting").click(function() {
-		$.getScript("js/setting.js");
-	});
+	$("#setting").click(function() {});
 	// 登出
 	$("#logout").click(function() {
 		$.getScript("js/logout.js");
 	});
 	// 病患資訊搜尋按鈕
 	$.getScript("js/patientSearch.js");
+	// 允許顯示通知
+	Notification.requestPermission();
 });

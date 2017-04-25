@@ -56,6 +56,219 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- bxSlider Javascript file -->
+<script src="slider/jquery.bxslider.min.js"></script>
+<!-- bxSlider CSS file -->
+<link href="slider/jquery.bxslider.css" rel="stylesheet" />
+
+<!-- 上半邊 項目(開始) -->
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+$(document).ready(function() {
+	if (!(window.localStorage.getItem('login'))) {
+		alert("您尚未登入!跳轉至登入頁面中...");
+		window.location.href = 'Login.html';
+	}
+});
+
+//一進來取得所有項目
+$(document).ready(function() {
+	$("#displayItem").empty();
+	var doctorID = window.localStorage.getItem('login');
+	
+	$.ajax({
+		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		data : {
+			state : "allItem",
+			doctorID : doctorID
+		},
+		dataType : "json",
+
+		success : function(response) {
+			for(var number=0; number<response.itemIDList.length; number++){
+				var itemName = response.itemNameList[number];
+				var itemRecord = response.itemRecordList[number];
+				var itemLastTime = response.itemLastTimeList[number];
+				var itemID = response.itemIDList[number];
+				var url = "EditPatientHealthTracking.html?itemID=" + response.itemIDList[number] ;
+				
+				var detailName = response.detailNameList[number];
+				var detailValue = response.detailValueList[number];
+				var detailUnit = response.detailUnitList[number];
+				//console.log("value : " + detailValue);
+				//console.log("value[0] : " + detailValue[0]);
+				//console.log("value.length : " + detailValue.length);
+				
+				var appendString = 
+					"<li><div class='panel panel-default'>"+
+					"	<div class='panel-body' id='item1' style='background-color:#F7E56E;min-height:110px;max-height:110px;text-overflow:ellipsis;overflow:hidden;font-weight:bold;'>"+
+					"		最近一個月的"+itemName+"紀錄 : "+itemRecord+"筆<br>"+
+					"		最後一次"+itemName+"紀錄 : "+itemLastTime+"<br>";					
+				for(var i=0; i<detailName.length; i++){
+					appendString+="		"+detailName[i]+" : "+detailValue[i]+detailUnit[i]+"<br>";
+				}	
+				appendString+=
+					"	</div>"+
+					"	<a href='EditPatientHealthTracking.html?itemID="+itemID+"'>"+
+					"		<div class='panel-footer' style='background-color: white;border-style:solid;border-color:#F7E56E;'>"+
+					"			<span class='pull-left' style='color: black;'>詳細資料</span>"+
+					"			<span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-right'></i></span>"+
+					"			<div class='clearfix'></div>"+
+					"		</div>"+
+					"	</a>"+
+					"</div></li>";
+				
+				$("#displayItem").append(appendString);
+			}
+			//設定滑動
+			$(document).ready(function(){
+				var w = $("#divWidth").width();
+				//console.log("width 寬度 : " + w);
+				
+				$('.bxslider').bxSlider({
+					slideWidth: w,
+					minSlides: 3,
+					maxSlides: 3,
+					slideMargin: 10
+				});
+			});	
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+});		
+</script>
+<!-- 上半邊 項目(結束) -->
+
+
+<script>
+//一進來就//取得下拉選單的值//取得所有項目的值
+$(document).ready(function() {
+	//取得存在local storage的doctoeID值並顯示出來
+	var doctorID = window.localStorage.getItem('login');
+	
+	$.ajax({
+		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		data : {
+			state : "allType",
+			doctorID : doctorID
+		},
+		dataType : "json",
+
+		success : function(response) {
+			//取得下拉選單的值
+			for(var number = 0; number < response.typeList.length; number++){
+				var itemType = response.typeList[number];	//項目類別名稱
+				$("#healthType").append("<option value='op1'>"+itemType+"</option>");
+			}			
+			//取得所有項目的值
+			for(number = 0; number < response.itemIDList.length; number++){
+				var itemNumber = "item" + response.itemIDList[number];	//項目數字
+				var itemName = response.nameList[number];				//項目名稱
+				$("#itemSelect").append("<option value='"+itemNumber+"'>"+itemName+"</option>");
+			}
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+});
+//選取分類後顯示該分類所有的項目
+function changeType(){
+	$("#itemSelect").empty();
+	document.getElementById('itemSelect').disabled=false;	//可以選取項目
+	
+	//取得存在local storage的doctoeID值並顯示出來
+	var doctorID = window.localStorage.getItem('login');
+	
+	var select = $("#healthType :selected").text();
+	console.log("我選了分類 : " + select);
+	
+	//如果選回健康狀況追蹤分類的話，顯示全部的
+	if(select=="分類"){
+		$.ajax({
+			//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+			url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+			data : {
+				state : "allType",
+				doctorID : doctorID
+			},
+			dataType : "json",
+
+			success : function(response) {
+				//取得所有項目的值
+				for(number = 0; number < response.itemIDList.length; number++){
+					var itemNumber = "item" + response.itemIDList[number];	//項目數字
+					var itemName = response.nameList[number];				//項目名稱
+					$("#itemSelect").append("<option value='"+itemNumber+"'>"+itemName+"</option>");
+				}
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+	}
+	//選什麼分類，顯示該分類的項目
+	else{
+		$.ajax({
+			//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+			url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+			data : {
+				state : "typeSelectItem",
+				doctorID : doctorID,
+				select: select
+			},
+			dataType : "json",
+
+			success : function(response) {
+				//選取分類後取得該分類項目的值
+				for(number = 0; number < response.itemIDList.length; number++){
+					var itemNumber = "item" + response.itemIDList[number];	//項目數字
+					var itemName = response.nameList[number];				//項目名稱
+					$("#itemSelect").append("<option value='"+itemNumber+"'>"+itemName+"</option>");
+				}
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+	}
+}
+
+//按下後新增項目給病患
+$(document).ready(function() {
+	$("#addItemToPatient").click(function(){
+		var doctorID = window.localStorage.getItem('login');
+		var itemSelect =  $('#itemSelect option:selected').val();
+		console.log("我選了項目 : " +itemSelect);
+		
+		$.ajax({
+			//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+			url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+			data : {
+				state : "addItemToPatient",
+				doctorID : doctorID,
+				itemSelect : itemSelect
+			},
+			dataType : "json",
+
+			success : function(response) {
+				console.log("addItemToPatient success");
+				alert(response.result);
+				window.location.href = 'NewPatientHealthTracking.html';
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+		
+	});
+});
+</script>
+
 </head>
 
 <body>
@@ -68,7 +281,39 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+				<div class="row-md-1">
+					<div class="col-sm-12" style="margin-top:10px;margin-bottom:10px;">
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="location.href='NewPatientHealthTracking.html'">新增</button>
+					</div>	
+				</div>
+				<div class="row-md-4"> 
+					<div class="col-md-12" style="padding-left: 40px;" id="divWidth">
+						<!-- 顯示已給病患的項目開始  -->
+						<ul class="bxslider" id="displayItem">
+						</ul>
+					</div>
+				</div>
+				<div class="row-md-4">
+					<div class="col-md-12" style="padding-left: 40px;">
+						<div class="panel panel-default" style="border: 4px solid #f0f0f0; border-radius: 0 !important;">
+							<!-- 顯示可新增給病患的分類、項目開始 -->
+							<div class="panel-body" id="addItem" >
+								<span style="font-size:18px;font-weight:bold;">從健康狀況追蹤模板中新增<br></span>
+								<select class="form-control" id="healthType" style="width:10%;display:inline;margin-top:10px;"onChange="changeType()";>
+									<option value="all">分類</option>
+								</select>
+								<select class="form-control" id="itemSelect" style="width:20%;display:inline;margin-left:10px;">
+								</select>
+								<button type="button" class="btn btn-default" id="addItemToPatient" style="background-color:#f0f0f0;font-size:13px;margin-left:10px;">新增</button>
+							</div>
+							<!-- 顯示可新增病患的項目結束 -->
+						</div>
+					</div>
+				</div>
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+			</div>
 		</div>
 
 	</div>

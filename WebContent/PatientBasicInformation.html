@@ -77,10 +77,10 @@
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
 			<div class="row">
-				<div class="row-md-4">
-					<div class="col-md-4" style="padding-top: 20px; padding-left: 40px;">
-						<div class="panel panel-default" style="margin-bottom: 0px;">
-							<div class="panel-heading" style="background-color: white; height: 70px">
+				<div class="row">
+					<div class="col-md-4" style="padding-top: 2vh; padding-left: 2vw;">
+						<div class="panel panel-default" style="margin-bottom: 0;">
+							<div class="panel-heading" style="background-color: white; height: 10vh">
 								<img class="img-responsive" style="float: left" src="picture/patientBasicInformation/photo.png" />
 								<h3 id="patientName"></h3>
 							</div>
@@ -106,22 +106,22 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-md-8" style="padding-top: 20px; padding-left: 20px;">
-						<div class="panel panel-default">
+					<div class="col-md-8" style="padding-top: 2vh; padding-left: 1vw;">
+						<div class="panel panel-default" style="margin-bottom: 2vh">
 							<div id="patientBasicMedicalRecordDate" class="panel-heading"
 								style="background-color: white"></div>
-							<div id="patientBasicMedicalRecordContent" class="panel-body" style="min-height: 170px; max-height: 170px; overflow-y: scroll;"></div>
+							<div id="patientBasicMedicalRecordContent" class="panel-body" style="min-height: 24vh; max-height: 24vh; overflow-y: scroll;"></div>
 						</div>
 					</div>
 				</div>
-				<div class="row-md-8">
-					<div class="col-md-2" style="padding-top: 20px; padding-left: 20px; margin-left: 20px;">
+				<div class="row">
+					<div class="col-md-2" style="padding-top: 2vh; padding-left: 2vw;">
 						<div class="panel panel-default">
 							<div class="panel-heading" style="background-color: white">最近一個月的問卷</div>
 							<div class="panel-body" style="background-color: white">
 								<div class="row">
 									<div>
-										<b id="recentQuestionnaireNum" style="padding-left: 20px; color: #ed254e; font-size: 600%;"></b>
+										<b id="recentQuestionnaireNum" style="padding-left: 1vw; color: #ed254e; font-size: 550%;"></b>
 										<span class="text-right" >份問卷</span>
 									</div>
 								</div>
@@ -135,13 +135,13 @@
 							</a>
 						</div>
 					</div>
-					<div class="col-md-2" style="padding-top: 20px; padding-left: 20px;">
+					<div class="col-md-2" style="padding-top: 2vh; padding-left: 1vw;">
 						<div class="panel panel-default">
 							<div class="panel-heading" style="background-color: white">最近一個月的檔案夾</div>
 							<div class="panel-body" style="background-color: white">
 								<div class="row">
 									<div>
-										<b id="recentFolderNum" style="padding-left: 20px; color: #f9dc5c; font-size: 600%;"></b>
+										<b id="recentFolderNum" style="padding-left: 1vw; color: #f9dc5c; font-size: 550%;"></b>
 										<span class="text-right" >個檔案</span>
 									</div>
 								</div>
@@ -155,14 +155,14 @@
 							</a>
 						</div>
 					</div>
-					<div class="col-md-6" style="padding-top: 20px; padding-left: 20px;">
+					<div class="col-md-6" style="padding-top: 2vh; padding-left: 1vw;">
 						<div class="panel panel-default">
 							<div class="panel-heading" style="background-color: white">
 								最近一個月的健康狀況追蹤
 								<select id="recentHealthTrackingName" class="pull-right"></select>
 							</div>
 							<div id="healthTrackingBody" class="panel-body" style="background-color: white">
-								<div id="chart"></div>
+								<div id="chart" style="min-height: 35vh; max-height: 35vh;"></div>
 							</div>
 						</div>
 					</div>

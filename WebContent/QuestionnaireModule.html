@@ -52,12 +52,51 @@
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
+<script src="js/questionnaireFrame.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
-
+	<style type="text/css">
+		.lattice {
+				border: 3px solid #f0f0f0;
+			}
+	</style>
 </head>
+<script>
+		//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+		$(document).ready(function() {
+			if(!(window.localStorage.getItem('login'))){
+			alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+			}
+		})
+</script>
+<script>
 
+var user = window.localStorage.getItem('login');		
+	$(document).ready(function() {
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+			data : {
+				state : "searchQMType",
+				doctorID : user
+			},
+			dataType : "json",
+		
+			success : function(response) {
+				$("#QMType").empty();
+				var temp="<option value='all'>問卷模板分類</option>";
+				for(var i=0;i<response.length;i++){
+					temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+				}	
+				temp+="</select>";
+				$("#QMType").append(temp);
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});		
+	});
+</script>
 <body>
 
 	<div id="wrapper">
@@ -68,7 +107,40 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="location.href='NewQuestionnaireModule.html'">新增問卷模板</button>&nbsp;&nbsp;
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="location.href='FirstVisitQuestionnaireModule.html'">初診問卷模板</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="QMType" style="width:80%;">
+										<option value="all">問卷模板分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="QuestionnaireList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+				
+				</div>			
+			
+			
+			
+			
+						
+			</div>
 		</div>
 
 	</div>

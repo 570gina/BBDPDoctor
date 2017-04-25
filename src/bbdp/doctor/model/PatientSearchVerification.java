@@ -14,7 +14,7 @@ public class PatientSearchVerification {
 		String result = "";
 		String patient = "";
 		try {
-			ResultSet resultSet = conn.runSql("SELECT * FROM patient WHERE account LIKE '_____" + inputID + "'");
+			ResultSet resultSet = conn.runSql("SELECT patientID,account,name FROM patient WHERE account LIKE '_____" + inputID + "'");
 			//搜尋成功
 			while (resultSet.next()) {
 				//第一個物件
@@ -28,16 +28,14 @@ public class PatientSearchVerification {
 							"\",\"account\":\"" + resultSet.getString("account") + 
 							"\",\"name\":\"" + resultSet.getString("name") + "\"}";
 				}
-				result = "[" + patient +"]";
-				//System.out.println(resultSet.getInt("id")+"\t\t"+ 
-				//resultSet.getString("name")+"\t\t"+resultSet.getString("passwd")); 
+				result = "[" + patient +"]";				
 			}
 			
 			//搜尋失敗
 			if(result.equals("")){	
 				result = "fail";
 			}
-			
+			if (resultSet != null) try { resultSet.close();System.out.println("搜尋病患後關閉ResultSet"); } catch (SQLException ignore) {}
 			return result;
 		} catch (SQLException e) {
 			result = "SQLException";

@@ -52,10 +52,188 @@
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
+<script src="js/questionFrame.js"></script>
+<script src="js/ajaxfileupload.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+	<style type="text/css">
+		.lattice {
+				border: 3px solid #f0f0f0;
+			}
+	h5 {
+	 font-weight:bold;
+	 }
+	</style>
+	<script>
+		//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+		$(document).ready(function() {
+			if(!(window.localStorage.getItem('login'))){
+			alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+			}
+		})
+</script>
+	<script>
+		var user = window.localStorage.getItem('login');
+		var score=0;
+		var content=500;
+		var judgment = 1;
+		var anserNumber = 0;
+		var tempNumber;
+		function changeAnser(){
+			$('#MCQ').empty();
+			score=0;
+			content=500;
+			var anserNumber = 0;
+		}		
 
+		function changeType(){
+			var s =  $('#QPType1 option:selected').val();
+			console.log(s);
+			if(s=="all"){
+				document.getElementById('QPType2').disabled=false;
+				judgment = 1;
+			}else{
+				judgment = 0;
+				document.getElementById('QPType2').disabled=true;
+			}
+		}			
+		
+	
+		function addAnser(){
+			var s =  $('#QType option:selected').val();
+			if(s=="單選題"){
+				if(anserNumber<10){
+					score+=1;
+					content+=1;
+					anserNumber+=1;
+					$("#MCQ").append("<div id = 'd"+score+"'><input type='number' class='form-control' style='width:15%;display:inline;	vertical-align:middle;' id='"+score+"'placeholder='分數'>&nbsp;<input type='text' class='form-control' style='width:65%;display:inline;	vertical-align:middle;' id='"+content+"'placeholder='請輸入選項'>&nbsp;<button type='button' class='btn btn-default'  style='background-color:#f0f0f0;display:inline;vertical-align:middle;'onClick='deleteAnser("+score+")'>刪除</button><br><div style='height:7px'></div></div>");
+							console.log(score);		
+							console.log(content);
+				}else
+					window.alert("最多10個選項喔");
+				
+			}else
+				window.alert("請切換題型");
+		}
+
+		function TFaddAnser(){
+			changeAnser();
+			$("#QType").val("單選題").change();
+			score+=2;
+			content+=2;
+			anserNumber+=2;
+			$("#MCQ").append("<div id = 'd1'><input type='number' class='form-control' style='width:15%;display:inline;	vertical-align:middle;' id='1'placeholder='分數' value = '1'>&nbsp;<input type='text' class='form-control' style='width:65%;display:inline;	vertical-align:middle;' id='501'placeholder='請輸入選項' value = '是'>&nbsp;<button type='button' class='btn btn-default'  style='background-color:#f0f0f0;display:inline;vertical-align:middle;'onClick='deleteAnser(1)'>刪除</button><br><div style='height:7px'></div></div>");
+			$("#MCQ").append("<div id = 'd2'><input type='number' class='form-control' style='width:15%;display:inline;	vertical-align:middle;' id='2'placeholder='分數' value = '0'>&nbsp;<input type='text' class='form-control' style='width:65%;display:inline;	vertical-align:middle;' id='502'placeholder='請輸入選項' value = '否'>&nbsp;<button type='button' class='btn btn-default'  style='background-color:#f0f0f0;display:inline;vertical-align:middle;'onClick='deleteAnser(2)'>刪除</button><br><div style='height:7px'></div></div>");
+
+		}		
+		
+		
+		
+		function deleteAnser(tempNumber){
+			var s =  $('#QType option:selected').val();
+			if(s=="單選題"){
+				$('#d'+tempNumber).remove();
+				anserNumber-=1;
+			}else
+				window.alert("無可刪除選項");
+		}
+		
+		
+		
+		function anserString(){
+			var ans="[";
+			var j;
+			for(var i=1;i<=score;i++){
+				j=i+500;
+				if($('#'+j).val()){
+					ans+="{";
+					ans+='"score":';
+					if($('#'+i).val())
+						ans += $('#'+i).val()+',';
+					else
+						ans += '0,';
+					ans+='"content":';
+					ans += '"'+$('#'+j).val()+'"}';
+					if(i<score) ans +=',';
+				}
+			}
+			ans+="]";
+			console.log(ans);
+			return ans;			
+		}
+		
+		$(document).ready(function() {
+			$("#doAjaxBtn").click(function() {
+				var QPAns ="";
+				var qt =  $('#QType option:selected').val();
+				if(qt=="單選題") QPAns = anserString();
+				if($('#QPname').val()){
+					if((judgment == 1 && $('#QPType2').val())||judgment == 0){
+						if(qt=="簡答題" || QPAns!="[]"){
+							var temp;
+							if(judgment==1) temp=$('#QPType2').val();
+							else temp=$('#QPType1 option:selected').val();
+							
+							$.ajax({
+								url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
+								data : {
+									state : "addQuestion",
+									doctorID : user,
+									QPname : $('#QPname').val(),
+									QType : temp,
+									QPType : $('#QType option:selected').val(),
+									QPAnser : QPAns										
+								},
+								dataType : "json",
+						
+								success : function(response) {
+									if (response>0) {
+										window.alert("題目新增成功");
+										window.location.href = 'QuestionnairePool.html';
+									}else if (response==0) {
+										window.alert("題目已存在");								
+									}else if (response==-1) {
+										window.alert("題目已存在，已取消隱藏");
+										window.location.href = 'QuestionnairePool.html';
+									}
+								},
+								error : function() {
+									window.alert("新增失敗");
+									console.log("錯誤訊息");
+								}
+							});
+						}else window.alert("請加入選項");
+					}else window.alert("請選擇或新增分類");
+				}else window.alert("請輸入題目名稱");
+			});	
+			
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
+				data : {
+					state : "searchQPType",
+					doctorID : user									
+				},
+				dataType : "json",
+		
+				success : function(response) {
+					$("#QPType1").empty();
+					$("#QPType").empty();
+					var temp="<option value='all'>題目分類</option>";
+					for(var i=0;i<response.length;i++){
+						temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+					}	
+					temp+="</select>";
+					$("#QPType1").append(temp);	
+					$("#QPType").append(temp);
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		});
+		
+	</script>
 </head>
 
 <body>
@@ -68,13 +246,74 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12" >
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"disabled="disabled">新增題目</button>&nbsp;&nbsp;
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="addTempStorage()">將勾選題目加入暫存區</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form method="post"	action = "">
+									<select class="form-control" id="QPType" style="width:80%;">
+										<option value="all">題目分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="QuestionList"></div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<div>
+						<input type="button" id="doAjaxBtn" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">
+					</div>
+					<div style="height:52px;"></div>
+				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color:#FFFFFF;">										
+							<h5>題目</h5>
+							<input type="text" class="form-control" id="QPname" placeholder="請輸入題目名稱...">	
+							<h5>分類</h5>
+							<select class="form-control" id="QPType1" style="width:35%;display:inline;"onChange="changeType()";>
+								<option value="">題目分類</option>
+							</select>
+							<h5 style="display:inline;">&nbsp;或&nbsp;</h5>
+							<input type="text" class="form-control" style="width:35%;display:inline;" id="QPType2" placeholder="請輸入要新增的分類名稱...">	
+							<h5>題型</h5>
+							<select class="form-control" id="QType" style="width:35%;display:inline;vertical-align:middle;"onChange="changeAnser()";>
+								<option value="單選題">單選題</option>
+								<option value="簡答題">簡答題</option>							
+							</select>&nbsp;
+							<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onClick="TFaddAnser()" id="TF" >快速新增是非題</button>
+						</div>
+							
+						<div class="panel-body" style="min-height: 46.5vh; max-height: 46.5vh; overflow-y: auto;">
+							<h5>答案選項</h5>
+							<div id="anser">
+								<div id="MCQ">
+								
+								</div>
+								<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onClick="addAnser()" id="newAnser" >新增選項</button>
+							</div>
+							
+						</div>
+					</div>					
+				</div>		
+	
+			</div>
 		</div>
 
 	</div>
 
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
+
 
 </body>
 

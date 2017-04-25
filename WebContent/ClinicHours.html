@@ -56,6 +56,9 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- 門診時間css -->
+<link href="css/clinicHours.css" rel="stylesheet" type="text/css">
+
 </head>
 
 <body>
@@ -68,13 +71,84 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class="col-md-12" style="margin-top: 3vh; margin-bottom: 3vh;">
+					<span class="lead"><b>門診時間</b></span>
+					<div class="pull-right">
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;" onclick="location.href='EditClinicHours.html'">編輯</button>
+					</div>
+				</div>
+			</div>
+			<div class="row" style="padding-left: 1vw; padding-right: 1vw;">
+				<table class="table table-bordered table-hover">
+					<thead>
+						<tr>
+							<th class="col-md-1" style="border-color: #c2eabd;">時間</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期一</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期二</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期三</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期四</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期五</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期六</th>
+							<th class="col-md-1" style="border-color: #c2eabd;">星期日</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>08:30 ~ 12:30</td>
+							<td><i class="fa fa-check"></i></td>
+							<td></td>
+							<td></td>
+							<td><i class="fa fa-check"></i><div>備註: 中風評估門診</div></td>
+							<td></td>
+							<td><i class="fa fa-check"></i><div>備註: 酸痛門診</div></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>13:00 ~ 17:00</td>
+							<td><i class="fa fa-check"></i><div>備註: 肉毒桿菌及神經痛門診</div></td>
+							<td></td>
+							<td><i class="fa fa-check"></i></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>18:30 ~ 21:00</td>
+							<td></td>
+							<td></td>
+							<td><i class="fa fa-check"></i></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="row">
+				<div class="col-md-12" style="margin-top: 3vh; margin-bottom: 3vh;">
+					<span class="lead"><b>備註</b></span>
+				</div>
+			</div>
+			<div class="row" style="padding-left: 1vw; padding-right: 1vw;">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div style="margin-top: 1vh; margin-bottom: 1vh;"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;&nbsp;周一早診為「巴金森特別門診」</div>
+						<div style="margin-top: 1vh; margin-bottom: 1vh;"><span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;&nbsp;2017-01-28~2017-01-30請假，2017-02-04請假</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 	</div>
 
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
+
+	<!-- 門診時間js -->
+	<script src="js/clinicHours.js"></script>
 
 </body>
 

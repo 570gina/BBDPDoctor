@@ -56,6 +56,91 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- bxSlider Javascript file -->
+<script src="slider/jquery.bxslider.min.js"></script>
+<!-- bxSlider CSS file -->
+<link href="slider/jquery.bxslider.css" rel="stylesheet" />
+
+<!-- 上半邊 項目(開始) -->
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+$(document).ready(function() {
+	if (!(window.localStorage.getItem('login'))) {
+		alert("您尚未登入!跳轉至登入頁面中...");
+		window.location.href = 'Login.html';
+	}
+});
+
+//一進來取得所有項目
+$(document).ready(function() {
+	$("#displayItem").empty();
+	var doctorID = window.localStorage.getItem('login');
+	
+	$.ajax({
+		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		data : {
+			state : "allItem",
+			doctorID : doctorID
+		},
+		dataType : "json",
+
+		success : function(response) {
+			for(var number=0; number<response.itemIDList.length; number++){
+				var itemName = response.itemNameList[number];
+				var itemRecord = response.itemRecordList[number];
+				var itemLastTime = response.itemLastTimeList[number];
+				var itemID = response.itemIDList[number];
+				var url = "EditPatientHealthTracking.html?itemID=" + response.itemIDList[number] ;
+				
+				var detailName = response.detailNameList[number];
+				var detailValue = response.detailValueList[number];
+				var detailUnit = response.detailUnitList[number];
+				//console.log("value : " + detailValue);
+				//console.log("value[0] : " + detailValue[0]);
+				//console.log("value.length : " + detailValue.length);
+				
+				var appendString = 
+					"<li><div class='panel panel-default'>"+
+					"	<div class='panel-body' id='item1' style='background-color:#F7E56E;min-height:110px;max-height:110px;text-overflow:ellipsis;overflow:hidden;font-weight:bold;'>"+
+					"		最近一個月的"+itemName+"紀錄 : "+itemRecord+"筆<br>"+
+					"		最後一次"+itemName+"紀錄 : "+itemLastTime+"<br>";					
+				for(var i=0; i<detailName.length; i++){
+					appendString+="		"+detailName[i]+" : "+detailValue[i]+detailUnit[i]+"<br>";
+				}	
+				appendString+=
+					"	</div>"+
+					"	<a href='EditPatientHealthTracking.html?itemID="+itemID+"'>"+
+					"		<div class='panel-footer' style='background-color: white;border-style:solid;border-color:#F7E56E;'>"+
+					"			<span class='pull-left' style='color: black;'>詳細資料</span>"+
+					"			<span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-right'></i></span>"+
+					"			<div class='clearfix'></div>"+
+					"		</div>"+
+					"	</a>"+
+					"</div></li>";
+				
+				$("#displayItem").append(appendString);
+			}
+			//設定滑動
+			$(document).ready(function(){
+				var w = $("#divWidth").width();
+				//console.log("width 寬度 : " + w);
+				
+				$('.bxslider').bxSlider({
+					slideWidth: w,
+					minSlides: 3,
+					maxSlides: 3,
+					slideMargin: 10
+				});
+			});	
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+});		
+</script>
+<!-- 上半邊 項目(結束) -->
 </head>
 
 <body>
@@ -68,7 +153,69 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+				<div class="row-md-1">
+					<div class="col-sm-12" style="margin-top:10px;margin-bottom:10px;">
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="location.href='NewPatientHealthTracking.html'">新增</button>
+					</div>	
+				</div>
+				<div class="row-md-4"> 
+					<div class="col-md-12" style="padding-left: 40px;" id="divWidth">
+				<!-- 
+						<div class="panel panel-default">
+							<!-- 顯示已給病患的項目開始 
+							<div class="panel-body" style="min-height:200px; max-height:200px;overflow:hidden;">
+				-->
+								<ul class="bxslider" id="displayItem">
+		
+									
+								</ul>
+
+
+							 <!--
+								<div class="panel panel-default" style="width:24%;float:left;margin-right:10px;">
+									<div class="panel-body" style="background-color:#F7E56E;min-height:110px;max-height:110px;text-overflow:ellipsis;overflow:hidden;font-weight:bold;">
+										2017年01月 血壓紀錄 : 3筆<br>
+										最後一次血壓紀錄 : 2017/01/28 14:25<br>
+										收縮壓 : 107mmHg<br>
+										舒張壓 : 77mmHg<br>
+										心跳 : 73.5次/分<br>
+									</div>
+									<a href="EditPatientHealthTracking.html?itemID=1">
+										<div class="panel-footer" style="background-color: white;border-style:solid;border-color:#F7E56E;">
+											<span class="pull-left" style="color: black;">詳細資料</span>
+											<span class="pull-right" style="color: black;"><i class="fa fa-arrow-circle-right"></i></span>
+											<div class="clearfix"></div>
+										</div>
+									</a>
+								</div>
+								
+								
+								<div class="panel panel-default" style="width:24%;float:left;margin-right:10px;">
+									<div class="panel-body" style="background-color:#F7E56E;min-height:110px;max-height:110px;text-de">
+										2017年01月 跌倒紀錄 : 4筆<br>
+										最後一次跌倒紀錄 : 2017/01/25 11:00<br>
+										跌倒次數 : 1次<br>
+									</div>
+									<a href="EditPatientHealthTracking.html?itemID=1">
+										<div class="panel-footer" style="background-color: white;border-style:solid;border-color:#F7E56E;">
+											<span class="pull-left" style="color: black;">詳細資料</span>
+											<span class="pull-right" style="color: black;"><i class="fa fa-arrow-circle-right"></i></span>
+											<div class="clearfix"></div>
+										</div>
+									</a>
+								</div>
+							-->
+				<!--				
+							</div>
+							 顯示已給病患的項目結束 
+						</div>
+				-->	
+					</div>
+				</div>
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+			</div>
 		</div>
 
 	</div>

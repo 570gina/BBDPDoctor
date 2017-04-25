@@ -7,8 +7,9 @@ import bbdp.db.model.DBConnection;
 
 public class LoginVerification {
 
+	//已關資料庫
 	public HashMap verification(DBConnection conn, String account, String password) {
-		String result = "loginDefault";
+		String result = "請重新嘗試";
 		String s, p, doctorID = null;
 		
 		try {
@@ -34,6 +35,8 @@ public class LoginVerification {
 					System.out.println("搜尋使用者...");
 				}
 			}
+			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}//關閉resultSet
+			
 		} catch (SQLException e) {
 			System.out.println("LogintDB Exception :" + e.toString());
 		}

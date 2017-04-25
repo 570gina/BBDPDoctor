@@ -68,9 +68,56 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class="col-md-12" style="margin-top: 3vh; margin-bottom: 3vh;">
+					<span class="lead"><b>新增注意事項</b></span>
+				</div>
+			</div>
+			<div class="row" style="padding-left: 1vw; padding-right: 1vw;">
+				<div class="panel panel-default left-list">
+					<div class="panel-heading">
+						<div class="row" style="margin-left: 0.5vw;">
+							<h5><b>分類</b></h5>
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								<select class="form-control" onChange="changeType()">
+									<option value="" selected="selected">注意事項分類</option>
+									<option value="">巴金森氏症</option>
+								</select>
+							</div>
+							<div class="col-md-6"></div>
+						</div>
+						<div class="row" style="margin-left: 0.5vw;">
+							<h5><b>注意事項</b></h5>
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								<select class="form-control" onChange="changeType()">
+									<option value="" selected="selected"></option>
+									<option value="" >每日持續運動</option>
+								</select>
+							</div>
+							<div class="col-md-6"></div>
+						</div>
+					</div>
+					<div class="panel-body">
+						<div class="row" style="margin-left: 0.5vw;">
+							<h5><b>直接新增注意事項</b></h5>
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								<input type="text" class="form-control" placeholder="請輸入要新增的注意事項..." />
+							</div>
+							<div class="col-md-3">
+								<button type="button" class="btn btn-default" style="background-color: #f0f0f0;" onclick="">送出</button>
+							</div>
+							<div class="col-md-3"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
-
 	</div>
 
 	<!-- 醫生端框架js -->

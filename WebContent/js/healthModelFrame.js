@@ -1,3 +1,4 @@
+
 		//一進來取得所有項目//取得下拉選單的值//取得div的值
 		$(document).ready(function() {
 			//console.log("hello1" + $("#healthType1").val());
@@ -9,6 +10,7 @@
 			$.ajax({
 				//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
 				url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
+				
 				data : {
 					state : "allItem",
 					doctorID : doctorID
@@ -25,7 +27,7 @@
 					for(number = 0; number < response.itemIDList.length; number++){
 						var itemNumber = "item" + response.itemIDList[number];	//項目數字
 						var itemName = response.nameList[number];				//項目名稱
-						$("#itemDiv").append("<div style='text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;'"+
+						$("#itemDiv").append("<div style='text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;border-radius:5px;'"+
 							" id='"+itemNumber+"' onclick=itemSelect('"+itemNumber+"')>&nbsp;&nbsp;"+itemName+"</div>");
 					}
 					

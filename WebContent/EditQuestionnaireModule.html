@@ -52,10 +52,397 @@
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
+<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script src="js/questionnaireFrame.js"></script>
 
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+	.lattice {
+		border: 3px solid #f0f0f0;
+	}
+	ul{ list-style-type:none;}
+	li{
+	
+		padding: 0;
+		list-style-type:none;
+	}
+	.myMOUSE{ cursor: move; }
+	.modal-body {
+    	max-height: 70vh;
+   		overflow-y: auto;
+	}
+	h5 {
+	 font-weight:bold;
+	 }
+</style>
+<script>
+	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if(!(window.localStorage.getItem('login'))){
+		alert("您尚未登入!跳轉至登入頁面中...");
+		window.location.href = 'Login.html';
+		}
+	})
+</script>
+<script>
 
+var QPNumber=0;
+var judgment = 1;
+var num = 0;
+var QMAns = "";
+var user = window.localStorage.getItem('login');
+
+var anserNumber = 0;
+var url = window.location.href;
+var qparts = url.split("?");
+var QID = qparts[1].split("=");
+var nowQ = QID[1];
+$(document).ready(function() {
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+		data : {
+			state : "searchQMType",
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			$("#QMType").empty();
+			$("#QMType1").empty();
+			var temp="<option value='all'>問卷模板分類</option>";
+			for(var i=0;i<response.length;i++){
+				temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+			}	
+			temp+="</select>";
+			$("#QMType").append(temp);
+			$("#QMType1").append(temp);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+		data : {
+			state : "editQuestionnaire",
+			edit : "name",
+			doctorID : user,
+			nowQ : nowQ
+		},
+		
+		success : function(response) {
+			$("#QMname").attr('value',response);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});		
+
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+		data : {
+			state : "editQuestionnaire",
+			edit : "type",
+			doctorID : user,
+			nowQ : nowQ
+		},
+	
+		success : function(response) {
+			$("#QMType2").attr('value',response);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});		
+
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+		data : {
+			state : "editQuestionnaire",
+			edit : "other",
+			doctorID : user,
+			nowQ : nowQ
+		},
+		dataType : "json",
+		success : function(response) {
+			for(var i=0;i<response.length;i++){
+			 printQuestion(response[i].part,response[i].content);
+			}
+
+		},
+		error : function() {
+			
+		}
+	});
+
+    $(document).ajaxComplete(function(){
+		editOK();
+    });	
+	
+    $('.can_darg').css('cursor', 'move'); //滑鼠標
+
+    $("#sortable").sortable({
+    	scroll: true,
+		axis: "y", //只能上下垂直拖拉
+	    containment: "#action_body", //限制範圍，避免拖拉出界外
+	    handle: ".can_darg",
+	    cursor: "ns-resize", //滑鼠標
+
+   		stop: function(event, ui) { //只有要拖拉，並且停止後
+
+    	},
+   		update: function(event, ui) { //拖拉，並且有更換動作
+
+    	}
+ 	}).disableSelection(); //讓拖拉作用區塊內的文字無法被選取
+
+	$(document).on('click', '#addPart', function(e) { //綁上層的元素事件
+		num+=1;
+	    $('.sortQuestionnaire').append("<li class='dyn_div' id = 'sort_"+num+"' style='	margin-left:-3em;'><img src='picture/move.png' class='can_darg myMOUSE' style='width: 30px; height: 30px;'>&nbsp;<input type='text' id='part"+num+"' class='form-control' style='width:40%;display:inline;	vertical-align:middle;' placeholder='Part名稱'>&nbsp;<button type='button' class='btn btn-default remove'  style='background-color:#f0f0f0;display:inline;vertical-align:middle;'>刪除</button><div style='height:7px'></div></li>"); //插入到最後
+	
+	
+	});
+ 	
+	$(document).on('click', '#addQTS', function(e) { //綁上層的元素事件
+		var temp;
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+			data : {
+				state : "getQuestionnaireTempStorage",
+				doctorID : user
+			},
+			dataType : "json",
+			
+			success : function(response) {
+				if(response.length == 0) window.alert("暫存區內沒有題目");
+				
+				for(var i=0;i<response.length;i+=3){
+					num+=1;
+					temp = "<li class='dyn_div' id = 'sort_"+num+"' style='	margin-left:-3em;'><div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading can_darg myMOUSE' id = 'question"+num+"' style='background-color:#D2F898;'>"+response[i]+"</div>";
+					 
+					if(response[i+1]=="單選題"){
+						temp+="<div class='panel-body' id = 'option"+num+"'>";
+					 	var obj = eval('(' + response[i+2] + ')');						
+						for (var j = 0; j < obj.length; j++) {
+						 	temp += obj[j].score+" = "+obj[j].content+"<br>";
+					 	}
+						temp+="</div>";						
+					 }
+					 
+					 temp +="<button type='button' class='btn btn-default remove'  style='background-color:#f0f0f0;'>刪除</button></div></li>";
+					 
+					 $('.sortQuestionnaire').append(temp);
+				}
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});	
+	
+	}); 		
+ 	
+
+    $(document).on('click', '.remove', function(e) { //刪除排序元件
+ 
+        $(this).closest($(this)).parent().parent().remove();
+ 	});  
+    
+	$("#doAjaxBtn").click(function() {		//儲存
+		var scoring = 0;
+		if($('#scoring').is(":checked")) scoring = 1;
+		if($('#QMname').val()){
+			if((judgment == 1 && $('#QMType2').val())||judgment == 0){
+				if(judgment==1) temp=$('#QMType2').val();
+				else temp=$('#QMType1 option:selected').val();
+				$.ajax({
+					url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+					data : {
+						state : "updateQuestionnaire",
+						doctorID : user,
+						QMname : $('#QMname').val(),
+						QMType : temp,
+						questions : QMAns,
+						nowQ : nowQ,
+						scoring : scoring
+					},
+					dataType : "json",
+				
+					success : function(response) {
+						if (response>0) {
+							window.alert("題目修改成功");
+							window.location.href = 'QuestionnaireModule.html';
+						}else if (response==0) {
+							window.alert("此問卷名稱已存在");								
+						}
+					},
+					error : function() {
+						window.alert("修改失敗");
+						console.log("錯誤訊息");
+					}
+				});
+			}else window.alert("請選擇或新增分類");
+		}else window.alert("請輸入問卷名稱");
+	});	
+    
+    $("#deleteAjaxBtn").click(function() {			//刪除問卷
+
+		if(confirm("刪除問卷"))
+		{
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+				data : {
+					state : "deleteQuestionnaire",
+					doctorID : user,
+					nowQ : nowQ
+				},
+				
+				success : function(response) {
+					if(response>0){
+						window.alert("刪除成功");
+						window.location.href = "QuestionnaireModule.html";
+					}else
+						window.alert("問卷已使用，無法刪除");
+				},
+				error : function() {
+					window.alert("刪除失敗");
+					console.log("錯誤訊息");
+				}
+			});
+		 };
+		
+	});
+	
+});
+
+function printQuestion(part,content){
+	var temp="";
+	var tmp="";
+	var stringContent = content+'';
+	$('#viewQM').empty();
+	if(part){
+		num+=1;
+		tmp="<li class='dyn_div' id = 'sort_"+num+"' style='	margin-left:-3em;'><div><img src='picture/move.png' class='can_darg myMOUSE' style='width: 30px; height: 30px;'>&nbsp;<input type='text' id='part"+num+"' class='form-control' style='width:40%;display:inline;	vertical-align:middle;' placeholder='Part名稱' value='"+part+"'>&nbsp;<button type='button' class='btn btn-default remove'  style='background-color:#f0f0f0;display:inline;vertical-align:middle;'>刪除</button></div><div style='height:7px'></div></li>";
+	    
+	}else{
+		tmp="";
+	}
+	if(content){
+		var contentArray = stringContent.split(",");
+		temp = tmp;
+		for(var i = 0; i<contentArray.length;i++){	
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+				data : {
+					state : "selectQP",
+					doctorID : user,
+					QPname : contentArray[i]
+				},
+				async:false,
+				dataType : "json",
+				success : function(response) {
+					num+=1;
+					temp += "<li class='dyn_div' id = 'sort_"+num+"' style='	margin-left:-3em;'><div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading can_darg myMOUSE' id = 'question"+num+"' style='background-color:#D2F898;'>"+response[0]+"</div>";
+					 
+					if(response[1]=="單選題"){
+						temp+="<div class='panel-body' id = 'option"+num+"'>";
+						var obj = eval('(' + response[2] + ')');						
+						for (var j = 0; j < obj.length; j++) {
+							temp += obj[j].score+" = "+obj[j].content+"<br>";
+						}
+						temp+="</div>";						
+					}
+					 
+					temp +="<button type='button' class='btn btn-default remove'  style='background-color:#f0f0f0;'>刪除</button></div></li>";
+					$('.sortQuestionnaire').append(temp);
+					temp="";
+				
+				},
+				error : function() {
+					
+				}
+			});			
+		}	
+	}	
+}
+
+function changeType(){
+	var s =  $('#QMType1 option:selected').val();
+	console.log(s);
+	if(s=="all"){
+		document.getElementById('QMType2').disabled=false;
+		judgment = 1;
+	}else{
+		judgment = 0;
+		document.getElementById('QMType2').disabled=true;
+	}
+}	
+
+
+
+function editOK(){
+	var sortQ = $("#sortable").sortable('serialize');
+	var temp1 = sortQ.split("&");
+	var temp = "";
+	var part = 0;
+	var tempQ = "";
+	var a=0;
+	var b=0;	//要不要content的{
+	var c=0;	//判斷最後一個是什麼
+	var reg=/,$/gi;
+	if(sortQ){
+		QMAns = "[";
+		$('#viewQM').empty();
+		for(var i=0;i<temp1.length;i++){
+			temp += temp1[i];
+		}
+	
+		var temp2 = temp.split("sort[]=");
+	
+		for(var i=1;i<temp2.length;i++){
+			if($('#part'+temp2[i]).attr("type")=="text"){
+				if(a==1) {
+					QMAns=QMAns.replace(reg,"");
+					QMAns += ']},';
+				}else if (i!=1)
+					QMAns += '},';
+				
+				QMAns += '{"part": "';
+				part+=1;
+				$('#viewQM').append("<div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading' style='background-color:#D2F898;font-weight: bold;'>Part "+part+"："+$('#part'+temp2[i]).val()+"</div>");
+				QMAns += $('#part'+temp2[i]).val();
+				QMAns += '"';
+				a=0;
+				b=1;
+				c=0;			
+			}
+			else{
+				if(b==0){
+					QMAns += ' {"content": [';
+					b=1;
+				}
+				if(a==0 && i!=1) QMAns += ',"content": [';
+			
+				tempQ="<div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading' style='background-color:#D2F898;'>"+$('#question'+temp2[i]).text()+"</div>";
+				if($('#option'+temp2[i]).html()==null)
+					tempQ+="</div>";
+				else	
+					tempQ+="<div class='panel-body'>"+$('#option'+temp2[i]).html()+"</div></div>";
+				$('#viewQM').append(tempQ);
+				QMAns += '"'+$('#question'+temp2[i]).text()+'",';
+				a=1;
+				c=1;
+			}
+		}
+		QMAns=QMAns.replace(reg,"");
+		if(c==1) QMAns += "]}]";
+		else QMAns += "}]";
+	}
+}
+
+
+ </script> 
 </head>
 
 <body>
@@ -68,13 +455,101 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="location.href='NewQuestionnaireModule.html'">新增問卷模板</button>&nbsp;&nbsp;
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="location.href='FirstVisitQuestionnaireModule.html'">初診問卷模板</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="QMType" style="width:80%;">
+										<option value="all">問卷模板分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="QuestionnaireList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<form>
+					<div>
+						<input type="button" id="doAjaxBtn" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">
+						<div style="float:right;width:4px;height:4px;"></div>
+						<input type="button" id="deleteAjaxBtn" class="btn btn-default" value="刪除" style="background-color:#f0f0f0;font-size:13px;float:right;">
+					</div>
+					<div style="height:52px;"></div>
+				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color:#FFFFFF;">										
+							<h5>問卷</h5>
+							<input type="text" class="form-control" id="QMname" placeholder="請輸入模板名稱...">	
+							<h5>分類</h5>
+							<select class="form-control" id="QMType1" style="width:35%;display:inline;"onChange="changeType()">
+								<option value="all">問卷模板分類</option>
+							</select>
+							<h5 style="display:inline;">&nbsp;或&nbsp;</h5>
+							<input type="text" class="form-control" style="width:35%;display:inline;" id="QMType2" placeholder="請輸入要新增的分類名稱...">
+							<br>
+							<br>
+							<label><input type="checkbox" id="scoring">&nbsp;計算問卷總分</label>		
+							<div style="height:15px;"></div>
+							<input type="button" class="btn btn-default" value="編輯題目" style="background-color:#f0f0f0;font-size:13px;" data-toggle="modal" data-target="#myModal">&nbsp;
+						</div>
+							
+						<div class="panel-body" id = "viewQM" style="min-height: 43vh; max-height: 43vh; overflow-y: auto;">
+						</div>
+					</div>
+					</form>						
+				</div>			
+			
+			
+			
+			
+						
+			</div>
 		</div>
 
 	</div>
 
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
+
+	  <!-- Modal -->
+
+<div id="myModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+               <input type="button" class="btn btn-default" value="新增Part" style="background-color:#f0f0f0;font-size:13px;" id="addPart">&nbsp;
+				<input type="button" id="addQTS" class="btn btn-default" value="加入暫存區題目" style="background-color:#f0f0f0;font-size:13px;">
+            </div>
+            <div class="modal-body" id= "action_body">
+				<ul class="sortQuestionnaire ui-state-default" id="sortable">
+				 <!-- loop -->
+						      
+				</ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="editOK()">完成</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
 
 </body>
 

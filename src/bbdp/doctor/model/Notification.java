@@ -5,14 +5,16 @@ public class Notification {
 	private String patientID;
 	private String time;
 	private String hyperlink;
-	private String content;
+	private String title;
+	private String body;
 
-	public Notification(String doctorID, String patientID, String time, String hyperlink, String content) {
+	public Notification(String doctorID, String patientID, String time, String hyperlink, String title, String body) {
 		this.doctorID = doctorID;
 		this.patientID = patientID;
 		this.time = time;
 		this.hyperlink = hyperlink;
-		this.content = content;
+		this.title = title;
+		this.body = body;
 	}
 
 	public String getDoctorID() {
@@ -47,12 +49,19 @@ public class Notification {
 		this.hyperlink = hyperlink;
 	}
 
-	public String getContent() {
-		return content;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
+	public String getBody() {
+		return body;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
+	}
 }

@@ -19,14 +19,16 @@ public class NotificationServlet extends HttpServlet {
 		String doctorID = request.getParameter("doctorID");
 		
 		if (option.equals("clearAllNotification")) {
+			System.out.println("in NotificationServlet clearAllNotification condition start");
 			DBConnection db = (DBConnection) getServletContext().getAttribute("db");
 			String searchResult = "";
-			searchResult = NotificationServer.clearAllNotification(db, doctorID.substring(20));
+			searchResult = NotificationServer.clearAllNotification(db, doctorID);
 			if (searchResult.equals("SQLException")) {
 				response.getWriter().println("SQLException");
 			} else {
 				response.getWriter().println(searchResult);
 			}
+			System.out.println("in NotificationServlet clearAllNotification condition end");
 		} else if (option.equals("click")) {
 			HttpSession session = request.getSession();
 			session.setAttribute("patientID", doctorID);

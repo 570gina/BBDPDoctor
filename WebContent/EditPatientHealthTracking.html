@@ -56,6 +56,97 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- C3.js相關 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.css" rel="stylesheet" />
+
+<!-- bxSlider Javascript file -->
+<script src="slider/jquery.bxslider.min.js"></script>
+<!-- bxSlider CSS file -->
+<link href="slider/jquery.bxslider.css" rel="stylesheet" />
+
+<!-- 上半邊 項目(開始) -->
+<script>
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+$(document).ready(function() {
+	if (!(window.localStorage.getItem('login'))) {
+		alert("您尚未登入!跳轉至登入頁面中...");
+		window.location.href = 'Login.html';
+	}
+});
+
+//一進來取得所有項目
+$(document).ready(function() {
+	$("#displayItem").empty();
+	var doctorID = window.localStorage.getItem('login');
+	
+	$.ajax({
+		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		data : {
+			state : "allItem",
+			doctorID : doctorID
+		},
+		dataType : "json",
+
+		success : function(response) {
+			for(var number=0; number<response.itemIDList.length; number++){
+				var itemName = response.itemNameList[number];
+				var itemRecord = response.itemRecordList[number];
+				var itemLastTime = response.itemLastTimeList[number];
+				var itemID = response.itemIDList[number];
+				var url = "EditPatientHealthTracking.html?itemID=" + response.itemIDList[number] ;
+				
+				var detailName = response.detailNameList[number];
+				var detailValue = response.detailValueList[number];
+				var detailUnit = response.detailUnitList[number];
+				//console.log("value : " + detailValue);
+				//console.log("value[0] : " + detailValue[0]);
+				//console.log("value.length : " + detailValue.length);
+				
+				var appendString = 
+					"<li><div class='panel panel-default'>"+
+					"	<div class='panel-body' id='item1' style='background-color:#F7E56E;min-height:110px;max-height:110px;text-overflow:ellipsis;overflow:hidden;font-weight:bold;'>"+
+					"		最近一個月的"+itemName+"紀錄 : "+itemRecord+"筆<br>"+
+					"		最後一次"+itemName+"紀錄 : "+itemLastTime+"<br>";					
+				for(var i=0; i<detailName.length; i++){
+					appendString+="		"+detailName[i]+" : "+detailValue[i]+detailUnit[i]+"<br>";
+				}	
+				appendString+=
+					"	</div>"+
+					"	<a href='EditPatientHealthTracking.html?itemID="+itemID+"'>"+
+					"		<div class='panel-footer' style='background-color: white;border-style:solid;border-color:#F7E56E;'>"+
+					"			<span class='pull-left' style='color: black;'>詳細資料</span>"+
+					"			<span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-right'></i></span>"+
+					"			<div class='clearfix'></div>"+
+					"		</div>"+
+					"	</a>"+
+					"</div></li>";
+				
+				$("#displayItem").append(appendString);
+			}
+			//設定滑動
+			$(document).ready(function(){
+				var w = $("#divWidth").width();
+				//console.log("width 寬度 : " + w);
+				
+				$('.bxslider').bxSlider({
+					slideWidth: w,
+					minSlides: 3,
+					maxSlides: 3,
+					slideMargin: 10
+				});
+			});	
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+});		
+</script>
+<!-- 上半邊 項目(結束) -->
+
 </head>
 
 <body>
@@ -68,7 +159,73 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+				<div class="row-md-1">
+					<div class="col-sm-12" style="margin-top:10px;margin-bottom:10px;">
+						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="location.href='NewPatientHealthTracking.html'">新增</button>
+					</div>	
+				</div>
+				<div class="row-md-4"> 
+					<div class="col-md-12" style="padding-left: 40px;" id="divWidth">
+						<!-- 顯示已給病患的項目開始  -->
+						<ul class="bxslider" id="displayItem">
+						</ul>
+					</div>
+				</div>
+				
+				<div class="row-md-7">
+					<div class="col-md-12" style="padding-left: 40px;">
+						<div class="panel panel-default" style="border: 4px solid #f0f0f0; border-radius: 0 !important; min-height: 45vh; max-height: 45vh; margin-bottom: 0;">
+							<!-- 顯示病患該項目的細項資料開始 -->
+							<div class="panel-body" id="displayDetail" style="padding-top: 1vh;">
+							
+							
+								<!-- 下半部左邊  -->
+								<div class="col-md-4">
+									<div id="itemName" style="margin-bottom:10px;">
+										<span style="font-size:18px;font-weight:bold;">血壓<br></span>
+									</div>
+									<div>
+										<input type="date" class="form-control" id="dateStart" style="width:45%;display:inline-block;vertical-align:middle;" onchange="selectDate()">
+										<span style="display:inline-block;vertical-align:middle;">&nbsp;到&nbsp;</span>
+										<input type="date" class="form-control" id="dateEnd" style="width:45%;display:inline-block;vertical-align:middle;" onchange="selectDate()">
+										<br><br>
+										<select class="form-control" id="chartType" style="width:40%;display:inline-block;vertical-align:middle;">
+											<option value="all">折線圖</option>
+										</select>
+									</div>
+									<div class="checkbox" id="detailCheckbox" style="margin-top:15px;">
+										<!-- 細項勾選區 -->
+										<label class="checkbox-inline" for="detail0">
+											<input class="" type="checkbox" value="0" name="Product_0" id="detail0" style="width:16px;height:16px;display:inline-block;vertical-align:middle;" onClick="changeChart()" checked>
+												<span style="display:inline-block;vertical-align:middle;font-size:16px;font-weight:bold;">收縮壓&nbsp;&nbsp;</span>
+										</label>
+										<label class="checkbox-inline" for="detail1">
+											<input class="" type="checkbox" value="1" name="Product_1" id="detail1" style="width:16px;height:16px;display:inline-block;vertical-align:middle;" onClick="changeChart()" checked>
+												<span style="display:inline-block;vertical-align:middle;font-size:16px;font-weight:bold;">舒張壓&nbsp;&nbsp;</span>
+										</label>	
+									</div>
+								</div>
+												
+								<!-- 下半部右邊  圖表 <span style="font-size:18px;font-weight:bold;">Chart</span>-->	
+								<div class="col-md-7">
+									<div id="chart"></div>
+								</div>	
+								
+								<!-- 下半部右邊 刪除按鈕-->		
+								<div class="col-md-1">								
+									<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="deleteHealthTracking()">刪除</button>
+								</div>	
+									
+											
+							</div>
+							<!-- 顯示病患該項目的細項資料結束 -->
+						</div>
+					</div>
+				</div>
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+			</div>
 		</div>
 
 	</div>
@@ -78,6 +235,242 @@
 
 	<!-- 醫生端病患資訊框架js -->
 	<script src="js/patientInformationFrame.js"></script>
+	
+	<!-- C3.JS -->
+	<script>
+		var urlall = window.location.href;
+		var urlparts = urlall.split("?");
+		var IDparts = urlparts[1].split("=");
+		var itemID = IDparts[1];
+	
+		console.log("urlall : " + urlall);
+		console.log("urlparts : " + urlparts);
+		console.log("IDparts : " + IDparts);
+		console.log("itemID : " + itemID);
+		
+		var doctorID = window.localStorage.getItem('login');
+		
+		//預設輸入為今天日期////////////////////////////////////////////////////////////////////////////////////////////////////
+		$(document).ready( function() {
+		    var now = new Date();
+		    var month = (now.getMonth() + 1);               
+		    var day = now.getDate();
+		    if(month < 10) 
+		        month = "0" + month;
+		    if(day < 10) 
+		        day = "0" + day;
+		    var today = now.getFullYear() + '-' + month + '-' + day;
+		  
+		    $("#dateStart").val(today);
+		    $("#dateEnd").val(today);  
+		    
+		    //取得該項目一些基本資料/////////////////////////////////////////////////////////////////////////////////////////////
+		    $.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+				data : {
+					state : "itemAllDetail",
+					doctorID : doctorID,
+					itemID : itemID
+				},
+				dataType : "json",
+
+				success : function(response) {		
+					//項目名稱
+					var itemName = response.itemName;
+					$("#itemName").empty();
+					$("#itemName").append("<span style='font-size:18px;font-weight:bold;'>"+itemName+"<br></span>");
+					
+					//時間
+					console.log(" [['x', '2017-01-07 12:00', '2017-01-08 12:00', '2017-01-09 12:00', '2017-01-10 12:00'],['收縮壓', 110, 90, 100, 120],['舒張壓', 75, 70, 85, 65],['心跳', 85, 60, 70, 75]]");
+					var column = [];
+					var timeString = ['x'];
+					for(var number=0; number<response.itemTimeList.length; number++){
+						var itemTime = response.itemTimeList[number].substring(0, 16);
+						timeString.push(itemTime);
+					}
+					//console.log("timeString : "+timeString);
+					column.push(timeString);
+					
+					//細項
+					for(var i=0; i<response.detailNameList.length; i++){
+						var value = [];
+						value.push(response.detailNameList[i]);
+						for(var j=0; j<response.detailValueList.length; j++){		//valueList 第一個集合
+							var tempList = response.detailValueList[j];
+							//集合中第幾個
+							value.push(tempList[i]);	//要取得跟name一樣的位置，所以要用i，不能用j
+						}
+						//console.log("value : "+value);
+						column.push(value);
+					}
+					
+					//細項name、id
+					$("#detailCheckbox").empty();
+					for(var number=0; number<response.detailIDList.length; number++){
+						var detailID = response.detailIDList[number];		//detailID
+						var detailName = response.detailNameList[number];	//detailName
+						$("#detailCheckbox").append(
+											"<label class='checkbox-inline' for='detail"+detailID+"'>"+
+											"	<input class='' type='checkbox' value='"+detailID+"' name='detail' id='detail"+detailID+"' style='width:16px;height:16px;display:inline-block;vertical-align:middle;' onClick='changeChart()' checked>"+
+											"		<span style='display:inline-block;vertical-align:middle;font-size:16px;font-weight:bold;'>"+detailName+"&nbsp;&nbsp;</span>"+
+											"</label>");
+					}
+					
+					//console.log("column : "+column);
+					//c3.js chart
+					var chart = c3.generate({
+						bindto: '#chart',
+						data: {
+							x: 'x',
+							xFormat: '%Y-%m-%d %H:%M',
+							columns: column
+						},
+						axis: {
+							x: {
+								label: '日期',
+								type: 'timeseries',
+								tick: {
+									format: '%Y-%m-%d %H:%M'
+								}
+							}
+						}
+					});
+					
+					
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		    
+		});
+		
+		//改變開始日期/////////////////////////////////////////////////////////////////////////////////////////////////////////
+		function selectDate(){
+			 var dateStart = $('#dateStart').val();
+			 var dateEnd = $('#dateEnd').val();
+			 
+			 //限制選取範圍，開始日期不可大於結束日期，結束日期不可小於開始日期
+			 $("#dateStart").attr({	
+			    	"max" : dateEnd
+			    });
+			 $("#dateEnd").attr({
+			    	"min" : dateStart
+			    });
+			 changeChart();
+		}
+		
+		//改變圖表///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		function changeChart(){
+			//取得選取的時間
+			 var dateStart = $('#dateStart').val();
+			 var dateEnd = $('#dateEnd').val();
+			 //console.log("dateStart : "+dateStart);
+			 //console.log("dateEnd : "+dateEnd);
+			 
+			 //取得勾選的detail id
+			 var checkArray = new Array();
+			 $('input:checkbox:checked[name="detail"]').each(function(i) { checkArray[i] = this.value; });
+			 //console.log("checkArray : "+checkArray);
+			 
+			 //變化圖表//////////////////////////////////////////////////////////////////////////////////////////////////////
+			 $.ajax({
+					//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+					url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+					data : {
+						state : "changeChart",
+						doctorID : doctorID,
+						itemID : itemID,
+						dateStart : dateStart,
+						dateEnd : dateEnd,
+						checkArray : checkArray
+					},
+					dataType : "json",
+
+					success : function(response) {		
+						console.log("回傳成功!!");
+						
+						//時間
+						var column = [];
+						var timeString = ['x'];
+						for(var number=0; number<response.itemTimeList.length; number++){
+							var itemTime = response.itemTimeList[number].substring(0, 16);
+							timeString.push(itemTime);
+						}
+						//console.log("timeString : "+timeString);
+						column.push(timeString);
+						
+						//細項
+						for(var i=0; i<response.detailIDList.length; i++){
+							for(var k=0; k<checkArray.length; k++){
+								if(checkArray[k] == response.detailIDList[i]){			//如果有勾選此細項的話，放入
+									console.log("checkArray[k] : " + checkArray[k]);
+									var value = [];
+									value.push(response.detailNameList[i]);
+									for(var j=0; j<response.detailValueList.length; j++){		//valueList 第一個集合
+										var tempList = response.detailValueList[j];
+										//集合中第幾個
+										value.push(tempList[i]);	//要取得跟name一樣的位置，所以要用i，不能用j
+									}
+									//console.log("value : "+value);
+									column.push(value);
+								}
+							}
+						}
+						console.log("column : "+column);
+						//c3.js chart
+						var chart = c3.generate({
+							bindto: '#chart',
+							data: {
+								x: 'x',
+								xFormat: '%Y-%m-%d %H:%M',
+								columns: column
+							},
+							axis: {
+								x: {
+									label: '日期',
+									type: 'timeseries',
+									tick: {
+										format: '%Y-%m-%d %H:%M'
+									}
+								}
+							}
+						});
+						
+					},
+					error : function() {
+						console.log("錯誤訊息");
+					}
+				});
+		}
+		
+		//刪除該追蹤項目///////////////////////////////////////////////////////////////////////////////////////////////////////
+		function deleteHealthTracking(){
+			$.ajax({
+				//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
+				url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+				data : {
+					state : "deleteHealthTracking",
+					doctorID : doctorID,
+					itemID : itemID
+				},
+				dataType : "json",
+
+				success : function(response) {		
+					alert(response.result);
+					location.href='PatientHealthTracking.html';
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
+		
+		
+		
+	</script>
+	
 
 </body>
 

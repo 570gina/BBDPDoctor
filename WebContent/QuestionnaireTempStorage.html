@@ -48,16 +48,188 @@
 <!-- Metis Menu Plugin JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="vendor/metisMenu/metisMenu.min.js"></script>
-
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
-
+	<style type="text/css">
+		.lattice {
+				border: 3px solid #f0f0f0;
+			}
+	</style>
 </head>
+	<script>
+		//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+		$(document).ready(function() {
+			if(!(window.localStorage.getItem('login'))){
+			alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+			}
+		})
+</script>
+<script>
 
+	var user = window.localStorage.getItem('login');
+
+	function delTempStorage(){
+	
+		var questionArray = "";
+		$('input:checkbox:checked[name="Qcheckbox"]').each(function(i) { questionArray += (this.value+",");});
+		if(questionArray=="")
+			window.alert("請勾選欲移除題目");
+		else{
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireTempStorageServlet",
+				data : {
+					state : "deleteTempStorage",
+					doctorID : user,
+					questionArray : questionArray
+				},
+				traditional: true,
+				success : function(response) {
+					window.alert("題目已移除");
+					location.reload();
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
+	}
+
+	function goToEdit(number){
+		var QBtnID = $('#QPbtn'+number).val();
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
+			data : {
+				state : "selectQPID",		//配合修改去取值
+				selectName : QBtnID,
+				doctorID : user
+			},
+
+			success : function(response) {
+				window.location.href = 'EditQuestionnairePool.html?Qid='+response;
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});			
+	}
+	
+	function clickQustion(number){	
+		var QBtnName = $('#QPbtn'+number).val();
+		
+		var temp="";
+		
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireTempStorageServlet",
+			data : {
+				state : "viewQuestion",
+				selectName : QBtnName,
+				doctorID : user
+			},
+			dataType : "json",
+			success : function(response) {
+				temp = '<div><input type="button" class="btn btn-default" value="修改" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="goToEdit('+number+')"></div>	<div style="height:52px;"></div>';
+				temp+="<div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading' style='background-color:#D2F898;'>"+QBtnName+"</div>";
+				temp+="<div class='panel-body'>";
+				for(var i =0;i<response.length;i++){
+					temp+=response[i].score+"="+response[i].content+"<br>";
+				}
+				temp+="</div></div>";
+			},
+			error : function() {
+				temp = '<div><input type="button" class="btn btn-default" value="修改" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="goToEdit('+number+')"></div>	<div style="height:52px;"></div>';
+				temp+="<div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading' style='background-color:#D2F898;'>"+QBtnName+"</div></div>";
+				
+			}
+		});
+		
+	    $(document).ajaxComplete(function(){
+			$("#QPview").empty();
+	    	$("#QPview").append(temp);
+	    });	
+	}
+	
+
+	
+	$(document).ready(function() {
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireTempStorageServlet",
+			data : {
+				state : "searchQPType",
+				doctorID : user
+			},
+			dataType : "json",
+		
+			success : function(response) {
+				$("#QPType").empty();
+				var temp="<option value=''>題目分類</option>";
+				for(var i=0;i<response.length;i++){
+					temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+				}	
+				temp+="</select>";
+				$("#QPType").append(temp);
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+		
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireTempStorageServlet",
+			data : {
+				state : "selectQPType",
+				selectType : $('#QPType option:selected').val(),
+				doctorID : user
+			},
+			dataType : "json",
+			success : function(response) {
+				$("#QuestionList").empty();
+				var temp="";
+				var questionNumber=0;
+				for(var i=0;i<response.length;i++){
+					questionNumber++;
+					temp+="<div><input type='checkbox' value='"+response[i]+"' name='Qcheckbox' style='zoom: 1.5;vertical-align:middle;overflow : hidden;'><input class='btn btn-default' value='"+response[i]+"' id='QPbtn"+questionNumber+"' type= 'button'style='text-align:left;width:85%;height:70px;background-color:#D2F898;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; overflow : hidden;'onclick='clickQustion("+questionNumber+")'></div><div style='height:7px'></div>";
+				}	
+				$("#QuestionList").append(temp);
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+		$('#QPType').change(function(){
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireTempStorageServlet",
+				data : {
+					state : "selectQPType",
+					selectType : $('#QPType option:selected').val(),
+					doctorID : user
+				},
+				dataType : "json",
+				success : function(response) {
+					$("#QuestionList").empty();
+					var temp="";
+					var questionNumber=0;
+					for(var i=0;i<response.length;i++){
+						questionNumber++;
+						temp+="<div><input type='checkbox' value='"+response[i]+"' name='Qcheckbox' style='zoom: 1.5;vertical-align:middle;'><input class='btn btn-default' value='"+response[i]+"' id='QPbtn"+questionNumber+"' type= 'button'style='text-align:left;width:85%;height:70px;background-color:#D2F898;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; overflow : hidden;'onclick='clickQustion("+questionNumber+")'></div><div style='height:7px'></div>";
+					}	
+					$("#QuestionList").append(temp);
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});	
+		});
+		
+		
+		
+	});
+	
+
+</script>
 <body>
 
 	<div id="wrapper">
@@ -68,7 +240,40 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="delTempStorage()">將勾選題目刪除</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="QPType" style="width:80%;">
+										<option value="all">題目分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="QuestionList"></div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<div id = 'QPview'>						
+						
+					</div>
+				</div>					
+			
+			
+			
+			
+			
+			</div>
 		</div>
 
 	</div>
@@ -76,6 +281,6 @@
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
 
-</body>
+</body>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
 
 </html>

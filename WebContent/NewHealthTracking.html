@@ -58,11 +58,21 @@
 
 <!-- 左半邊的 -->
 <script src="js/healthModelFrame.js"></script>
+
 <script>
 //一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 //一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 //一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if (!(window.localStorage.getItem('login'))) {
+			alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+		}
+	});	
+</script>
 
+<script>
 
 //取得下拉選單的值
 $(document).ready(function() {
@@ -70,7 +80,7 @@ $(document).ready(function() {
 	//console.log("hello1" + $("#healthType1 :selected").text());
 	//取得存在local storage的doctoeID值並顯示出來
 	var doctorID = window.localStorage.getItem('login');
-	/////////////////////////////////////////////////////////////////////////$("#itemDiv").empty();
+	$("#itemDiv").empty();
 	
 	$.ajax({
 		//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
@@ -137,7 +147,7 @@ function addDetail(){
 		console.log("新增後目前的 detailArray: " + detailArray);
 		$("#display").append(
 				"<div class='col-sm-12' id='detail"+detailIDLast+"_Div' style='margin-top:20px;'>"+
-				"	<div class='col-sm-10' style='background-color:#F7E56E;'>"+
+				"	<div class='col-sm-10' style='background-color:#F7E56E;border-radius:5px;'>"+
 				"		<div style='margin-bottom:5px; margin-top:7px;'>"+
 				"			<label style='width:15%;display:inline;text-align:left;float:left;'>項目</label>"+
 				"			<input type='text' class='form-control' style='width:35%;display:inline;' id='detail"+detailIDLast+"_name' placeholder='項目名稱'>"+
@@ -169,7 +179,6 @@ function addDetail(){
 		alert("最多10個項目");
 	}	
 }
-
 
 //右下邊//勾有，才可以輸入單位;
 var selectUnit=1;
@@ -374,6 +383,12 @@ $(document).ready(function() {
 
 </script>
 
+
+<style type="text/css">
+h5 {
+	font-weight:bold;
+}
+</style>
 </head>
 
 <body>
@@ -398,15 +413,15 @@ $(document).ready(function() {
 						</button>
 					</div>
 					<br>
-					    <div class="panel panel-default lattice">
-							<div class="panel-heading" style="border-bottom-width:0px;">							
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
 								<form>						
 									<select class="form-control" id="healthType1" style="width:80%;" onChange="change1(this.selectedIndex);">
 										<option value="op0">健康狀況追蹤分類</option>
 									</select>	
 								</form>
 							</div>
-							<div class="panel-body" style="height:75vh;overflow-y:auto;" id="itemDiv">
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="itemDiv">
 								<!-- 
 								<div style="text-align:left;width:100%;height:70px;line-height:70px;background-color:#F7E56E;vertical-align:middle;font-size:15px;border:none;text-overflow: ellipsis; margin-bottom:10px;"
 									id="test1" onclick="itemSelect()">
@@ -435,7 +450,7 @@ $(document).ready(function() {
 					</div>	
 					<!-- 右半邊 上面 -->
 					<div style="height:52px;"></div>
-				    <div class="panel panel-default lattice">
+				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
 						<div class="panel-heading" style="background-color:#FFFFFF;">										
 							<h5>模板名稱</h5>
 							<input type="text" class="form-control" id="modelName" placeholder="請輸入模板名稱...">	
@@ -457,7 +472,7 @@ $(document).ready(function() {
 						</div>
 						
 					<!-- 右半邊 下面-->		
-						<div class="panel-body" style="height:60vh;overflow-y:auto;">	
+						<div class="panel-body" style="min-height: 46.5vh; max-height: 46.5vh; overflow-y: auto;">	
 							<div id="display">	
 								<!--  移到右上的紀錄單位
 								<div style="margin-bottom:5px;">

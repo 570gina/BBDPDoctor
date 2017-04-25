@@ -56,9 +56,188 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+	<style type="text/css">
+		.lattice {
+				border: 3px solid #f0f0f0;
+			}
+	h5 {
+	 font-weight:bold;
+	 }
+	</style>
+<script>
+var judgment = 1;
+var partNumber = 0;
+var user = window.localStorage.getItem('login');		
+$(document).ready(function() {
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+		data : {
+			state : "searchQMType",
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			$("#QType").empty();
+			$("#QType1").empty();
+			var temp="<option value='all'>問卷模板分類</option>";
+			for(var i=0;i<response.length;i++){
+				temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+			}	
+			temp+="</select>";
+			$("#QType").append(temp)
+			$("#QType1").append(temp);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+	
+	$('#QType1').change(function(){
+		$( "#QName" ).prop( "disabled", false );
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+			data : {
+				state : "selectQMType",
+				selectType : $('#QType1 option:selected').val(),
+				doctorID : user
+			},
+			dataType : "json",
+			success : function(response) {
+				$("#QName").empty();					
+				var temp="<option value=''>請選擇問卷</option>";
+				for(var i=0;i<response.length;i++){
+					temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+				}	
+				temp+="</select>";
+				$("#QName").append(temp);
+
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});	
+	});
+	
+	
+	$('#QName').change(function(){
+		if($('#QType1 option:selected').val()!=""){
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+				data : {
+					state : "getQuestionnaire",
+					doctorID : user,
+					Qname : $('#QName option:selected').val()
+				},
+				dataType : "json",
+				success : function(response) {
+					partNumber=0;
+					$('#QPview').empty();
+					for(var i =0;i<response.length;i++){
+						printQuestion(response[i].part,response[i].content);
+					}
+
+				},
+				error : function() {
+					$('#QPview').empty();
+				}
+			});
+		}
+	});
+	
+	/*$("#addCycle").click(function(){
+	    if($("#addCycle").prop("checked")==true){
+	    	$( "#times" ).prop( "disabled", false );
+	    	$( "#cycleType" ).prop( "disabled", false );
+	    	$( "#totalTimes" ).prop( "disabled", false );
+	    }else{
+	    	$( "#times" ).prop( "disabled", true );
+	    	$( "#cycleType" ).prop( "disabled", true );
+	    	$( "#totalTimes" ).prop( "disabled", true );
+	    }
+	});*/
+	
+	
+	$("#doAjaxBtn").click(function() {
+		if($('#QName option:selected').val()){
+			_times = $('#times').val();
+			_cycleType = $('#cycleType option:selected').val();
+			_totalTimes = $('#totalTimes').val();
+			
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+				data : {
+					state : "sendQuestionnaire",
+					doctorID : user,
+					QName : $('#QName option:selected').val(),
+					QCycle : _times,
+					QCycleType : _cycleType,
+					QTotalTimes : _totalTimes										
+				},
+				dataType : "json",
+				
+				success : function(response) {
+					window.alert("發送成功");
+					window.location.href = 'PatientQuestionnaire.html';
+				},
+				error : function() {
+					window.alert("失敗");
+					console.log("錯誤訊息");
+				}
+			});
+		}else window.alert("請選擇問卷");
+	});	
+
+});
+
+function printQuestion(part,content){
+	var temp="";
+	var stringContent = content+'';
+	if(part){
+		partNumber+=1;
+		$('#QPview').append("<div class='panel' style='border-color:#F8B1B0;width:100%;'><div class='panel-heading' style='background-color:#F8B1B0;font-weight: bold;'>Part "+partNumber+"："+part+"</div>");
+	}
+	if(content){
+		var contentArray = stringContent.split(",");
+		for(var i = 0; i<contentArray.length;i++){
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+				data : {
+					state : "selectQP",
+					doctorID : user,
+					QPname : contentArray[i]
+				},
+				async:false,
+				dataType : "json",
+				success : function(response) {
+					temp += "<div class='panel' style='border-color:#F8B1B0;width:100%;'><div class='panel-heading' style='background-color:#F8B1B0;'>"+response[0]+"</div>";
+					 
+					if(response[1]=="單選題"){
+						temp+="<div class='panel-body'>";
+						var obj = eval('(' + response[2] + ')');						
+						for (var j = 0; j < obj.length; j++) {
+							temp += obj[j].score+" = "+obj[j].content+"<br>";
+						}
+						temp+="</div>";						
+					}
+					temp +="</div>";
+					$('#QPview').append(temp);
+				
+				},
+				error : function() {
+				}
+			});			
+		}	
+	}
+	
+	
+}
+
+</script>	
 </head>
 
 <body>
+
 
 	<div id="wrapper">
 
@@ -68,10 +247,78 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;" disabled="disabled">新增問卷</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="QType" style="width:80%;">
+										<option value="all">問卷分類</option>
+									</select>
+									<div style='height:7px;'></div>
+									<select class="form-control" id="QdateRange" style="width:30%;display: inline-block;">
+										<option value="all"></option>
+									</select>	
+									<select class="form-control" id="Qdate" style="width:40%;display: inline-block;">
+										<option value="all"></option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 60vh; max-height: 60vh; overflow-y: auto;" id="QuestionnaireList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<div>
+						<input type="button" id="doAjaxBtn" class="btn btn-default" value="送出" style="background-color:#f0f0f0;font-size:13px;float:right;">
+					</div>
+					<div style="height:52px;"></div>
+				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color:#FFFFFF;">										
+							<h5>問卷模板</h5>
+							<select class="form-control" id="QType1" style="width:35%;display: inline;">
+								<option value="all">問卷模板分類</option>
+							</select>
+							<select class="form-control" disabled id="QName" style="width:35%;display: inline;">
+							</select>
+							
+							<h5>週期</h5>
+							<!--<input type="checkbox" id="addCycle" name="location">有-->
+							<input type='number' class='form-control' style='width:15%;display:inline;' id='times'  min='1' max='7' value='1'>							
+							<select class="form-control"id="cycleType" style="width:15%;display: inline;">
+								<option value='天'selected>天</option>
+								<option value='週' >週</option>
+								<option value='月' >月</option>
+							</select>一次，共
+							<input type='number'class='form-control' style='width:15%;display:inline;' id='totalTimes'  min='1' value='1'>次
+						</div>
+							
+						<div class="panel-body" id = 'QPview' style="min-height: 51vh; max-height: 51vh; overflow-y: auto;">
+							
+						</div>
+					</div>	
+				</div>			
+			
+			
+			
+			
+						
+			</div>
 		</div>
 
 	</div>
+
 
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
@@ -80,5 +327,6 @@
 	<script src="js/patientInformationFrame.js"></script>
 
 </body>
+
 
 </html>

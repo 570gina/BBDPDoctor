@@ -22,16 +22,16 @@ $(document).ready(function() {
 	$("#searchModal").on("show.bs.modal", function() {
 		$(".modal-body").html("");
 
-		if ($('#patientID').val().length != 5){
+		if ($('#patientID').val().length != 5|| isNaN($('#patientID').val())){
 			$(".modal-body").html("請輸入病患身分證字號後5碼");
 		}
 		else{
 			$.ajax({
-				type: "POST",	//指定http參數傳輸格式
-				url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
-				//url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
-				data: {option : "search", account: $('#patientID').val()}, //要傳給目標的data
-				dataType: "json",              //目標url處理完後回傳的值之type
+				type: "POST",
+				//url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
+				url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
+				data: {option : "search", account: $('#patientID').val()},
+				dataType: "json",
 						
 				success : function(response){
 					if(response.length > 0){
@@ -70,8 +70,8 @@ function searchConfirm(i) {
 	
 	$.ajax({
 		type: "POST",	
-		url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
-		//url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
+		//url: "http://localhost:8080/BBDPDoctor/PatientSearchServlet",
+		url: "http://140.121.197.130:8000/BBDPDoctor/PatientSearchServlet",
 		data: {option : "select", selectPatient : selecrPatientID[i]},
 		success : function(response){
 			window.location.href='PatientBasicInformation.html';

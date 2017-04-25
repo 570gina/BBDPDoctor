@@ -16,12 +16,14 @@ public class NotificationServer {
 			ArrayList<Notification> notifications = new ArrayList<Notification>();
 			while (resultSet.next()) {
 				notifications.add(new Notification(resultSet.getString("doctorID"), resultSet.getString("patientID"), resultSet.getString("time"),
-						resultSet.getString("hyperlink"), resultSet.getString("content")));
+						resultSet.getString("hyperlink"), resultSet.getString("title"), resultSet.getString("body")));
 			}
 			Gson gson = new Gson();
 			result = gson.toJson(notifications);
+			//if (resultSet != null) resultSet.close();
 			return result;
 		} catch (SQLException e) {
+			System.out.println("SQLException in NotificationServer getNotification");
 			result = "SQLException";
 			return result;
 		}
@@ -33,6 +35,7 @@ public class NotificationServer {
 			conn.updateSql("DELETE FROM push WHERE doctorID = '" + doctorID + "'");
 			return result;
 		} catch (SQLException e) {
+			System.out.println("SQLException in NotificationServer clearAllNotification");
 			result = "SQLException";
 			return result;
 		}

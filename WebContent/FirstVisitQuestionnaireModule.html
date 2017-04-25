@@ -53,11 +53,197 @@
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
 
+<script src="js/questionnaireFrame.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
-</head>
+<style type="text/css">
+	.lattice {
+			border: 3px solid #f0f0f0;
+			}
+		h5 {
+		 	font-weight:bold;
+	 		}
 
+</style>
+</head>
+<script>
+		//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+		$(document).ready(function() {
+			if(!(window.localStorage.getItem('login'))){
+			alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+			}
+		})
+</script>
+<script>
+var judgment = 1;
+var QNumber = 0;
+var user = window.localStorage.getItem('login');		
+$(document).ready(function() {
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+		data : {
+			state : "searchQMType",
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			$("#QMType").empty();
+			$("#QMType1").empty();
+			var temp="<option value='all'>問卷模板分類</option>";
+			for(var i=0;i<response.length;i++){
+				temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+			}	
+			temp+="</select>";
+			$("#QMType").append(temp)
+			$("#QMType1").append(temp);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});	
+		
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/FirstVisitQuestionnaireModuleServlet",
+		data : {
+			state : "searchFVQ",
+			doctorID : user
+		},
+		dataType : "json",
+		success : function(response) {
+			$("#FirstVisitQuestionnaireList").empty();
+			var temp="";
+			for(var i=0;i<response.length;i+=2){
+				QNumber+=1;
+				temp+="<div class='panel' style='border-color:#D2F898;width:80%;float:left;'><div class='panel-heading' style='background-color:#D2F898;color:#4F4F4F;font-size:13px' >症狀："+response[i]+"</div>";
+				temp+="<div class='panel-body' id = 'tempID"+QNumber+"'>"+response[i+1]+"</div><button type='button' class='btn btn-default' id='"+QNumber+"' style='background-color:#f0f0f0;'onclick='delQ("+QNumber+")'>刪除</button></div>"
+			}
+			$("#FirstVisitQuestionnaireList").append(temp);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+		
+	
+	$('#QMType1').change(function(){
+		$("#QMName").removeAttr('disabled');
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireModuleServlet",
+			data : {
+				state : "selectQMType",
+				selectType : $('#QMType1 option:selected').val(),
+				doctorID : user
+			},
+			dataType : "json",
+			success : function(response) {
+				$("#QMName").empty();					
+				var temp="<option value=''>請選擇問卷</option>";
+				for(var i=0;i<response.length;i++){
+					temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+				}	
+				temp+="</select>";
+				$("#QMName").append(temp);
+
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});	
+	});
+		
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/FirstVisitQuestionnaireModuleServlet",
+		data : {
+			state : "searchSymptom",
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			$("#symptom1").empty();
+			var temp="<option value='all'>選擇症狀</option>";
+			for(var i=0;i<response.length;i++){
+				temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
+			}	
+			temp+="</select>";
+			$("#symptom1").append(temp);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});	
+	$("#addQuestionAjax").click(function() {
+		if($('#QMName option:selected').val()){
+			if((judgment == 1 && $('#symptom2').val())||judgment == 0){
+				if(judgment==1) temp=$('#symptom2').val();
+				else temp=$('#symptom1 option:selected').val();
+				$.ajax({
+					url : "http://140.121.197.130:8000/BBDPDoctor/FirstVisitQuestionnaireModuleServlet",
+					data : {
+						state : "addQFVQ",
+						doctorID : user,
+						QMname : $('#QMName').val(),
+						QMSymptom : temp,								
+					},
+					dataType : "json",
+				
+					success : function(response) {
+						if (response>0) {
+							window.alert("成功加入");
+							window.location.reload();
+						}else if (response==0) {
+							window.alert("此症狀初診問卷已存在");
+						}
+					},
+					error : function() {
+						window.alert("失敗");
+						console.log("錯誤訊息");
+					}
+				});
+			}else window.alert("請選擇或新增分類");
+		}else window.alert("請選擇問卷");
+	});	
+    
+
+		
+});
+
+function delQ(num){
+	if(confirm("確定從初診模板移除？")){
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/FirstVisitQuestionnaireModuleServlet",
+			data : {
+				state : "deleteQFVQ",
+				QName : $('#tempID1').text(),
+				doctorID : user
+			},
+			dataType : "json",
+			
+			success : function(response) {
+				window.location.reload();
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});	
+	}
+}
+
+function changeSymptom(){
+	var s =  $('#symptom1 option:selected').val();
+	console.log(s);
+	if(s=="all"){
+		document.getElementById('symptom2').disabled=false;
+		judgment = 1;
+	}else{
+		judgment = 0;
+		document.getElementById('symptom2').disabled=true;
+	}
+}		
+</script>
 <body>
 
 	<div id="wrapper">
@@ -68,7 +254,69 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="location.href='NewQuestionnaireModule.html'">新增問卷模板</button>&nbsp;&nbsp;
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px; "disabled="disabled";>初診問卷模板</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="QMType" style="width:80%;">
+										<option value="all">問卷模板分類</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 70vh; max-height: 70vh; overflow-y: auto;" id="QuestionnaireList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+						<input type="button" id="doAjaxBtn" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">
+					</div>
+					<div style="height:52px;"></div>
+					    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading"style="background-color:#FFFFFF;">							
+								<form>						
+									<select class="form-control" id="QMType1" style="width:35%;display: inline;">
+										<option value="all">問卷模板分類</option>
+									</select>
+									<select class="form-control" id="QMName" disabled style="width:35%;display: inline;" >
+									</select>
+									<div style="height:15px;"></div>
+									<h5 style="display: inline;vertical-align:middle;">顯示症狀：</h5>
+									<select class="form-control" id="symptom1" style="width:30%;display: inline;vertical-align:middle;"onChange="changeSymptom()">
+										<option value="all">選擇症狀</option>
+									</select>
+									<h5 style="display:inline;vertical-align:middle;">&nbsp;或&nbsp;</h5>
+									<input type="text" class="form-control" style="width:30%;display:inline;vertical-align:middle;" id="symptom2" placeholder="請輸入要新增的症狀名稱...">&nbsp;
+									<input type="button" id="addQuestionAjax" class="btn btn-default" value="加入" style="background-color:#f0f0f0;font-size:13px;">	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 63vh; max-height: 63vh; overflow-y: auto;" id="FirstVisitQuestionnaireList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>			
+			
+			
+			
+			
+						
+			</div>
 		</div>
 
 	</div>

@@ -1,4 +1,4 @@
-$("#page-wrapper>.row").prepend(
+$("#page-wrapper>.row:first").prepend(
 "<ul class='nav nav-tabs'>"
 	 + "<li id='patientNameOnTab'></li>"
 	 + "<li id='basicInformation'><a href='PatientBasicInformation.html'><b>基本資料</b></a></li>"
