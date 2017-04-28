@@ -55,7 +55,7 @@ function getQData() {
 					var questionnaireName;
 					if(response.QList[i].questionnaireName.length > 14) description = response.QList[i].questionnaireName.substring(0, 14) + "...";
 					else questionnaireName = response.QList[i].questionnaireName;
-					$("#todayQuestionnairePanel>.panel-footer>.list-group").append("<a href='javascript: clickQItem(\"" + response.QList[i].patientID + "\");' class='list-group-item' style='background-color: #F8B1B0; border: 2px solid white;'><div class='media'><div class='media-left'><img src='picture/homepage/user.png' class='media-object' /></div><div class='media-body'><h4 class='list-group-item-heading media-heading'><b>" + response.QList[i].patientName + "</b></h4><p class='list-group-item-text'>" + questionnaireName + "</p><p class='list-group-item-text pull-right'>" + response.QList[i].date + "</p></div></div></a>");
+					$("#todayQuestionnairePanel>.panel-footer>.list-group").append("<a href='javascript: clickQItem(\"" + response.QList[i].patientID + "\");' class='list-group-item' style='background-color: #F8B1B0; border: 2px solid white;'><div class='media'><div class='media-left'><img src='picture/patientPhoto/" + setTempPhoto(response.QList[i].patientID) + ".png' class='media-object' /></div><div class='media-body'><h4 class='list-group-item-heading media-heading'><b>" + response.QList[i].patientName + "</b></h4><p class='list-group-item-text'>" + questionnaireName + "</p><p class='list-group-item-text pull-right'>" + response.QList[i].date + "</p></div></div></a>");		//大頭貼!!
 				}
 			}
 		},

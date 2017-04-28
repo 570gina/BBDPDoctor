@@ -86,7 +86,7 @@ function generateClinicNotification(patientID, patientName) {		//產生診間推
 function generateRemindNotification(json, patientID, patientName) {		//產生提醒推播右下角notification視窗
 	var options = {
 		body: json.body,
-		icon: "https://image.flaticon.com/icons/png/512/149/149071.png"
+		icon: "picture/patientPhoto/" + setTempPhoto(patientID) + ".png"		//大頭貼!!
 	}
 	var notification = new Notification(json.title, options);
 	notification.onclick = function() {

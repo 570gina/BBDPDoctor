@@ -83,4 +83,6 @@ $(document).ready(function() {
 	$.getScript("js/patientSearch.js");
 	// 允許顯示通知
 	Notification.requestPermission();
+	//寫死大頭貼
+	$.getScript("js/photoTemp.js");
 });

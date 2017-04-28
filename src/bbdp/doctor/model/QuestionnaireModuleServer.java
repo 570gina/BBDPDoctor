@@ -57,6 +57,7 @@ public class QuestionnaireModuleServer {
 		try {
 			ResultSet rs = conn.runSql("select * FROM question where doctorID = '"+doctorID+"' and 	tempstorage = 1 ORDER BY CAST(questionID AS UNSIGNED)");
 			while (rs.next()) {
+				selectResult.add(rs.getString("questionID"));
 				selectResult.add(rs.getString("question"));
 				selectResult.add(rs.getString("kind"));
 				selectResult.add(rs.getString("option"));
@@ -92,7 +93,7 @@ public class QuestionnaireModuleServer {
 		return dbReturn;
 	}	
 
-	public static int updateQuestionnaire(DBConnection conn, String doctorID, String QMname, String QMType, String questions, String questionnaireID,String scoring) {
+	public static int updateQuestionnaire(DBConnection conn, String doctorID, String QMname, String QMType, String questions, String questionnaireID,String scoring,String medicalRecord) {
 		int dbReturn=-1;
 		String result;
 		int score = Integer.parseInt(scoring);
@@ -107,7 +108,7 @@ public class QuestionnaireModuleServer {
 			}		
 		if(dbReturn!=0){
 			try {
-				dbReturn = conn.updateSql("UPDATE questionnaire SET name = '"+QMname+"', type = '"+QMType+"', question = '"+questions+"', scoring ='"+score+"' WHERE questionnaireID = '"+questionnaireID+"'");	
+				dbReturn = conn.updateSql("UPDATE questionnaire SET name = '"+QMname+"', type = '"+QMType+"', question = '"+questions+"', scoring ='"+score+"', medicalRecord = '"+medicalRecord+"' WHERE questionnaireID = '"+questionnaireID+"'");	
 			} catch (SQLException e) {
 				System.out.println("QuestionnaireServer錯誤");
 			}
@@ -129,11 +130,11 @@ public class QuestionnaireModuleServer {
 		return QID;
 	}	
 
-	public static String editNoJson(DBConnection conn, String questionnaireID, String search) {
+	public static String editNoJson(DBConnection conn, String doctorID, String questionnaireID, String search) {
 		String result="";
 		
 		try {
-			ResultSet rs = conn.runSql("select "+search+" FROM questionnaire where questionnaireID = '"+questionnaireID+"'");
+			ResultSet rs = conn.runSql("select "+search+" FROM questionnaire where questionnaireID = '"+questionnaireID+"' and doctorID = '"+doctorID+"'");
 			while (rs.next()) {
 				result = rs.getString(search);
 			}			
@@ -144,11 +145,11 @@ public class QuestionnaireModuleServer {
 		return result;
 	}
 
-	public static String editJson(DBConnection conn, String questionnaireID) {
+	public static String editJson(DBConnection conn, String doctorID, String questionnaireID) {
 		String result="";
 		
 		try {
-			ResultSet rs = conn.runSql("select question FROM questionnaire where questionnaireID = '"+questionnaireID+"'");
+			ResultSet rs = conn.runSql("select question FROM questionnaire where questionnaireID = '"+questionnaireID+"' and doctorID = '"+doctorID+"'");
 			while (rs.next()) {
 				result = rs.getString("question");
 			}			
@@ -158,12 +159,13 @@ public class QuestionnaireModuleServer {
 		return result;
 	}
 	
-	public static ArrayList selectQP(DBConnection conn, String doctorID ,String QPname) {
+	public static ArrayList selectQP(DBConnection conn, String doctorID ,String questionID) {
 		ArrayList selectResult = new ArrayList();
 		
 		try {
-			ResultSet rs = conn.runSql("select * FROM question where doctorID = '"+doctorID+"' and 	question = '"+QPname+"'");
+			ResultSet rs = conn.runSql("select * FROM question where doctorID = '"+doctorID+"' and 	questionID = '"+questionID+"'");
 			while (rs.next()) {
+				selectResult.add(rs.getString("questionID"));
 				selectResult.add(rs.getString("question"));
 				selectResult.add(rs.getString("kind"));
 				selectResult.add(rs.getString("option"));
@@ -295,6 +297,19 @@ public class QuestionnaireModuleServer {
 		
 		return dbReturn;
 	}
-	
+	public static String clickScoring(DBConnection conn, String doctorID, String questionnaireID) {
+		String result="";
+		
+		try {
+			ResultSet rs = conn.runSql("select scoring FROM questionnaire where questionnaireID = '"+questionnaireID+"' and doctorID = '"+doctorID+"'");
+			while (rs.next()) {
+				result = rs.getString("scoring");
+			}			
+		} catch (SQLException e) {
+			System.out.println("QuestionnaireServer錯誤");
+		}			
+		
+		return result;
+	}
 
 }

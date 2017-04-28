@@ -49,6 +49,7 @@ public class HealthTrackingServlet extends HttpServlet {
 		HashMap result = new HashMap();				 // 結果
 		HashMap allItem = new HashMap();			 // 所有項目結果
 		HashMap typeSelect = new HashMap();			 // 選取分類後的項目結果
+		HashMap addItemStorage = new HashMap();		 // 儲存新增
 		HashMap editDefault = new HashMap();		 // 選取分類後的項目結果
 		HashMap deleteItemStorage = new HashMap();	 // 刪除結果
 		
@@ -80,11 +81,13 @@ public class HealthTrackingServlet extends HttpServlet {
 		//儲存//NewHealthTracking.html
 		if (state.equals("storage")) {
 			System.out.println("在servlet中的傳入參數 state:"+ state +" doctorID:"+doctorID+" modelName:"+modelName+" typeName:"+typeName);
-			healthTrackingServer.addItemStorage(db, doctorID, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle);
+			addItemStorage = healthTrackingServer.addItemStorage(db, doctorID, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle);
 
+			result = addItemStorage;
 			// 回傳json型態
 			response.getWriter().write(gson.toJson(result));
 		}
+		
 		
 		//取得原本的值//EditHealthTracking.html
 		if (state.equals("editDefault")) {

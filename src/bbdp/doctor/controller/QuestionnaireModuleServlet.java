@@ -30,16 +30,16 @@ public class QuestionnaireModuleServlet extends HttpServlet {
 		if(state.equals("searchQMType")){
 			result = QuestionnaireModuleServer.searchQMType(db,doctorID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("selectQMType")){
 			String selectType = request.getParameter("selectType");
 			result = QuestionnaireModuleServer.selectQMType(db,doctorID,selectType);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("getQuestionnaireTempStorage")){
 			result = QuestionnaireModuleServer.getQuestionnaireTempStorage(db,doctorID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("addQuestionnaire")){
 			String QMname = request.getParameter("QMname");
 			String QMType = request.getParameter("QMType");
@@ -56,37 +56,36 @@ public class QuestionnaireModuleServlet extends HttpServlet {
 		}else if(state.equals("editQuestionnaire")){
 			String nowQ = request.getParameter("nowQ");
 			String edit = request.getParameter("edit");
-			if(edit.equals("name")){
-				String editRS = QuestionnaireModuleServer.editNoJson(db,nowQ,"name");
-				response.getWriter().println(editRS);
-			}else if(edit.equals("type")){
-				String editRS = QuestionnaireModuleServer.editNoJson(db,nowQ,"type");
-				response.getWriter().println(editRS);								
-			}else{
-				String editRS = QuestionnaireModuleServer.editJson(db,nowQ);
+			if(edit.equals("other")){
+				String editRS = QuestionnaireModuleServer.editJson(db,doctorID,nowQ);
 				response.getWriter().write(editRS);
-				System.gc();								
+			}else{
+				String editRS = QuestionnaireModuleServer.editNoJson(db,doctorID,nowQ,edit);
+				response.getWriter().println(editRS);																
 			}
 
 		}else if(state.equals("selectQP")){
-			String QPname = request.getParameter("QPname");
-			result = QuestionnaireModuleServer.selectQP(db,doctorID,QPname);
+			String questionID = request.getParameter("questionID");
+			result = QuestionnaireModuleServer.selectQP(db,doctorID,questionID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("updateQuestionnaire")){
 			String QMname = request.getParameter("QMname");
 			String QMType = request.getParameter("QMType");
 			String questions = request.getParameter("questions");
 			String nowQ = request.getParameter("nowQ");
 			String scoring = request.getParameter("scoring");
-			int rs = QuestionnaireModuleServer.updateQuestionnaire(db,doctorID,QMname,QMType,questions,nowQ,scoring); 
+			String medicalRecord = request.getParameter("medicalRecord");
+			int rs = QuestionnaireModuleServer.updateQuestionnaire(db,doctorID,QMname,QMType,questions,nowQ,scoring,medicalRecord); 
 			response.getWriter().println(rs);			
 		}else if(state.equals("deleteQuestionnaire")){
 			String nowQ = request.getParameter("nowQ");
 			int rs = QuestionnaireModuleServer.deleteQuestionnaire(db,doctorID,nowQ); 
-			response.getWriter().println(rs);			
-			
-			
+			response.getWriter().println(rs);						
+		}else if(state.equals("clickScoring")){
+			String nowQ = request.getParameter("nowQ");
+			String scoring = QuestionnaireModuleServer.clickScoring(db,doctorID,nowQ); 
+			response.getWriter().println(scoring);						
 		}
 	}
 }

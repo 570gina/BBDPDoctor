@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>BBDP醫生端系統</title>
+<title>BBDP</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet"
@@ -12,6 +12,7 @@
 	<!-- Shortcut Icon -->
 <link rel="Shortcut Icon" type="image/x-icon"
 	href="picture/doctor-frame/icon.ico">
+
 <style type="text/css">
 * {
   font-family: 微軟正黑體;
@@ -88,12 +89,9 @@ fieldset[disabled] .btn-default.active {
 					}
 					else {
 						$("#loginFail").empty();
-						//$("#loginFail").append(response.result);
+						$("#loginFail").append(response.result);
 						
-						//var str="test";
-						//document.getElementById("loginFail").innerHTML+=str;  
-						
-						alert(response.result);
+						console.log(response.result);
 					}
 				},
 				error : function() {
@@ -107,8 +105,16 @@ fieldset[disabled] .btn-default.active {
 <body>
 	<div class="col-sm-12">
 		<!-- ======================================================================================================================================================= -->
-		<div style="text-align: center; margin-top: 10vh;">
-			<img src="picture/logo.png" style="width: 20%; height: 20%;">
+		<div class="row" style="margin-top: 10vh;">
+			<div class="col-md-4"></div>
+			<div class="col-md-4">
+				<center><img class="img-responsive" src="picture/logo.png" /></center>
+			</div>
+			<div class="col-md-4"></div>
+		</div>
+		
+		<div>
+			
 		</div>
 		<h1 class="text-center" style="color: #2e2d4d">
 			<strong>BBDP 醫生端系統</strong>

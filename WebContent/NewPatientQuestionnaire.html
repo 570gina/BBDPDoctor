@@ -52,7 +52,7 @@
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
+<script src="js/patientQuestionnaireFrame.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
@@ -63,9 +63,52 @@
 	h5 {
 	 font-weight:bold;
 	 }
+	 
+	 a{
+		text-decoration: none;color:black;
+	}
+	
+	a:link{
+           color: #000000;
+    }
+
+	a:visited{
+		color: #000000;
+	}
+
+	a:hover{
+		color: #000000;
+	}
+
+    a:active{
+		color: #000000;
+	}
+
+	#item{
+		height:70px;
+		width:100%;
+		margin-bottom:10px;
+		text-align:left;
+		vertical-align:middle;
+		font-size:15px;
+		border:none;
+		text-overflow: ellipsis;
+		overflow : hidden;
+		border-radius: 5px;
+	}	
 	</style>
+
 <script>
-var judgment = 1;
+	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if (!(window.localStorage.getItem('login'))) {
+			modalGenerator("尚未登入", "跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+		}
+	});
+</script>
+	
+<script>
 var partNumber = 0;
 var user = window.localStorage.getItem('login');		
 $(document).ready(function() {
@@ -78,14 +121,12 @@ $(document).ready(function() {
 		dataType : "json",
 		
 		success : function(response) {
-			$("#QType").empty();
 			$("#QType1").empty();
 			var temp="<option value='all'>問卷模板分類</option>";
 			for(var i=0;i<response.length;i++){
 				temp+="<option value='"+response[i]+"'>"+response[i]+"</option>";
 			}	
 			temp+="</select>";
-			$("#QType").append(temp)
 			$("#QType1").append(temp);
 		},
 		error : function() {
@@ -145,18 +186,6 @@ $(document).ready(function() {
 		}
 	});
 	
-	/*$("#addCycle").click(function(){
-	    if($("#addCycle").prop("checked")==true){
-	    	$( "#times" ).prop( "disabled", false );
-	    	$( "#cycleType" ).prop( "disabled", false );
-	    	$( "#totalTimes" ).prop( "disabled", false );
-	    }else{
-	    	$( "#times" ).prop( "disabled", true );
-	    	$( "#cycleType" ).prop( "disabled", true );
-	    	$( "#totalTimes" ).prop( "disabled", true );
-	    }
-	});*/
-	
 	
 	$("#doAjaxBtn").click(function() {
 		if($('#QName option:selected').val()){
@@ -181,10 +210,10 @@ $(document).ready(function() {
 					window.location.href = 'PatientQuestionnaire.html';
 				},
 				error : function() {
-					window.alert("失敗");
 					console.log("錯誤訊息");
 				}
 			});
+			
 		}else window.alert("請選擇問卷");
 	});	
 
@@ -199,13 +228,14 @@ function printQuestion(part,content){
 	}
 	if(content){
 		var contentArray = stringContent.split(",");
+		console.log(contentArray);
 		for(var i = 0; i<contentArray.length;i++){
 			$.ajax({
 				url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
 				data : {
 					state : "selectQP",
 					doctorID : user,
-					QPname : contentArray[i]
+					questionID : contentArray[i]
 				},
 				async:false,
 				dataType : "json",
@@ -221,13 +251,14 @@ function printQuestion(part,content){
 						temp+="</div>";						
 					}
 					temp +="</div>";
-					$('#QPview').append(temp);
 				
 				},
 				error : function() {
+				
 				}
 			});			
-		}	
+		}
+		$('#QPview').append(temp);
 	}
 	
 	
@@ -258,15 +289,17 @@ function printQuestion(part,content){
 					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
 							<div class="panel-heading">							
 								<form>						
-									<select class="form-control" id="QType" style="width:80%;">
+									<select class="form-control" id="QType" style="width:80%;"onchange="changeQuestionnaire()">
 										<option value="all">問卷分類</option>
 									</select>
 									<div style='height:7px;'></div>
 									<select class="form-control" id="QdateRange" style="width:30%;display: inline-block;">
-										<option value="all"></option>
+										<option value="all" >請選擇</option>
+										<option value="year">年</option>
+										<option value="month">月</option>
 									</select>	
-									<select class="form-control" id="Qdate" style="width:40%;display: inline-block;">
-										<option value="all"></option>
+									<select class="form-control" id="Qdate" style="width:40%;display: inline-block;"onchange="changeQuestionnaire()">
+										<option value="all">所有時間</option>
 									</select>	
 								</form>
 							</div>
@@ -295,7 +328,7 @@ function printQuestion(part,content){
 							
 							<h5>週期</h5>
 							<!--<input type="checkbox" id="addCycle" name="location">有-->
-							<input type='number' class='form-control' style='width:15%;display:inline;' id='times'  min='1' max='7' value='1'>							
+							<input type='number' class='form-control' style='width:15%;display:inline;' id='times'  min='0' max='7' value='0'>							
 							<select class="form-control"id="cycleType" style="width:15%;display: inline;">
 								<option value='天'selected>天</option>
 								<option value='週' >週</option>

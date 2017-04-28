@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class QuestionnairePoolServer {
 	
-	public static int addQuestion(DBConnection conn, String doctorID, String QPname, String QType, String QPType, String QPAnser) {
+	public static int addQuestion(DBConnection conn, String doctorID, String QPname, String QType, String QPType, String QPAnswer) {
 		int dbReturn=-2;
 		String result;
 		
@@ -28,7 +28,7 @@ public class QuestionnairePoolServer {
 		}		
 		if(dbReturn!=0 && dbReturn!=-1){
 			try {
-				dbReturn = conn.updateSql("INSERT INTO question (questionID,doctorID,type,kind,question,option) select ifNULL(max(questionID+0),0)+1,'"+doctorID+"','"+QType+"','"+QPType+"','"+QPname+"','"+QPAnser+"'FROM question");
+				dbReturn = conn.updateSql("INSERT INTO question (questionID,doctorID,type,kind,question,option) select ifNULL(max(questionID+0),0)+1,'"+doctorID+"','"+QType+"','"+QPType+"','"+QPname+"','"+QPAnswer+"'FROM question");
 			} catch (SQLException e) {
 				
 				System.out.println("QuestionnaireServer錯誤");
@@ -37,7 +37,7 @@ public class QuestionnairePoolServer {
 		return dbReturn;
 	}
 
-	public static int updateQuestion(DBConnection conn, String doctorID, String QPname, String QType, String QPType, String QPAnser, String questionID) {
+	public static int updateQuestion(DBConnection conn, String doctorID, String QPname, String QType, String QPType, String QPAnswer, String questionID, String MR) {
 		int dbReturn=-1;
 		String result;
 		
@@ -52,7 +52,7 @@ public class QuestionnairePoolServer {
 			}		
 		if(dbReturn!=0){
 			try {
-				dbReturn = conn.updateSql("UPDATE question SET question = '"+QPname+"', type = '"+QType+"', kind = '"+QPType+"', option = '"+QPAnser+"'WHERE questionID = '"+questionID+"'");	
+				dbReturn = conn.updateSql("UPDATE question SET question = '"+QPname+"', type = '"+QType+"', kind = '"+QPType+"', option = '"+QPAnswer+"', medicalRecord = '"+MR+"' WHERE questionID = '"+questionID+"'");	
 			} catch (SQLException e) {
 				System.out.println("QuestionnaireServer錯誤");
 			}

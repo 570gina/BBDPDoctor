@@ -64,6 +64,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.css" rel="stylesheet" />
 
+<script>
+	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if (!(window.localStorage.getItem('login'))) {
+			//alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+		}
+	});
+</script>
+
 </head>
 
 <body>
@@ -81,8 +91,8 @@
 					<div class="col-md-4" style="padding-top: 2vh; padding-left: 2vw;">
 						<div class="panel panel-default" style="margin-bottom: 0;">
 							<div class="panel-heading" style="background-color: white; height: 10vh">
-								<img class="img-responsive" style="float: left" src="picture/patientBasicInformation/photo.png" />
-								<h3 id="patientName"></h3>
+								<img id="patientImg" class="img-responsive" style="float: left" src="picture/patientBasicInformation/photo.png" />		<!-- 大頭貼!! -->
+								<h3 id="patientName" style="display: inline;"></h3>
 							</div>
 							<div class="panel-body">
 								<div class="table-responsive">

@@ -33,11 +33,9 @@ public class FirstVisitQuestionnaireModuleServlet extends HttpServlet {
 		if(state.equals("searchSymptom")){
 			result = QuestionnaireModuleServer.searchSymptom(db,doctorID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
 		}else if(state.equals("searchFVQ")){
 			result = QuestionnaireModuleServer.searchFVQ(db,doctorID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
 		}else if(state.equals("addQFVQ")){
 			String QMname = request.getParameter("QMname");
 			String QMSymptom = request.getParameter("QMSymptom");

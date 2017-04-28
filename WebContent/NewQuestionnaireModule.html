@@ -53,6 +53,7 @@
 <script src="dist/js/sb-admin-2.js"></script>
 <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script src="js/questionnaireFrame.js"></script>
+<script src="js/modalGenerator.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 <style type="text/css">
@@ -81,7 +82,7 @@
 	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 	$(document).ready(function() {
 		if(!(window.localStorage.getItem('login'))){
-		alert("您尚未登入!跳轉至登入頁面中...");
+		modalGenerator("尚未登入", "跳轉至登入頁面中...");
 		window.location.href = 'Login.html';
 		}
 	})
@@ -91,6 +92,7 @@ var QPNumber=0;
 var judgment = 1;
 var num = 0;
 var QMAns = "";
+var IDandName=[];
 var user = window.localStorage.getItem('login');		
 $(document).ready(function() {
 	$.ajax({
@@ -152,15 +154,15 @@ $(document).ready(function() {
 			dataType : "json",
 			
 			success : function(response) {
-				if(response.length == 0) window.alert("暫存區內沒有題目");
-				
-				for(var i=0;i<response.length;i+=3){
+				if(response.length == 0) modalGenerator("提示", "暫存區內沒有題目");
+				for(var i=0;i<response.length;i+=4){
 					num+=1;
-					temp = "<li class='dyn_div' id = 'sort_"+num+"' style='	margin-left:-3em;'><div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading can_darg myMOUSE' id = 'question"+num+"' style='background-color:#D2F898;'>"+response[i]+"</div>";
+					IDandName[response[i+1]] = response[i];
+					temp = "<li class='dyn_div' id = 'sort_"+num+"' style='	margin-left:-3em;'><div class='panel' style='border-color:#D2F898;width:100%;'><div class='panel-heading can_darg myMOUSE' id = 'question"+num+"' style='background-color:#D2F898;'>"+response[i+1]+"</div>";
 					 
-					if(response[i+1]=="單選題"){
+					if(response[i+2]=="單選題"){
 						temp+="<div class='panel-body' id = 'option"+num+"'>";
-					 	var obj = eval('(' + response[i+2] + ')');						
+					 	var obj = eval('(' + response[i+3] + ')');						
 						for (var j = 0; j < obj.length; j++) {
 						 	temp += obj[j].score+" = "+obj[j].content+"<br>";
 					 	}
@@ -206,19 +208,18 @@ $(document).ready(function() {
 				
 					success : function(response) {
 						if (response>0) {
-							window.alert("問卷新增成功");
+							modalGenerator("提示", "問卷新增成功");
 							window.location.href = 'QuestionnaireModule.html';
 						}else if (response==0) {
-							window.alert("問卷名稱已存在");								
+							modalGenerator("提示", "問卷名稱已存在");								
 						}
 					},
 					error : function() {
-						window.alert("新增失敗");
 						console.log("錯誤訊息");
 					}
 				});
-			}else window.alert("請選擇或新增分類");
-		}else window.alert("請輸入問卷名稱");
+			}else modalGenerator("提示", "請選擇或新增分類");
+		}else modalGenerator("提示", "請輸入問卷名稱");
 	});	
     
     
@@ -226,7 +227,6 @@ $(document).ready(function() {
 
 function changeType(){
 	var s =  $('#QMType1 option:selected').val();
-	console.log(s);
 	if(s=="all"){
 		document.getElementById('QMType2').disabled=false;
 		judgment = 1;
@@ -275,7 +275,7 @@ function editOK(){
 			}
 			else{
 				if(b==0){
-					QMAns += ' {"content": [';
+					QMAns += '{"content": [';
 					b=1;
 				}
 				if(a==0 && i!=1) QMAns += ',"content": [';
@@ -286,7 +286,7 @@ function editOK(){
 				else	
 					tempQ+="<div class='panel-body'>"+$('#option'+temp2[i]).html()+"</div></div>";
 				$('#viewQM').append(tempQ);
-				QMAns += '"'+$('#question'+temp2[i]).text()+'",';
+				QMAns += '"'+IDandName[$('#question'+temp2[i]).text()]+'",';
 				a=1;
 				c=1;
 			}

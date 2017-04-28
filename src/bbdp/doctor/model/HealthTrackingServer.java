@@ -111,9 +111,11 @@ public class HealthTrackingServer {
 	}
 
 	// 新增儲存//已關資料庫
-	public void addItemStorage(DBConnection conn, String doctorID, String modelName, String typeName, String[] nameList,
+	public HashMap addItemStorage(DBConnection conn, String doctorID, String modelName, String typeName, String[] nameList,
 			String[] unitList, String[] range_1_List, String[] range_2_List, String[] upperLimitList,
 			String[] lowerLimitList, String cycle) {
+		HashMap addItemStorage = new HashMap();
+		String result = "請重新嘗試";
 		Gson gson = new Gson();
 
 		for (int i = 0; i < nameList.length; i++) {
@@ -193,11 +195,15 @@ public class HealthTrackingServer {
 			insert = conn.updateSql(insertItemSQL);
 			System.out.println("Listener insertItem : " + insert);
 			/////////////////////////// 新增item 結束 ///////////////////////////
+			
+			result = "新增成功";
+			addItemStorage.put("result", result);
+			System.out.println("Server addItemStorage : " + addItemStorage);
 
 		} catch (SQLException e) {
 			System.out.println("HealthTrackingServer addItemStorage Exception :" + e.toString());
 		}
-		// return "新增失敗";
+		return addItemStorage;
 	}
 
 	// 編輯前的原本值//已關資料庫

@@ -58,8 +58,9 @@ $(document).ready(function() {
 			dataType : "json",
 
 			success : function(response) {
-				$("#display").empty();
-				$("#display").append("<h3>" + response.show + "</h3>");
+				//$("#display").empty();
+				//$("#display").append("<h3>" + response.show + "</h3>");
+				modalGenerator("帳戶設定修改", response.show);	//模組產生器
 				
 				$("#name").empty();
 				$("#hospital").empty();

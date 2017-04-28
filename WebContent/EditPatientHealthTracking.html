@@ -66,16 +66,18 @@
 <!-- bxSlider CSS file -->
 <link href="slider/jquery.bxslider.css" rel="stylesheet" />
 
+<script>
+	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if (!(window.localStorage.getItem('login'))) {
+			//alert("您尚未登入!跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+		}
+	});
+</script>
+
 <!-- 上半邊 項目(開始) -->
 <script>
-//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
-$(document).ready(function() {
-	if (!(window.localStorage.getItem('login'))) {
-		alert("您尚未登入!跳轉至登入頁面中...");
-		window.location.href = 'Login.html';
-	}
-});
-
 //一進來取得所有項目
 $(document).ready(function() {
 	$("#displayItem").empty();

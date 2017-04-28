@@ -52,10 +52,411 @@
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
+<script src="js/patientQuestionnaireFrame.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+	
+	a{
+		text-decoration: none;color:black;
+	}
+	
+	a:link{
+           color: #000000;
+    }
 
+	a:visited{
+		color: #000000;
+	}
+
+	a:hover{
+		color: #000000;
+	}
+
+    a:active{
+		color: #000000;
+	}
+	.modal-body {
+    	max-height: 70vh;
+   		overflow-y: auto;
+	}
+	
+	#item{
+		height:70px;
+		width:100%;
+		margin-bottom:10px;
+		text-align:left;
+		vertical-align:middle;
+		font-size:15px;
+		border:none;
+		text-overflow: ellipsis;
+		overflow : hidden;
+		border-radius: 5px;
+	}	
+	.list-group-horizontal .list-group-item {
+		display: inline-block;
+		padding-top: 0.8vh;
+		padding-bottom: 0.8vh;
+	}
+	.list-group-horizontal .list-group-item {
+		margin-bottom: 0;
+		margin-left:-4px;
+		margin-right: 0;
+	}
+	.list-group-horizontal .list-group-item:first-child {
+		border-top-right-radius:0;
+		border-bottom-left-radius:4px;
+	}
+	.list-group-horizontal .list-group-item:last-child {
+		border-top-right-radius:4px;
+		border-bottom-left-radius:0;
+	}
+	.list-group-horizontal {
+		margin-bottom: 0;
+		margin-left: 0.5vw;
+	}
+</style>
+<script>
+	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
+	$(document).ready(function() {
+		if (!(window.localStorage.getItem('login'))) {
+			modalGenerator("尚未登入", "跳轉至登入頁面中...");
+			window.location.href = 'Login.html';
+		}
+	});
+</script>
+<script>
+var user = window.localStorage.getItem('login');
+var url = window.location.href;
+var qparts = url.split("?");
+var QID = qparts[1].split("=");
+var answerID = QID[1];
+var partNumber = 0;
+var answerArray = [];	//放答案，從0開始
+var questionnaireUserColor;
+var scoring = 0;	//1代表計分
+var totalSocre = 0;
+var questionNumber = 0;
+$(document).ready(function() {
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+		data : {
+			state : "searchAnswerQuestionnaire",
+			select : "TitleData",
+			answerID : answerID,
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			$("#titleData").empty();
+			$("#showButton").empty();
+			var color;
+			var temp = "";
+			questionnaireUserColor = response[0];
+			if(questionnaireUserColor =="#F8B1B0"){
+				color="自評";
+				$("#titleData").empty();
+				searchDoctorQ();				
+			}else {
+				color="後評";
+				$("#showButton").append('<input type="button" class="btn btn-default" value="病歷摘要產生" style="background-color:#f0f0f0;font-size:13px;float:right;" data-toggle="modal" data-target="#myModal">');
+				getMedicalrecord();
+			}
+			scoring = parseInt(response[3]);
+			temp+='<li class="list-group-item" style="background-color: '+questionnaireUserColor+'; border: 1px solid '+questionnaireUserColor+';">'+response[1]+'</li>';
+			temp+='<li class="list-group-item" style="background-color: white; border: 1px solid '+questionnaireUserColor+';" id = "scoring">'+color+'</li>';
+			temp+='<li class="list-group-item" style="background-color: '+questionnaireUserColor+'; border: 1px solid '+questionnaireUserColor+';">'+response[2]+'</li>';
+			$("#titleData").append(temp);
+			
+			searchAnswerQuestionnaire();
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+	
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+		data : {
+			state : "searchAnswerQuestionnaire",
+			select : "Answer",
+			answerID : answerID,
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			for(var i=0;i<response.length;i++){
+				answerArray[i] = response[i];
+			}
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});	
+	
+});
+function printQuestion(part,content){
+	var temp="";
+	var stringContent = content+'';
+	if(part){
+		partNumber+=1;
+		$('#QPview').append("<div class='panel panelColor' style='border-color:"+questionnaireUserColor+";width:100%;'><div class='panel-heading panel-headingColor' style='background-color:"+questionnaireUserColor+";font-weight: bold;'>Part "+partNumber+"："+part+"</div>");
+	}
+	if(content){
+		var contentArray = stringContent.split(",");
+		for(var i = 0; i<contentArray.length;i++){
+			questionNumber++;
+			$.ajax({
+				url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+				data : {
+					state : "selectQP",
+					doctorID : user,
+					questionID : contentArray[i]
+				},
+				async:false,
+				dataType : "json",
+				success : function(response) {
+					temp += "<div class='panel panelColor' style='border-color:"+questionnaireUserColor+";width:100%;'><div class='panel-heading panel-headingColor' style='background-color:"+questionnaireUserColor+";'>"+response[0]+"</div>";
+					temp+="<div class='panel-body'>";
+					if(response[1]=="單選題"){
+						var obj = eval('(' + response[2] + ')');						
+						for (var j = 0; j < obj.length; j++) {
+							temp += '<div class="radio"><label><input type="radio" name="radio'+questionNumber+'" disabled value="'+obj[j].score+' = '+obj[j].content+'">'+obj[j].score+' = '+obj[j].content+'</label></div>';
+						}					
+					}else{
+						temp += '<div id = "assayQuestion'+questionNumber+'"></div>';					
+					}
+					temp +="</div></div>";
+					temp+='<div class="list-group list-group-horizontal" id = "patientAnswer'+questionNumber+'"></div><br>';
+				},
+				error : function() {
+				
+				}
+			});			
+		}
+		$('#QPview').append(temp);
+	}
+	
+	
+}
+
+function checkAnswer(){
+	for(var i=1;i<=questionNumber;i++){
+		if(document.getElementById("assayQuestion"+i)){
+			$('#assayQuestion'+i).empty();
+			$('#assayQuestion'+i).append(answerArray[i-1]);
+		}else{
+			$("input[name = radio"+i+"]")[answerArray[i-1]-1].checked = true;
+		}
+	
+	}
+}
+
+function searchDoctorQ(){
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+		data : {
+			state : "searchDoctorQ",
+			doctorID : user,
+			answerID : answerID
+		},
+		async:false,
+		success : function(response) {
+			if(response)
+				$("#showButton").append('<input type="button" class="btn btn-default" value="查看後評" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="searchDoctorQuestionnaire(\''+response+'\')">');
+			else
+				$("#showButton").append('<input type="button" class="btn btn-default" value="新增後評" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="addQuestionnaire()">');				
+		},
+		error : function() {
+		}
+	});	
+
+}
+
+function searchDoctorQuestionnaire(num){
+	window.location.href = 'EditPatientQuestionnaire.html?Q='+num;
+}
+
+function searchAnswerQuestionnaire(){
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+		data : {
+			state : "searchAnswerQuestionnaire",
+			select : "Question",
+			answerID : answerID,
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			for(var i=0;i<response.length;i++){
+				 printQuestion(response[i].part,response[i].content);
+			}
+			checkAnswer();
+			if(questionnaireUserColor =="#D2F898")searchPatientQuestionnaire();
+			if(scoring) gotoScoring();
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+}
+
+function searchPatientQuestionnaire(){
+	var option;
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+		data : {
+			state : "searchPatientQuestionnaire",
+			answerID : answerID,
+			doctorID : user
+		},
+		dataType : "json",
+		
+		success : function(response) {
+			for(var i=1;i<=questionNumber;i++){
+				$('#patientAnswer'+i).empty();
+				var temp='<li class="list-group-item" style="background-color: #F8B1B0; border: 1px solid #F8B1B0;">病患答案</li>';
+				if(document.getElementById("assayQuestion"+i))
+					option = response[i-1];
+				else 
+					option = searchOption(response[i-1],i);
+				temp+='<li class="list-group-item" style="background-color: white; border: 1px solid #F8B1B0;">'+option+'</li>';
+				$('#patientAnswer'+i).append(temp);		
+			}
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+}
+function searchOption(text,num){
+	var tmp = parseInt(text);
+
+	return $("input[name = radio"+num+"]")[tmp-1].value;
+
+}
+
+function gotoScoring(){
+	for(var i=1;i<=questionNumber;i++){
+		if(document.getElementById("assayQuestion"+i)){}
+		else{
+			var s = $("input[name=radio"+i+"]:checked").val();			
+			var score = s.split("=");
+			totalSocre+=parseInt(score[0]);
+		}
+	}
+	$('#scoring').append(" "+totalSocre+" 分");
+}
+function addQuestionnaire(){
+	$("#showButton").empty();
+	$("#showButton").append('<input type="button" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="saveAnswer()">');
+	$(".panelColor").css('border-color','#D2F898');
+	$(".panel-headingColor").css('background-color','#D2F898');
+	for(var i =1;i<=questionNumber;i++){
+		var tempOption;
+		$('#patientAnswer'+i).empty();
+		var temp='<li class="list-group-item" style="background-color: #F8B1B0; border: 1px solid #F8B1B0;">病患答案</li>';
+		if(document.getElementById("assayQuestion"+i)){
+			tempOption = $("#assayQuestion"+i).text();
+			$("#assayQuestion"+i).empty();
+			$("#assayQuestion"+i).append('<input type="text" class="form-control" id="doctorAnswer'+i+'">');
+		}else{
+			tempOption = $("input[name=radio"+i+"]:checked").val();
+			$('input[name=radio'+i+']').removeAttr("disabled");
+			$("input[name=radio"+i+"]:checked").prop('checked', false);
+		}
+		temp+='<li class="list-group-item" style="background-color: white; border: 1px solid #F8B1B0;">'+tempOption+'</li>';
+		$('#patientAnswer'+i).append(temp);
+		
+	}
+}
+function saveAnswer(){
+	var tempArray = [];
+	var tempNum = 0;
+	var successSave = 1;
+	for(var i=1;i<=questionNumber;i++){
+		if(document.getElementById("assayQuestion"+i)){
+			if($("#doctorAnswer"+i).val()=="") {alert("還有題目尚未填答");successSave = 0;break;}
+			tempArray.push($("#doctorAnswer"+i).val());
+		}else{
+			tempNum = $("input[name=radio"+i+"]:checked").index("input[name=radio"+i+"]")+1;
+			if(tempNum==0) {alert("還有題目尚未填答");successSave = 0;break;}
+			tempArray.push(tempNum);
+		}
+	
+	}
+	
+	if(successSave){
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+			data : {
+				state : "saveDoctorAnswer",
+				answerID : answerID,
+				answerString : JSON.stringify(tempArray),
+				doctorID : user
+			},
+			
+			success : function(response) {
+				alert("新增成功");
+				window.location.href = 'PatientQuestionnaire.html';
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+	}
+}
+
+function getMedicalrecord(){
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+		data : {
+			state : "getMedicalrecord",
+			answerID : answerID,
+			doctorID : user
+		},
+		
+		success : function(response) {
+			$('#medicalrecordArea').empty();
+			$('#medicalrecordArea').append(response);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+}
+
+function addMR(){
+	if(confirm("確定新增病歷且發送給病患")){
+		
+		$.ajax({
+			url : "http://140.121.197.130:8000/BBDPDoctor/PatientQuestionnaireServlet",
+			data : {
+				state : "sendMedicalrecord",
+				medicalrecord : $('#medicalrecordArea').text(),
+				doctorID : user
+			},
+			dataType : "json",
+				
+			success : function(response) {
+				alert("發送成功");
+			},
+			error : function() {
+			alert("發送成e功");
+				console.log("錯誤訊息");
+			}
+		});	
+	
+	}
+
+
+
+}
+
+</script>
 </head>
 
 <body>
@@ -68,11 +469,86 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;"onclick="location.href='NewPatientQuestionnaire.html'">新增問卷</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>						
+									<select class="form-control" id="QType" style="width:80%;" onchange="changeQuestionnaire()">
+										<option value="all">問卷分類</option>
+									</select>
+									<div style='height:7px;'></div>
+									<select class="form-control" id="QdateRange" style="width:30%;display: inline-block;">
+										<option value="all" >請選擇</option>
+										<option value="year">年</option>
+										<option value="month">月</option>
+									</select>	
+									<select class="form-control" id="Qdate" style="width:40%;display: inline-block;" onchange="changeQuestionnaire()">
+										<option value="all">所有時間</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 60vh; max-height: 60vh; overflow-y: auto;" id="QuestionnaireList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<div id='showButton'>
+					</div>
+					<div style="height:52px;"></div>
+					<div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color: white;">
+						<div class="list-group list-group-horizontal" id = "titleData">
+						</div>
+					</div>				
+					<div class="panel-body" style="min-height: 67vh; max-height: 67vh; overflow-y: auto;" id = "QPview">
+					</div>
+				</div>			
+			
+			
+			
+			
+						
+			</div>
 		</div>
 
 	</div>
+	<!-- Modal -->
 
+	<div id="myModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					病歷摘要產生
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+					    <textarea class="form-control" rows="20" id="medicalrecordArea"></textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="addMR()">新增病歷</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+	
+	
+	
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
 

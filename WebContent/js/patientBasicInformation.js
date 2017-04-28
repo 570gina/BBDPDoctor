@@ -7,6 +7,59 @@ $.ajax({
 	},
 	dataType : "json",
 	success : function(response) {
+		/*$.getScript("js/photoTemp.js");
+		//大頭貼!!
+		$("#patientImg").attr("src", "picture/patientPhoto/" + setTempPhotoByName(response.patientName) + ".png");*/
+		var result;
+		switch(response.patientName) {
+			case "王小明": {
+				result = "A123456789";
+				break;
+			}
+			case "王小弟": {
+				result = "B112345678";
+				break;
+			}
+			case "李志偉": {
+				result = "C123456789";
+				break;
+			}
+			case "陳志明": {
+				result = "D112345678";
+				break;
+			}
+			case "沈建宏": {
+				result = "E101234567";
+				break;
+			}
+			case "楊美玲": {
+				result = "F223456789";
+				break;
+			}
+			case "莊雅婷": {
+				result = "G212345678";
+				break;
+			}
+			case "黃淑娟": {
+				result = "H223456789";
+				break;
+			}
+			case "謝淑芬": {
+				result = "I212345678";
+				break;
+			}
+			case "陳雅惠": {
+				result = "J201234567";
+				break;
+			}
+			default: {
+				result = "default";
+				break;
+			}
+		}
+		$("#patientImg").attr("src", "picture/patientPhoto/" + result + ".png");
+		$("#patientImg").attr("style", "width: 50px; height: 50px; display:inline;");
+		
 		//基本資料
 		$("#patientName").html("&nbsp;&nbsp;&nbsp;" + response.patientName);
 		$("#patientBirth").html(response.birth);

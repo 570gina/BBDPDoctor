@@ -32,7 +32,7 @@ public class QuestionnaireTempStorageServlet extends HttpServlet {
 		if(state.equals("searchQPType")){
 			result = QuestionnaireTempStorageServer.searchQPType(db,doctorID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("deleteTempStorage")){
 			String questionArray = request.getParameter("questionArray");
 			int rs = QuestionnaireTempStorageServer.deleteTempStorage(db,doctorID,questionArray); 
@@ -42,13 +42,13 @@ public class QuestionnaireTempStorageServlet extends HttpServlet {
 			String selectType = request.getParameter("selectType");
 			result = QuestionnaireTempStorageServer.selectQPType(db,doctorID,selectType);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("viewQuestion")){
 			String QBtnName = request.getParameter("selectName");
 			editRS = QuestionnaireTempStorageServer.viewQuestion(db,doctorID,QBtnName);
 			response.getWriter().write(editRS);
-			System.gc();
-			System.gc();
+			
+			
 		}
 
 	}

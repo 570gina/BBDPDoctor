@@ -52,7 +52,7 @@
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
 <script src="js/questionFrame.js"></script>
-
+<script src="js/modalGenerator.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 	<style type="text/css">
@@ -65,7 +65,7 @@
 		//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 		$(document).ready(function() {
 			if(!(window.localStorage.getItem('login'))){
-			alert("您尚未登入!跳轉至登入頁面中...");
+			modalGenerator("尚未登入", "跳轉至登入頁面中...");
 			window.location.href = 'Login.html';
 			}
 		})

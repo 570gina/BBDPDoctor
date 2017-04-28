@@ -32,19 +32,19 @@ public class QuestionnairePoolServlet extends HttpServlet {
 			String QPname = request.getParameter("QPname");
 			String QType = request.getParameter("QType");
 			String QPType = request.getParameter("QPType");
-			String QPAnser = request.getParameter("QPAnser");
-			int rs = QuestionnairePoolServer.addQuestion(db,doctorID,QPname,QType,QPType,QPAnser); 
+			String QPAnswer = request.getParameter("QPAnswer");
+			int rs = QuestionnairePoolServer.addQuestion(db,doctorID,QPname,QType,QPType,QPAnswer); 
 			response.getWriter().println(rs);
 	        	
 		}else if(state.equals("searchQPType")){
 			result = QuestionnairePoolServer.searchQPType(db,doctorID);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("selectQPType")){
 			String selectType = request.getParameter("selectType");
 			result = QuestionnairePoolServer.selectQPType(db,doctorID,selectType);
 			response.getWriter().write(gson.toJson(result));
-			System.gc();
+			
 		}else if(state.equals("editQuestion")){
 			String nowQP = request.getParameter("nowQP");
 			String edit = request.getParameter("edit");
@@ -54,10 +54,13 @@ public class QuestionnairePoolServlet extends HttpServlet {
 			}else if(edit.equals("Qtype")){
 				String editRS = QuestionnairePoolServer.editNoJson(db,doctorID,nowQP,"type");
 				response.getWriter().println(editRS);								
+			}else if(edit.equals("medicalRecord")){
+				String editRS = QuestionnairePoolServer.editNoJson(db,doctorID,nowQP,"medicalRecord");
+				response.getWriter().println(editRS);
 			}else{
 				String editRS = QuestionnairePoolServer.editJson(db,doctorID,nowQP);
 				response.getWriter().write(editRS);
-				System.gc();								
+												
 			}
 
 		}else if(state.equals("selectQPID")){
@@ -76,9 +79,10 @@ public class QuestionnairePoolServlet extends HttpServlet {
 			String QPname = request.getParameter("QPname");
 			String QType = request.getParameter("QType");
 			String QPType = request.getParameter("QPType");
-			String QPAnser = request.getParameter("QPAnser");
+			String QPAnswer = request.getParameter("QPanswer");
 			String nowQP = request.getParameter("nowQP");
-			int rs = QuestionnairePoolServer.updateQuestion(db,doctorID,QPname,QType,QPType,QPAnser,nowQP); 
+			String MR = request.getParameter("MR");
+			int rs = QuestionnairePoolServer.updateQuestion(db,doctorID,QPname,QType,QPType,QPAnswer,nowQP,MR); 
 			response.getWriter().println(rs);			
 		}else if(state.equals("addTempStorage")){
 			String questionArray = request.getParameter("questionArray");
