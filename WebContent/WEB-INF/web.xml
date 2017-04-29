@@ -168,13 +168,13 @@
   </servlet-mapping>
   <servlet>
     <description></description>
-    <display-name>PatientQuestionnaireMedicalRecordGeneratorServlet.java</display-name>
-    <servlet-name>PatientQuestionnaireMedicalRecordGeneratorServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PatientQuestionnaireMedicalRecordGeneratorServlet.java</servlet-class>
+    <display-name>PatientMedicalRecordServlet.java</display-name>
+    <servlet-name>PatientMedicalRecordServlet.java</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientMedicalRecordServlet.java</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>PatientQuestionnaireMedicalRecordGeneratorServlet.java</servlet-name>
-    <url-pattern>/PatientQuestionnaireMedicalRecordGeneratorServlet.java</url-pattern>
+    <servlet-name>PatientMedicalRecordServlet.java</servlet-name>
+    <url-pattern>/PatientMedicalRecordServlet.java</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>

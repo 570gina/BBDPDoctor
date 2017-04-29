@@ -44,7 +44,6 @@ $(document).ready(function() {
 				$("#QuestionnaireList").append(temp);
 			},
 			error : function() {
-				alert("456");
 				console.log("錯誤訊息");
 			}
 		});	

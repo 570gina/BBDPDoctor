@@ -73,14 +73,18 @@
 
 <!-- 上半邊 項目(開始) -->
 <script>
+//改網址用的
+//var url = "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet";
+var url = "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet";
+
 //一進來取得所有項目
 $(document).ready(function() {
+	
 	$("#displayItem").empty();
 	var doctorID = window.localStorage.getItem('login');
 	
 	$.ajax({
-		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		url : url,
 		data : {
 			state : "allItem",
 			doctorID : doctorID

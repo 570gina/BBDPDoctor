@@ -41,10 +41,8 @@ public class HealthTrackingServlet extends HttpServlet {
 		String itemID = request.getParameter("itemID");
 		String[] detailArray = request.getParameterValues("detailArray[]");
 		
-		
 		HealthTrackingServer healthTrackingServer=new HealthTrackingServer();
-		Gson gson = new Gson();
-		
+		Gson gson = new Gson();	
 		
 		HashMap result = new HashMap();				 // 結果
 		HashMap allItem = new HashMap();			 // 所有項目結果
@@ -112,7 +110,7 @@ public class HealthTrackingServlet extends HttpServlet {
 		//刪除//EditHealthTracking.html
 		if (state.equals("deleteItem")) {
 			System.out.println("在servlet中的傳入參數 state:"+ state +" itemID:"+itemID+" doctorID:"+doctorID+" modelName:"+modelName+" typeName:"+typeName);			
-			deleteItemStorage = healthTrackingServer.deleteItemStorage(db, doctorID, itemID, detailArray, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle);
+			deleteItemStorage = healthTrackingServer.deleteItemStorage(db, doctorID, itemID, detailArray);
 
 			result = deleteItemStorage;
 			// 回傳json型態

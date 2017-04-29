@@ -28,7 +28,7 @@
 <!-- Custom Fonts -->
 <link href="vendor/font-awesome/css/font-awesome.min.css"
 	rel="stylesheet" type="text/css">
-
+<script src="js/modalGenerator.js"></script>
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 <!--[if lt IE 9]>
@@ -63,7 +63,6 @@
 		//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 		$(document).ready(function() {
 			if(!(window.localStorage.getItem('login'))){
-			modalGenerator("尚未登入", "跳轉至登入頁面中...");
 			window.location.href = 'Login.html';
 			}
 		})
@@ -77,7 +76,7 @@
 		var questionArray = "";
 		$('input:checkbox:checked[name="Qcheckbox"]').each(function(i) { questionArray += (this.value+",");});
 		if(questionArray=="")
-			window.alert("請勾選欲移除題目");
+			window.modalGenerator("提示", "請勾選欲移除題目");
 		else{
 			$.ajax({
 				url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnaireTempStorageServlet",
@@ -88,7 +87,6 @@
 				},
 				traditional: true,
 				success : function(response) {
-					window.alert("題目已移除");
 					location.reload();
 				},
 				error : function() {

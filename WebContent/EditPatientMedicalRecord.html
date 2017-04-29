@@ -48,27 +48,134 @@
 <!-- Metis Menu Plugin JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="vendor/metisMenu/metisMenu.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/clipboard.js/1.6.0/clipboard.min.js"></script>
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
+<script src="js/patientMedicalRecordFrame.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+	<style type="text/css">
+		.lattice {
+				border: 3px solid #f0f0f0;
+			}
+	 a{
+		text-decoration: none;color:black;
+	}
+	
+	a:link{
+           color: #000000;
+    }
+
+	a:visited{
+		color: #000000;
+	}
+
+	a:hover{
+		color: #000000;
+	}
+
+    a:active{
+		color: #000000;
+	}
+
+	#item{
+		height:70px;
+		width:100%;
+		margin-bottom:10px;
+		text-align:left;
+		vertical-align:middle;
+		font-size:15px;
+		border:none;
+		text-overflow: ellipsis;
+		overflow : hidden;
+		border-radius: 5px;
+	}	
+	</style>
+<script src="js/modalGenerator.js"></script>
 <script>
 	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 	$(document).ready(function() {
 		if (!(window.localStorage.getItem('login'))) {
-			//alert("您尚未登入!跳轉至登入頁面中...");
+			
 			window.location.href = 'Login.html';
 		}
 	});
 </script>
+	
+<script>
+	var user = window.localStorage.getItem('login');
+	var url = window.location.href;
+ 	var temp1 = url.split("?");
+ 	var temp2 = temp1[1].split("=");
+	var temp3 = temp2[1].split("%20");
+	var dateTime = temp3[0]+" "+temp3[1];
 
+function newMR(){
+	window.location.href = 'NewPatientMedicalRecord.html';
+}
+
+function editOldMR(){
+	
+	$("#MRcomment").prop("readonly",false);
+	$("#changeBtn").empty();
+	$("#changeBtn").append('<input type="button" onclick="saveOldMR()" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">');
+
+}
+function saveOldMR(){
+
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientMedicalRecordServlet",
+		data : {
+			state : "saveOldMR",
+			MRcomment : $("#MRcomment").val(),
+			dateTime : dateTime,
+			doctorID : user
+		},
+		
+		success : function(response) {
+			window.location.reload();
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+
+}
+
+$(document).ready(function() {
+	$("#title1").empty();
+	var date = dateTime.split(".");
+	$("#title1").append(date[0]+"<img src='picture/copy.png' class='pull-right copyImg' height='25' width='25'/>");
+
+	$.ajax({
+		url : "http://140.121.197.130:8000/BBDPDoctor/PatientMedicalRecordServlet",
+		data : {
+			state : "getMedicalRecord",
+			dateTime : dateTime,
+			doctorID : user
+		},
+			
+		success : function(response) {
+
+			$("#MRcomment").empty();
+
+			$("#MRcomment").append(response);
+		},
+		error : function() {
+			console.log("錯誤訊息");
+		}
+	});
+
+});
+
+
+</script>	
 </head>
 
 <body>
+
 
 	<div id="wrapper">
 
@@ -78,17 +185,85 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;" onclick="newMR()">新增病歷摘要</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>
+									<select class="form-control" id="MRdateRange" style="width:30%;display: inline-block;">
+										<option value="all" >請選擇</option>
+										<option value="year">年</option>
+										<option value="month">月</option>
+									</select>	
+									<select class="form-control" id="MRdate" style="width:40%;display: inline-block;" onchange="changeMR()">
+										<option value="all">所有時間</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 66vh; max-height: 66vh; overflow-y: auto;" id="MedicalRecordList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+					<br>
+					<div id = "changeBtn">
+						<input type="button" onclick="editOldMR()" class="btn btn-default" value="修改" style="background-color:#f0f0f0;font-size:13px;float:right;">
+					</div>
+					<div style="height:52px;"></div>
+				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
+						<div class="panel-heading" style="background-color:#FFFFFF;">							
+							<li class="list-group-item" id = "title1" style="background-color: #A3E7FC; border: 1px solid #A3E7FC;font-weight:bold;"></li>
+						</div>
+							
+						<div class="panel-body"  style="min-height: 66vh; max-height: 66vh; overflow-y: auto;">
+							<textarea class="form-control" rows="20"  style="resize:none;background-color:#FFFFFF;border: 1px solid #A3E7FC;"id="MRcomment"readonly="readonly"></textarea>
+						</div>
+					</div>	
+				</div>			
+			
+			
+			
+			
+						
+			</div>
 		</div>
 
 	</div>
+
 
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
 
 	<!-- 醫生端病患資訊框架js -->
 	<script src="js/patientInformationFrame.js"></script>
+	<script>
 
+		var clipboard = new Clipboard('.copyImg', {
+			text: function() {
+				return $('#MRcomment').text();
+			}
+		});
+
+		clipboard.on('success', function(e) {
+			console.log(e);
+		});
+
+		clipboard.on('error', function(e) {
+			console.log(e);
+		});
+	
+</script>
 </body>
+
 
 </html>

@@ -347,14 +347,13 @@ public class HealthTrackingServer {
 	}
 
 	// 刪除//已關資料庫
-	public HashMap deleteItemStorage(DBConnection conn, String doctorID, String itemID, String[] detailArray, String modelName, String typeName, String[] nameList,
-			String[] unitList, String[] range_1_List, String[] range_2_List, String[] upperLimitList,
-			String[] lowerLimitList, String cycle) {
+	public HashMap deleteItemStorage(DBConnection conn, String doctorID, String itemID, String[] detailArray) {
 		HashMap deleteItemStorage = new HashMap();
 		String result="無法刪除";
 		itemID = (String) itemID.subSequence(4, itemID.length());	//取出item id
 		
 		Gson gson = new Gson();
+		/*
 		System.out.println("modelName : " + modelName);
 		System.out.println("typeName : " + typeName);
 		System.out.println("itemID : " + itemID);
@@ -366,6 +365,7 @@ public class HealthTrackingServer {
 		System.out.println("upperLimitList : " + gson.toJson(upperLimitList));
 		System.out.println("lowerLimitList : " + gson.toJson(lowerLimitList));
 		System.out.println("cycle : " + cycle);
+		*/
 
 		ResultSet rs;
 		String deletedetailSQL, deleteItemSQL;

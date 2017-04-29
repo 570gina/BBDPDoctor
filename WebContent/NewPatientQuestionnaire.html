@@ -97,12 +97,12 @@
 		border-radius: 5px;
 	}	
 	</style>
-
+<script src="js/modalGenerator.js"></script>
 <script>
 	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 	$(document).ready(function() {
 		if (!(window.localStorage.getItem('login'))) {
-			modalGenerator("尚未登入", "跳轉至登入頁面中...");
+			
 			window.location.href = 'Login.html';
 		}
 	});
@@ -206,7 +206,6 @@ $(document).ready(function() {
 				dataType : "json",
 				
 				success : function(response) {
-					window.alert("發送成功");
 					window.location.href = 'PatientQuestionnaire.html';
 				},
 				error : function() {
@@ -214,7 +213,7 @@ $(document).ready(function() {
 				}
 			});
 			
-		}else window.alert("請選擇問卷");
+		}else window.modalGenerator("提示", "請選擇問卷");
 	});	
 
 });

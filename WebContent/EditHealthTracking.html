@@ -56,6 +56,9 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- modalGenerator js -->
+<script src="js/modalGenerator.js"></script>
+
 <!-- 左半邊的 -->
 <script src="js/healthModelFrame.js"></script>
 
@@ -351,6 +354,7 @@ function yesWarningDown(detail){
 $(document).ready(function() {
 	$("#update").click(function(){
 		var flag = true;
+		var errors = "";
 		var doctorID = window.localStorage.getItem('login');
 		var modelName = $("#modelName").val();
 		var cycle = $('#cycle option:selected').val();
@@ -361,22 +365,14 @@ $(document).ready(function() {
 		console.log("judgment : " + judgment);
 		console.log("cycle : " + cycle);
 		
-		//是否已經輸入模板名稱
-		if(modelName == ""){
-			alert("請輸入模板名稱");
-			flag = false;
-			console.log("flag : " + flag);
-		}
-		else{
-			flag = true;
-			console.log("flag : " + flag);
-		}
 		if(judgment == 1){
 			//分類為自行輸入的名稱
 			typeName = $("#healthTypeInput").val();
 			console.log("typeName : " + typeName);
 			if(typeName == ""){
-				alert("請輸入要新增的分類名稱");
+				if(errors == ""){
+					errors = "請輸入要新增的分類名稱";
+				}
 				flag = false;
 			}
 			else{
@@ -392,6 +388,19 @@ $(document).ready(function() {
 			console.log("flag : " + flag);
 		}
 		
+		//是否已經輸入模板名稱
+		if(modelName == ""){
+			if(errors == ""){
+				errors = "請輸入模板名稱";
+			}
+			flag = false;
+			console.log("flag : " + flag);
+		}
+		else{
+			flag = true;
+			console.log("flag : " + flag);
+		}
+		
 		var nameList = new Array();
 		var unitList = new Array();
 		var range_1_List = new Array();
@@ -400,27 +409,37 @@ $(document).ready(function() {
 		var lowerLimitList = new Array();
 		
 		console.log("detailArray : " + detailArray);
-		for(var index = 0; index < detailArray.length; index++){
-			if($("#detail"+detailArray[index]+"_name").val() == ""){
-				alert("請輸入項目名稱");
-				flag = false;
-				console.log("flag : " + flag);
-				break;
+		if(detailArray.length == 0){	//如果detailArray長度=0 代表沒有新增任何項目
+			if(errors == ""){
+				errors = "請新增至少一個項目";
 			}
-			nameList.push($("#detail"+detailArray[index]+"_name").val());
-			unitList.push($("#detail"+detailArray[index]+"_unit").val());
-			range_1_List.push($("#detail"+detailArray[index]+"_range_1").val());
-			range_2_List.push($("#detail"+detailArray[index]+"_range_2").val());
-			upperLimitList.push($("#detail"+detailArray[index]+"_upperLimit").val());
-			lowerLimitList.push($("#detail"+detailArray[index]+"_lowerLimit").val());
-			
+			flag = false;
 		}
-		console.log("nameList : " + nameList);
-		console.log("unitList : " + unitList);
-		console.log("range_1_List : " + range_1_List);
-		console.log("range_2_List : " + range_2_List);
-		console.log("upperLimitList : " + upperLimitList);
-		console.log("lowerLimitList : " + lowerLimitList);
+		else{
+			for(var index = 0; index < detailArray.length; index++){
+				if($("#detail"+detailArray[index]+"_name").val() == ""){
+					if(errors == ""){
+						errors = "請輸入項目名稱";
+					}
+					flag = false;
+					console.log("flag : " + flag);
+					break;
+				}
+				nameList.push($("#detail"+detailArray[index]+"_name").val());
+				unitList.push($("#detail"+detailArray[index]+"_unit").val());
+				range_1_List.push($("#detail"+detailArray[index]+"_range_1").val());
+				range_2_List.push($("#detail"+detailArray[index]+"_range_2").val());
+				upperLimitList.push($("#detail"+detailArray[index]+"_upperLimit").val());
+				lowerLimitList.push($("#detail"+detailArray[index]+"_lowerLimit").val());
+				
+			}
+			console.log("nameList : " + nameList);
+			console.log("unitList : " + unitList);
+			console.log("range_1_List : " + range_1_List);
+			console.log("range_2_List : " + range_2_List);
+			console.log("upperLimitList : " + upperLimitList);
+			console.log("lowerLimitList : " + lowerLimitList);
+		}
 		
 		
 		if(flag == true){
@@ -452,6 +471,11 @@ $(document).ready(function() {
 				}
 			});
 		}
+		else{
+			$("modal-1").attr("href", "#modal-container-1");	//這時才給予連結屬性，好讓modal產生
+			console.log("errors : " + errors);
+			modalGenerator("提示", errors);
+		}
 	});
 });
 
@@ -469,7 +493,7 @@ $(document).ready(function() {
 		console.log("judgment : " + judgment);
 		console.log("cycle : " + cycle);
 		
-		//是否已經輸入模板名稱
+/*		//是否已經輸入模板名稱
 		if(modelName == ""){
 			alert("請輸入模板名稱");
 			flag = false;
@@ -532,35 +556,39 @@ $(document).ready(function() {
 		
 		
 		if(flag == true){
-			$.ajax({
+*/			$.ajax({
 				//url : "http://localhost:8080/BBDPDoctor/HealthTrackingServlet",
 				url : "http://140.121.197.130:8000/BBDPDoctor/HealthTrackingServlet",
 				data : {
 					state : "deleteItem",
 					doctorID : doctorID,
 					itemID : itemID,
-					detailArray : detailArray,
-					modelName : modelName,
-					typeName : typeName,
-					nameList : nameList,
-					unitList : unitList,
-					range_1_List : range_1_List,
-					range_2_List : range_2_List,
-					upperLimitList : upperLimitList,
-					lowerLimitList : lowerLimitList,
-					cycle : cycle
+					detailArray : detailArray
+					//modelName : modelName,
+					//typeName : typeName,
+					//nameList : nameList,
+					//unitList : unitList,
+					//range_1_List : range_1_List,
+					//range_2_List : range_2_List,
+					//upperLimitList : upperLimitList,
+					//lowerLimitList : lowerLimitList,
+					//cycle : cycle
 				},
 				dataType : "json",
 	
 				success : function(response) {
-					window.location.href = 'HealthTracking.html';
-					alert(response.result);
+					console.log("提示 : " + response.result);
+					modalGenerator("結果", response.result);
+					if(response.result == "刪除成功"){
+						setTimeout(function(){
+							window.location.href = 'HealthTracking.html';
+						},1500);
+					}
 				},
 				error : function() {
 					console.log("錯誤訊息");
 				}
 			});
-		}
 	});
 });
 
@@ -579,7 +607,9 @@ $(document).ready(function() {
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
 			<div class="row">
-			<!-------------------------------------------- 我寫的 -------------------------------------------->				
+			<!-------------------------------------------- 我寫的 -------------------------------------------->
+				<!-- 模板輸入地方 -->
+				<a id="modal-1" href="" role="button" class="btn" data-toggle="modal" ></a>					
 				<!-- 左半邊 -->
 				<div class = "col-sm-4">
 					<br>

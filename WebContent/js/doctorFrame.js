@@ -85,4 +85,6 @@ $(document).ready(function() {
 	Notification.requestPermission();
 	//寫死大頭貼
 	$.getScript("js/photoTemp.js");
+	//<!-- modalGenerator js -->
+	$.getScript("js/modalGenerator.js");
 });

@@ -54,7 +54,7 @@
 <script src="dist/js/sb-admin-2.js"></script>
 <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script src="js/questionFrame.js"></script>
-
+<script src="js/modalGenerator.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 <style type="text/css">
@@ -79,7 +79,7 @@
 	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 	$(document).ready(function() {
 		if(!(window.localStorage.getItem('login'))){
-		modalGenerator("尚未登入", "跳轉至登入頁面中...");
+		
 		window.location.href = 'Login.html';
 		}
 	})
@@ -133,10 +133,10 @@
 				answerNumber+=1;
 				$("#MCQ").append("<div id = 'd"+score+"'><input type='number' class='form-control' style='width:15%;display:inline;	vertical-align:middle;' id='"+score+"'placeholder='分數'>&nbsp;<input type='text' class='form-control' style='width:65%;display:inline;	vertical-align:middle;' id='"+content+"'placeholder='請輸入選項'>&nbsp;<button type='button' class='btn btn-default'  style='background-color:#f0f0f0;display:inline;vertical-align:middle;'onClick='deleteAnswer("+score+")'>刪除</button><br><div style='height:7px'></div></div>");
 			}else
-				window.alert("最多10個選項");
+				window.modalGenerator("提示", "最多10個選項");
 			
 		}else
-			window.alert("請切換題型");
+			window.modalGenerator("提示", "請切換題型");
 	}
 	
 	function deleteAnswer(tempNumber){
@@ -160,7 +160,7 @@
 			$('#d'+tempNumber).remove();
 			answerNumber-=1;
 		}else
-			window.alert("無可刪除選項");
+			window.modalGenerator("提示", "無可刪除選項");
 	}
 			
 		
@@ -189,7 +189,6 @@
 	}
 		
 	$(document).ready(function() {
-		$('[data-toggle="tooltip"]').tooltip(); 
 		$.ajax({
 			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
 			data : {
@@ -266,7 +265,6 @@
 				
 				success : function(response) {
 					if(response>0){
-						window.alert("隱藏成功");
 						window.location.href = "QuestionnairePool.html";
 					}
 				},
@@ -277,56 +275,6 @@
 		
 		});	
 		
-		
-		$("#doAjaxBtn").click(function() {		//儲存題目
-			var QPAns ="";
-			var qt =  $('#QType option:selected').val();
-			if(qt=="單選題") QPAns = answerString();
-			if($('#QPname').val()){
-				if((judgment == 1 && $('#QPType2').val())||judgment == 0){
-					if(qt=="簡答題" || QPAns!="[]"){
-						var temp;
-						if(judgment==1) temp=$('#QPType2').val();
-						else {
-							temp=$('#QPType1 option:selected').val();
-						}
-						if(editQuestion==1){
-							if(!confirm("是否更新病歷摘要"))
-								editQuestion=0;
-						}
-						if(editQuestion==0){
-							jsonMR = transferMRtoString();
-							$.ajax({
-								url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
-								data : {
-									state : "updateQuestion",
-									doctorID : user,
-									QPname : $('#QPname').val(),
-									QType : temp,
-									QPType : $('#QType option:selected').val(),
-									QPanswer : QPAns,
-									nowQP : nowQP,
-									MR : jsonMR
-								},
-								dataType : "json",
-							
-								success : function(response) {
-									if (response>0) {
-										window.alert("題目修改成功");
-										window.location.href = 'QuestionnairePool.html';
-									}else if (response==0) {
-										window.alert("此題目名稱已存在");								
-									}
-								},
-								error : function() {
-									console.log("錯誤訊息");
-								}
-							});
-						}
-					}else window.alert("請加入選項");
-				}else window.alert("請選擇或新增分類");
-			}else window.alert("請輸入問卷名稱");
-		});	
 			
 		$.ajax({
 			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
@@ -427,7 +375,6 @@
 				console.log(QPmedicalRecord);
 			},
 			error : function() {
-			alert("ww");
 				console.log("錯誤訊息");
 			}
 		});
@@ -531,7 +478,6 @@
 	
 	function changeEditQMR(){
 		var sortQ = $("#sortable").sortable('serialize');
-		alert(sortQ);
 		var temp = "";
 		var temp2= "";
 		if(sortQ){
@@ -572,6 +518,59 @@
 		$("#addQuestionOption").prop("disabled", bool);
 		$("#addQuestionText").prop("disabled", bool);
 	}
+	
+	function gotoSave(){
+		editQuestion=0;
+		doAjaxBtn();
+	}
+	function doAjaxBtn(){		//儲存題目
+		var QPAns ="";
+		var qt =  $('#QType option:selected').val();
+		if(qt=="單選題") QPAns = answerString();
+		if($('#QPname').val()){
+			if((judgment == 1 && $('#QPType2').val())||judgment == 0){
+				if(qt=="簡答題" || QPAns!="[]"){
+					var temp;
+					if(judgment==1) temp=$('#QPType2').val();
+					else {
+						temp=$('#QPType1 option:selected').val();
+					}
+					if(editQuestion==1){
+						$('#updateMR').modal('show');
+					}
+					if(editQuestion==0){
+						jsonMR = transferMRtoString();
+						$.ajax({
+							url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
+							data : {
+								state : "updateQuestion",
+								doctorID : user,
+								QPname : $('#QPname').val(),
+								QType : temp,
+								QPType : $('#QType option:selected').val(),
+								QPanswer : QPAns,
+								nowQP : nowQP,
+								MR : jsonMR
+							},
+							dataType : "json",
+						
+							success : function(response) {
+								if (response>0) {
+									window.location.href = 'QuestionnairePool.html';
+								}else if (response==0) {
+									window.modalGenerator("提示", "此題目名稱已存在");								
+								}
+							},
+							error : function() {
+								console.log("錯誤訊息");
+							}
+						});
+					}
+				}else window.modalGenerator("提示", "請加入選項");
+			}else window.modalGenerator("提示", "請選擇或新增分類");
+		}else window.modalGenerator("提示", "請輸入問卷名稱");
+	}	
+	
 </script>
 </head>
 
@@ -611,9 +610,9 @@
 				<div class = "col-sm-8">
 					<br>
 					<div>
-						<input type="button" id="doAjaxBtn" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">
+						<input type="button" onclick ="doAjaxBtn()" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">
 						<div style="float:right;width:4px;height:4px;"></div>
-						<input type="button" id="hideAjaxBtn" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="若問卷已使用此題目，並不會受到影響。當新增相同的題目名稱，將會取消隱藏" value="隱藏" style="background-color:#f0f0f0;font-size:13px;float:right;">
+						<input type="button" id="hideAjaxBtn" class="btn btn-default" value="隱藏" style="background-color:#f0f0f0;font-size:13px;float:right;">
 						<div style="float:right;width:4px;height:4px;"></div>
 						<input type="button" onclick="runMedicalRecord()" class="btn btn-default" value="病歷摘要格式" style="background-color:#f0f0f0;font-size:13px;float:right;" data-toggle="modal" data-target="#medicalRecordModal">
 						
@@ -693,6 +692,28 @@
   </div>
 
 
+	<!-- Modal -->
+
+	<div id="updateMR" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">				
+					<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>×</button>
+				</div>
+				<div class="modal-body">
+					是否更新病歷摘要？
+				</div>
+				<div class="modal-footer">
+					<button type='button' class='btn btn-default' data-dismiss='modal'>更新</button>
+					<button type='button' class='btn btn-default' data-dismiss='modal' onclick = 'gotoSave()'>不更新</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+  
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
 </body>

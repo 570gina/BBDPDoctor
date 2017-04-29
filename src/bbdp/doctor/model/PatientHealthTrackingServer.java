@@ -3,6 +3,7 @@ package bbdp.doctor.model;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -16,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 
 import bbdp.db.model.DBConnection;
 import bbdp.doctor.model.HealthTrackingServer.ItemDetail;
+import bbdp.push.fcm.PushToFCM;
 
 public class PatientHealthTrackingServer {
 
@@ -360,7 +362,10 @@ public class PatientHealthTrackingServer {
 				//把項目used改為1
 				String updateSQL = "update healthtrackingitem SET uesd = 1 WHERE itemID = '"+itemSelect+"' ";
 				int update = conn.updateSql(updateSQL);
-				System.out.println("Listener updateUsed : " + update);		
+				System.out.println("Listener updateUsed : " + update);	
+				
+				//推播給病患
+				PushToFCM.sendNotification("健康追蹤填寫提醒", "請記得按時填寫", patientID);
 			}
 			//////////////////////////////確認並未新增給病患過後開始新增，並去item那裏把used改成1，表示已經使用過(結束)///////////////////////////////////////
 		} catch (SQLException e) {
@@ -372,11 +377,12 @@ public class PatientHealthTrackingServer {
 	
 	//取得現在的時間
 	public String getNowDate(){
-		SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		Date date = new Date();
-		String strDate = sdFormat.format(date);
-		System.out.println("strDate" + strDate);
-		return strDate;
+		//取得現在時間
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = simpleDateFormat.format(timestamp);
+		//System.out.println("currentTime : " + currentTime);
+		return currentTime;
 	}
 	
 	//取得該項目一些基本資料//EditPatientHealthTracking.html//已關資料庫

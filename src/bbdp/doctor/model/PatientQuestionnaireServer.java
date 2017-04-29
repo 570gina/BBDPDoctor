@@ -23,7 +23,7 @@ public class PatientQuestionnaireServer {
 				result = rs.getString("question");
 			}			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤1");
 		}			
 		return result;
 	}	
@@ -39,7 +39,7 @@ public class PatientQuestionnaireServer {
 				selectResult.add(rs.getString("option"));
 			}
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤2");
 		}
 		return selectResult;
 	}
@@ -58,13 +58,13 @@ public class PatientQuestionnaireServer {
 			if(rs.next())
 				questionnaireID = rs.getString("questionnaireID");
 		} catch (SQLException e) {			
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤3");
 		}
 		
 		try {
 			int	dbReturn1 = conn.updateSql("UPDATE questionnaire SET display = 1 where questionnaireID = '"+questionnaireID+"'");
 		} catch (SQLException e) {			
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤4");
 		}
 		
 		if(QCycleType.equals("週"))
@@ -79,12 +79,11 @@ public class PatientQuestionnaireServer {
 			now.add(Calendar.MONTH, addMonth); 
 			now.add(Calendar.DATE, addDay);
 			
-			
 			try {
 				dbReturn = conn.updateSql("INSERT INTO unfilledquestionnaire (questionnaireID,patientID,sendDate) VALUES('"+questionnaireID+"','"+patientID+"','"+sdf.format(now.getTime())+"')");
 			} catch (SQLException e) {
 				
-				System.out.println("QuestionnaireServer錯誤");
+				System.out.println("QuestionnaireServer錯誤5");
 			}			
 		}
 		return dbReturn;
@@ -100,7 +99,7 @@ public class PatientQuestionnaireServer {
 			}
 			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤6");
 		}		
 		
 		return searchResult;
@@ -118,7 +117,7 @@ public class PatientQuestionnaireServer {
 			}
 			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤7");
 		}		
 
 		if(edit.equals("month")){
@@ -126,7 +125,7 @@ public class PatientQuestionnaireServer {
 			String tempM="";
 			for(int i = 0;i<temp.size();i++){
 				String[] AfterSplit = ((String)temp.get(i)).split("-");
-				if(tempY == AfterSplit[0] &&tempM == AfterSplit[1]){
+				if(tempY.equals(AfterSplit[0]) && tempM.equals(AfterSplit[1])){
 					
 				}else{
 					searchResult.add(AfterSplit[0]+"/"+AfterSplit[1]);
@@ -138,7 +137,7 @@ public class PatientQuestionnaireServer {
 			String tempY="";
 			for(int i = 0;i<temp.size();i++){
 				String[] AfterSplit = ((String)temp.get(i)).split("-");
-				if(tempY == AfterSplit[0]){
+				if(tempY.equals(AfterSplit[0])){
 					
 				}else{
 					searchResult.add(AfterSplit[0]);
@@ -168,7 +167,7 @@ public class PatientQuestionnaireServer {
 			}
 			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤8");
 		}
 		return searchResult;		
 
@@ -230,7 +229,7 @@ public class PatientQuestionnaireServer {
 			}
 			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤9");
 		}
 		return searchResult;		
 	}
@@ -243,7 +242,7 @@ public class PatientQuestionnaireServer {
 				result = rs.getString("questionnaire.question");
 			}			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤10");
 		}
 		return result;
 	}
@@ -256,7 +255,7 @@ public class PatientQuestionnaireServer {
 				result = rs.getString("answer");
 			}			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤11");
 		}
 		return result;
 	}
@@ -280,7 +279,7 @@ public class PatientQuestionnaireServer {
 			}
 			
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤12");
 		}
 		return searchResult;		
 	}
@@ -301,7 +300,7 @@ public class PatientQuestionnaireServer {
 	public static String searchPatientQuestionnaire(DBConnection conn, String doctorID, String answerID) {
 		String patientAnswerID="";
 		String result="";
-		
+	
 		try {
 			ResultSet rs = conn.runSql("select answerID_patient FROM association where answerID_doctor = '"+answerID+"'");
 			
@@ -322,7 +321,7 @@ public class PatientQuestionnaireServer {
 			
 		} catch (SQLException e) {
 			System.out.println("QuestionnaireServer錯誤");
-		}				
+		}
 		return result;		
 	}
 
@@ -331,6 +330,7 @@ public class PatientQuestionnaireServer {
 		String questionnaireID = "";
 		String selfDescription = "";
 		String patientID = "";
+		String tempAnswerID ="";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
 		Calendar now = Calendar.getInstance(); 
 
@@ -346,21 +346,30 @@ public class PatientQuestionnaireServer {
 		} catch (SQLException e) {
 			System.out.println("QuestionnaireServer錯誤");
 		}		
-		
-		
+				
 		try {
 			int dbReturn = conn.updateSql("INSERT INTO answer (answerID,questionnaireID,patientID,doctorID,date,answer,selfDescription) select ifNULL(max(answerID+0),0)+1,'"+questionnaireID+"','"+patientID+"','"+doctorID+"','"+sdf.format(now.getTime())+"','"+answerString+"','"+selfDescription+"' FROM answer");
 		} catch (SQLException e) {
 				
 			System.out.println("QuestionnaireServer錯誤");
 		}
+		
+		try {
+			ResultSet rs = conn.runSql("select ifNULL(max(answerID+0),0) FROM answer");
+			
+			while (rs.next()) {
+				tempAnswerID = rs.getString("ifNULL(max(answerID+0),0)");
+		}
+			
+		} catch (SQLException e) {
+			System.out.println("QuestionnaireServer錯誤2");
+		}	
 
 		try {
-
-			dbReturn1 = conn.updateSql("INSERT INTO association (answerID_doctor,answerID_patient) select ifNULL(max(answerID+0),0),'"+answerID+"'FROM association join answer");
+			dbReturn1 = conn.updateSql("INSERT INTO association (answerID_doctor,answerID_patient) values('"+tempAnswerID+"', '"+answerID+"')");
 		} catch (SQLException e) {
 				
-			System.out.println("QuestionnaireServer錯誤");
+			System.out.println("QuestionnaireServer錯誤3");
 		}
 
 		return dbReturn1;
@@ -422,9 +431,10 @@ public class PatientQuestionnaireServer {
 		}
 		catch (JSONException e)
 		{
+
 		}
 
-		
+
 		for(int k = 0;k<searchResult.size();k++){
 			String questionID = (String) searchResult.get(k);
 			try {
@@ -436,7 +446,10 @@ public class PatientQuestionnaireServer {
 			} catch (SQLException e) {
 				System.out.println("QuestionnaireServer錯誤");
 			}
-		
+			
+			if(QPmedicalRecord == null) break;
+
+			
 			try{
 				JSONArray optionArray = new JSONArray(option);
 				optionArrayList = new String[searchResult.size()][10];
@@ -447,11 +460,11 @@ public class PatientQuestionnaireServer {
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				bool=false;
+			
 			};
 
 			try {
 				JSONObject QPMRObject = new JSONObject(QPmedicalRecord);
-				System.out.println(k);
 				String all = QPMRObject.getString("all");
 				if(all.equals("true")){
 					String allOption = QPMRObject.getString("0");
@@ -480,12 +493,11 @@ public class PatientQuestionnaireServer {
 				}
 					
 			} catch (JSONException e) {
-				
+		
 				
 			};
 			
 		}
-		
 
 		
 		if(!QmedicalRecord.isEmpty()){
@@ -505,13 +517,13 @@ public class PatientQuestionnaireServer {
 
 			}
 		}
-		
+
 		return QallMR;
 	}
 
 	public static int sendMedicalrecord(DBConnection conn, String doctorID, String patientID, String medicalrecord) {
 		int dbReturn = 0;
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 		Calendar now = Calendar.getInstance(); 
 
 		try {

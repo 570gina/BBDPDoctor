@@ -1,9 +1,12 @@
 package bbdp.push.fcm;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -20,14 +23,20 @@ public class PushToFCM {
 			URL obj = new URL(POST_URL);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 			con.setRequestMethod("POST");
-			con.setRequestProperty("Content-Type", "application/json");
+			con.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
 			con.setRequestProperty("Authorization", "key=" + FCM_KEY);
-
+			
+			System.out.println("send message: " + message);
 			con.setDoOutput(true);
-			OutputStream os = con.getOutputStream();
+			/*OutputStream os = con.getOutputStream();
 			os.write(message.getBytes());
 			os.flush();
-			os.close();
+			os.close();*/
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(wr, "UTF-8"));
+			writer.write(message);
+			writer.close();
+			wr.close();
 
 			int responseCode = con.getResponseCode();
 			System.out.println("POST Response Code: " + responseCode);

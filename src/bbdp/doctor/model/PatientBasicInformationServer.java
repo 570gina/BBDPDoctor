@@ -61,7 +61,7 @@ public class PatientBasicInformationServer {
 	private static String getRecentQuestionnaire(DBConnection conn, String patientID, String doctorID) {		//近一個月的問卷數量
 		String result = "";
 		try {
-			ResultSet resultSet = conn.runSql("SELECT date FROM answer WHERE patientID = '" + patientID + "' and doctorID = '" + doctorID + "'");
+			ResultSet resultSet = conn.runSql("SELECT date FROM questionnaire, answer WHERE patientID = '" + patientID + "' AND questionnaire.questionnaireID = answer.questionnaireID AND questionnaire.doctorID = '" + doctorID + "' AND answer.doctorID is NULL");
 			int countRecentQuestionnireNum= 0;
 			while (resultSet.next()) {
 				if(isRecent(resultSet.getString("date"))) countRecentQuestionnireNum++;
@@ -96,12 +96,16 @@ public class PatientBasicInformationServer {
 
 	private static String getLatestMedicalRecord(DBConnection conn, String patientID, String doctorID) {
 		String result = "";
+		String content = "";
+		String date = "";
 		try {
 			ResultSet resultSet = conn.runSql("SELECT * FROM medicalrecord WHERE date = (SELECT MAX(date) FROM medicalrecord WHERE patientID = '" + patientID + "' and doctorID = '" + doctorID + "')");
 			while (resultSet.next()) {
-				result = "\"MRDate\": \"" + resultSet.getString("date") + "\", \"MRContent\": \"" + resultSet.getString("content") + "\"";
+				content = resultSet.getString("content").replaceAll("\n", "<br />");
+				date = resultSet.getString("date");
 			}
-			
+
+			result = "\"MRDate\": \"" + date + "\", \"MRContent\": \"" + content + "\"";
 			if(result.equals("")) {
 				result = "\"MRDate\": " + "\"資料空白\"" + ", \"MRContent\": " + "\"資料空白\"";
 			}

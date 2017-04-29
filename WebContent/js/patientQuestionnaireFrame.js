@@ -70,7 +70,6 @@ $(document).ready(function() {
 			$("#QuestionnaireList").append(temp);
 		},
 		error : function() {
-
 			console.log("錯誤訊息");
 		}
 	});

@@ -1,7 +1,10 @@
-
+$("body").append(
+		"	<a id='modal-1' href='#modal-container-1' role='button' class='btn' data-toggle='modal' >"+
+		"	</a>");
 $(document).ready(function() {
 	localStorage.clear();//清除存在web local stroge的login資料，達到登出的效果
-	alert("登出成功");
+	modalGenerator("登出結果", "成功");
+	console.log("登出成功");
 
 	// 登出
 	$.ajax({
@@ -12,7 +15,9 @@ $(document).ready(function() {
 
 		success : function(response) {
 			if (response == true) {
-				window.location.href = 'Login.html';
+				setTimeout(function(){
+					window.location.href = 'Login.html';
+				},1500);
 			}
 		},
 		error : function() {

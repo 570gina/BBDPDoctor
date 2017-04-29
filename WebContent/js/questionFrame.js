@@ -75,7 +75,7 @@ function addTempStorage(){
 	var questionArray = "";
 	$('input:checkbox:checked[name="Qcheckbox"]').each(function(i) { num+=1; questionArray += (this.value+",");});
 	if(questionArray=="")
-		window.alert("請勾選題目");
+		modalGenerator("提示", "請勾選題目");
 	else{
 		$.ajax({
 			url : "http://140.121.197.130:8000/BBDPDoctor/QuestionnairePoolServlet",
@@ -87,9 +87,9 @@ function addTempStorage(){
 			traditional: true,
 			success : function(response) {
 				if(num == response)
-					window.alert("成功加入題目暫存區");
+					modalGenerator("提示", "成功加入題目暫存區");
 				else
-					window.alert("勾選的題目已有"+(num-response)+"道在暫存區內，成功再加入"+parseInt(response)+"道題目");
+					modalGenerator("提示", "勾選的題目已有"+(num-response)+"道在暫存區內，成功再加入"+parseInt(response)+"道題目");
 				$('input[name^="Qcheckbox"]').prop('checked', false); 
 			},
 			error : function() {

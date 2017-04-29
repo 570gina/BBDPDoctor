@@ -56,6 +56,9 @@
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
 
+<!-- modalGenerator js -->
+<script src="js/modalGenerator.js"></script>
+
 <!-- bxSlider Javascript file -->
 <script src="slider/jquery.bxslider.min.js"></script>
 <!-- bxSlider CSS file -->
@@ -73,14 +76,17 @@
 
 <!-- 上半邊 項目(開始) -->
 <script>
+//改網址用的
+//var url = "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet";
+var url = "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet";
+
 //一進來取得所有項目
 $(document).ready(function() {
 	$("#displayItem").empty();
 	var doctorID = window.localStorage.getItem('login');
 	
 	$.ajax({
-		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		url : url,
 		data : {
 			state : "allItem",
 			doctorID : doctorID
@@ -146,14 +152,17 @@ $(document).ready(function() {
 
 
 <script>
+//改網址用的
+//var url = "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet";
+var url = "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet";
+
 //一進來就//取得下拉選單的值//取得所有項目的值
 $(document).ready(function() {
 	//取得存在local storage的doctoeID值並顯示出來
 	var doctorID = window.localStorage.getItem('login');
 	
 	$.ajax({
-		//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+		url : url,
 		data : {
 			state : "allType",
 			doctorID : doctorID
@@ -192,8 +201,7 @@ function changeType(){
 	//如果選回健康狀況追蹤分類的話，顯示全部的
 	if(select=="分類"){
 		$.ajax({
-			//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
-			url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+			url : url,
 			data : {
 				state : "allType",
 				doctorID : doctorID
@@ -216,8 +224,7 @@ function changeType(){
 	//選什麼分類，顯示該分類的項目
 	else{
 		$.ajax({
-			//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
-			url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+			url : url,
 			data : {
 				state : "typeSelectItem",
 				doctorID : doctorID,
@@ -248,8 +255,7 @@ $(document).ready(function() {
 		console.log("我選了項目 : " +itemSelect);
 		
 		$.ajax({
-			//url : "http://localhost:8080/BBDPDoctor/PatientHealthTrackingServlet",
-			url : "http://140.121.197.130:8000/BBDPDoctor/PatientHealthTrackingServlet",
+			url : url,
 			data : {
 				state : "addItemToPatient",
 				doctorID : doctorID,
@@ -259,14 +265,18 @@ $(document).ready(function() {
 
 			success : function(response) {
 				console.log("addItemToPatient success");
-				alert(response.result);
-				window.location.href = 'NewPatientHealthTracking.html';
+				console.log("結果" + response.result);
+				modalGenerator("結果", response.result);
+				if(response.result == "新增成功!"){
+					setTimeout(function(){
+						window.location.href = 'NewPatientHealthTracking.html';
+					},1500);
+				}
 			},
 			error : function() {
 				console.log("錯誤訊息");
 			}
 		});
-		
 	});
 });
 </script>
@@ -285,6 +295,9 @@ $(document).ready(function() {
 		<div id="page-wrapper">
 			<div class="row">
 			<!-------------------------------------------- 我寫的 -------------------------------------------->
+				<!-- 模板輸入地方 -->
+				<a id="modal-1" href="" role="button" class="btn" data-toggle="modal" ></a>	
+				
 				<div class="row-md-1">
 					<div class="col-sm-12" style="margin-top:10px;margin-bottom:10px;">
 						<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;float:right;" onclick="location.href='NewPatientHealthTracking.html'">新增</button>

@@ -52,20 +52,85 @@
 <!-- Custom Theme JavaScript -->
 <!-- 有關下拉式選單 -->
 <script src="dist/js/sb-admin-2.js"></script>
-
+<script src="js/patientMedicalRecordFrame.js"></script>
 <!-- 醫生端框架css -->
 <link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+	
+	a{
+		text-decoration: none;color:black;
+	}
+	
+	a:link{
+           color: #000000;
+    }
 
+	a:visited{
+		color: #000000;
+	}
+
+	a:hover{
+		color: #000000;
+	}
+
+    a:active{
+		color: #000000;
+	}
+	.modal-body {
+    	max-height: 70vh;
+   		overflow-y: auto;
+	}
+	
+	#item{
+		height:70px;
+		width:100%;
+		margin-bottom:10px;
+		text-align:left;
+		vertical-align:middle;
+		font-size:15px;
+		border:none;
+		text-overflow: ellipsis;
+		overflow : hidden;
+		border-radius: 5px;
+	}	
+	.list-group-horizontal .list-group-item {
+		display: inline-block;
+		padding-top: 0.8vh;
+		padding-bottom: 0.8vh;
+	}
+	.list-group-horizontal .list-group-item {
+		margin-bottom: 0;
+		margin-left:-4px;
+		margin-right: 0;
+	}
+	.list-group-horizontal .list-group-item:first-child {
+		border-top-right-radius:0;
+		border-bottom-left-radius:4px;
+	}
+	.list-group-horizontal .list-group-item:last-child {
+		border-top-right-radius:4px;
+		border-bottom-left-radius:0;
+	}
+	.list-group-horizontal {
+		margin-bottom: 0;
+		margin-left: 0.5vw;
+	}
+</style>
 <script>
 	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 	$(document).ready(function() {
 		if (!(window.localStorage.getItem('login'))) {
-			//alert("您尚未登入!跳轉至登入頁面中...");
 			window.location.href = 'Login.html';
 		}
 	});
 </script>
+<script>
+var user = window.localStorage.getItem('login');
+function newMR(){
+	window.location.href = 'NewPatientMedicalRecord.html';
+}
 
+</script>
 </head>
 
 <body>
@@ -78,11 +143,46 @@
 
 		<!-- page-wrapper -->
 		<div id="page-wrapper">
-			<div class="row"></div>
+			<div class="row">
+				<div class = "col-sm-4">
+					<br>
+					<div class = "col-sm-12">
+					<div>
+					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;" onclick="newMR()">新增病歷摘要</button>
+					</div>
+					<br>
+					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
+							<div class="panel-heading">							
+								<form>
+									<select class="form-control" id="MRdateRange" style="width:30%;display: inline-block;">
+										<option value="all" >請選擇</option>
+										<option value="year">年</option>
+										<option value="month">月</option>
+									</select>	
+									<select class="form-control" id="MRdate" style="width:40%;display: inline-block;" onchange="changeMR()">
+										<option value="all">所有時間</option>
+									</select>	
+								</form>
+							</div>
+							<div class="panel-body" style="min-height: 66vh; max-height: 66vh; overflow-y: auto;" id="MedicalRecordList">
+								
+							</div>
+						</div>
+
+					</div>
+				</div>
+			
+				<div class = "col-sm-8">
+			
+			
+						
+				</div>
 		</div>
 
 	</div>
-
+	
+	
+	
 	<!-- 醫生端框架js -->
 	<script src="js/doctorFrame.js"></script>
 

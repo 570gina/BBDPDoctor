@@ -79,7 +79,6 @@
 	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
 	$(document).ready(function() {
 		if(!(window.localStorage.getItem('login'))){
-		modalGenerator("尚未登入", "跳轉至登入頁面中...");
 		window.location.href = 'Login.html';
 		}
 	})
@@ -353,7 +352,6 @@ $(document).ready(function() {
 				
 					success : function(response) {
 						if (response>0) {
-							modalGenerator("提示", "題目修改成功");
 							window.location.href = 'QuestionnaireModule.html';
 						}else if (response==0) {
 							modalGenerator("提示", "此問卷名稱已存在");								
@@ -374,20 +372,20 @@ $(document).ready(function() {
 				"					<div class='modal-content'>"+
 				"						<div class='modal-header'>"+
 				"							<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>×</button>"+
-				"							<h4 class='modal-title' id='myModalLabel'>提示</h4>"+
+				"							<h4 class='modal-title'>提示</h4>"+
 				"						</div>"+
 				"						<div class='modal-body'>"+
-				"							<div id='display'>確定刪除問卷？</div>"+
+				"							<div>確定刪除問卷？</div>"+
 				"						</div>"+
 				"						<div class='modal-footer'>"+
 				"							<button type='button' class='btn btn-default' data-dismiss='modal' onclick = 'deleteQuestionnaire()'>確定</button>"+
-				"							<button type='button' class='btn btn-default' data-dismiss='modal'>取消/button>"+
+				"							<button type='button' class='btn btn-default' data-dismiss='modal'>取消</button>"+
 				"						</div>"+
 				"					</div>"+
 				"				</div>"+
 				"			</div>");
-		$('#myModal-confirm1').modal('show');
-	)};
+		$('#modal-confirm1').modal('show');
+	});
 
 });
 function deleteQuestionnaire(){
@@ -401,13 +399,11 @@ function deleteQuestionnaire(){
 		
 		success : function(response) {
 			if(response>0){
-				modalGenerator("提示", "刪除成功");
-				window.location.href = "QuestionnaireModule.html";
+
 			}else
 				modalGenerator("提示", "問卷已使用，無法刪除");
 		},
 		error : function() {
-			modalGenerator("提示", "刪除失敗");
 			console.log("錯誤訊息");
 		}
 	});
