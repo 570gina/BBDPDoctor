@@ -8,10 +8,13 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.tomcat.jdbc.pool.DataSource;
+import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 import com.google.gson.Gson;
 
-import bbdp.db.model.DBConnection;
 import bbdp.doctor.model.AccountSettingServer;
 
 
@@ -21,12 +24,14 @@ public class AccountSettingServlet extends HttpServlet {
         super();
     }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
+		Gson gson = new Gson();
 
+		HttpSession session = request.getSession();	
+		String doctorID = (String) session.getAttribute("doctorID");
 		// 設置原本所需參數
 		String state = request.getParameter("state");
-		String doctorID = request.getParameter("doctorID");
 		// 設置修改所需參數
 		String account = request.getParameter("account");
 		String password = request.getParameter("password");
@@ -39,35 +44,33 @@ public class AccountSettingServlet extends HttpServlet {
 		HashMap accountDefault = new HashMap(); // 設置原本
 		HashMap accountChange = new HashMap(); // 設置修改
 		AccountSettingServer setting = new AccountSettingServer();
-
-		System.out.println("servlet 參數: " + state + doctorID + account + password+passwordCheck+name+hospital+department);
-		// 設置驗證
-		DBConnection db = (DBConnection) getServletContext().getAttribute("db");
-
+		
+		DataSource datasource = (DataSource) getServletContext().getAttribute("db");//取得存在context的datasource
+		
 		// 設置原本
 		if (state.equals("Default")) {
-			accountDefault = setting.settingDefault(db, doctorID);
-
-			System.out.println("在servlet中的accountInfo : " + accountDefault);
-			result = accountDefault; // 把設置原本放進結果
+			accountDefault = setting.settingDefault(datasource, doctorID);
+			response.getWriter().write(gson.toJson(accountDefault));
 		}
 		
 		// 設置修改
 		if (state.equals("Change")) {
 			String show;
-			show = setting.settingChange(db, account, password, passwordCheck, name, hospital, department);	//修改完畢
-			accountChange = setting.settingDefault(db, doctorID);	//再從db取得修改後的資訊
+			show = setting.settingChange(datasource, doctorID, password, passwordCheck);	//修改完畢
+			accountChange = setting.settingDefault(datasource, doctorID);	//再從db取得修改後的資訊
+			accountChange.put("show", show);
+			response.getWriter().write(gson.toJson(accountChange));
+		}	
+		
+		// 設置修改
+		if (state.equals("Change2")) {
+			String show;
+			show = setting.settingChange2(datasource, doctorID, name, hospital, department);	//修改完畢
+			accountChange = setting.settingDefault(datasource, doctorID);	//再從db取得修改後的資訊
 			accountChange.put("show", show);
 			
 			System.out.println("在servlet中的accountChange : " + accountChange);
-			result = accountChange; // 把設置修改放進結果
+			response.getWriter().write(gson.toJson(accountChange));
 		}
-
-		// 設置結果
-		System.out.println("在servlet中的result : " + result);
-
-		// 回傳json型態
-		Gson gson = new Gson();
-		response.getWriter().write(gson.toJson(result));
 	}
 }

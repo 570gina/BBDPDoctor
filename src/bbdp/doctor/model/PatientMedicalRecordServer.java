@@ -1,161 +1,163 @@
 package bbdp.doctor.model;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import bbdp.db.model.DBConnection;
 
 public class PatientMedicalRecordServer {
-	
-	public static ArrayList searchPatientMedicalRecord(DBConnection conn, String doctorID, String patientID) {
-		ArrayList searchResult = new ArrayList();
-		
+	public static int newMedicalRecord(Connection conn, String doctorID, String patientID, String medicalRecord) {
+		int returnInt = 0;
+		String medicalRecordID = "";
+		java.text.DateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar now = Calendar.getInstance();
 		try {
-			ResultSet rs = conn.runSql("select * FROM medicalRecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' ORDER BY date DESC");
-			
-			while (rs.next()) {
-				searchResult.add(rs.getString("date"));
-				
+			Statement st = conn.createStatement();			
+			ResultSet rs = st.executeQuery("select ifNULL(max(medicalRecordID+0),0)+1 FROM medicalrecord");
+			if(rs.next()) medicalRecordID = rs.getString("ifNULL(max(medicalRecordID+0),0)+1");
+			returnInt = st.executeUpdate("INSERT INTO medicalrecord (medicalRecordID,addTime,editTime,patientID,doctorID,content) VALUES('"+medicalRecordID+"','"+sdf.format(now.getTime())+"','"+sdf.format(now.getTime())+"','"+patientID+"','"+doctorID+"','"+medicalRecord+"')");
+			if(returnInt != 0){
+				rs = st.executeQuery("select name FROM doctor where doctorID = '"+doctorID+"'");
+				if (rs.next()) {
+					String name = rs.getString("name");
+					bbdp.push.fcm.PushToFCM.sendNotification("BBDP", name + " 醫師新增了您的病歷", patientID, "MedicalRecord.html?num="+medicalRecordID);
+				}
 			}
-			
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}
-		return searchResult;		
-
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}	
+		return returnInt;
 	}
-	
-	public static ArrayList searchPatientMRdateRange(DBConnection conn, String doctorID, String patientID, String edit) {
+	public static ArrayList selectMedicalRecordDate(Connection conn, String doctorID, String patientID, String dateRange, ArrayList dateList) {
 		ArrayList temp = new ArrayList();
-		ArrayList searchResult = new ArrayList();
-	
-		try {
-			ResultSet rs = conn.runSql("select distinct date FROM medicalRecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' ORDER BY date DESC");
-			
-			while (rs.next()) {
-				temp.add(rs.getString("date"));
-			}
-			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
 
-		if(edit.equals("month")){
-			String tempY="";
-			String tempM="";
-			for(int i = 0;i<temp.size();i++){
-				String[] AfterSplit = ((String)temp.get(i)).split("-");
-				if(tempY.equals(AfterSplit[0]) && tempM.equals(AfterSplit[1])){
-					
-				}else{
-					searchResult.add(AfterSplit[0]+"/"+AfterSplit[1]);
-					tempY = AfterSplit[0];
-					tempM = AfterSplit[1];
-				}
-			}		
-		}else if(edit.equals("year")){
-			String tempY="";
-			for(int i = 0;i<temp.size();i++){
-				String[] AfterSplit = ((String)temp.get(i)).split("-");
-				if(tempY.equals(AfterSplit[0])){
-					
-				}else{
-					searchResult.add(AfterSplit[0]);
-					tempY = AfterSplit[0];
-				}
-			}
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select distinct addTime FROM medicalrecord where doctorID='"+doctorID+"' and patientID = '"+patientID+"' ORDER BY CAST(addTime AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	temp.add(rs.getString("addTime"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return searchResult;
+		String tempYear="";
+		String tempMonth="";
+		if(dateRange.equals("year")){		
+			for(int i = 0;i<temp.size();i++){
+				String[] AfterSplit = ((String)temp.get(i)).split("-");
+				if(tempYear.equals(AfterSplit[0])){
+				}else{
+					dateList.add(AfterSplit[0]);
+					tempYear = AfterSplit[0];
+				}
+			}			
+		}else{
+			for(int i = 0;i<temp.size();i++){
+				String[] AfterSplit = ((String)temp.get(i)).split("-");
+				if(tempYear.equals(AfterSplit[0]) && tempMonth.equals(AfterSplit[1])){
+					
+				}else{
+					dateList.add(AfterSplit[0]+"/"+AfterSplit[1]);
+					tempYear = AfterSplit[0];
+					tempMonth = AfterSplit[1];
+				}
+			}				
+		}
+		return dateList;
 	}
-	
-	public static ArrayList changeMedicalRecord(DBConnection conn, String doctorID, String patientID, String dateType, String date) {
-		ArrayList searchResult = new ArrayList();
+	public static ArrayList getMedicalRecordList(Connection conn, String doctorID, String patientID, String dateRange, String date, ArrayList medicalRecordList){	
 		String searchTemp="";
-		
-		if(date.equals("all")){
-			dateType = "all";
-			
-		}
-		switch(dateType) {
-			case "all":
-				searchTemp = "select date FROM medicalRecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' ORDER BY date DESC";
-			break;
+
+		if(date.equals("")){
+			dateRange = "";		
+		}		
+		switch(dateRange){
 			case "year":
-				searchTemp = "select date FROM medicalRecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' and ( date BETWEEN '"+date+"/01/01' and '"+date+"/12/31') ORDER BY date DESC";
+				searchTemp = "select * FROM medicalrecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' and (addTime BETWEEN '"+date+"/01/01' and '"+date+"/12/31') ORDER BY CAST(addTime AS UNSIGNED) DESC";
 			break;
 			case "month":
-				searchTemp = "select date FROM medicalRecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' and ( date BETWEEN '"+date+"/01' and '"+date+"/31') ORDER BY date DESC";
+				searchTemp = "select * FROM medicalrecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' and (addTime BETWEEN '"+date+"/01' and '"+date+"/31') ORDER BY CAST(addTime AS UNSIGNED) DESC";
 			break;
 			default: 
-				System.out.println("dateType錯誤");
-			
+				searchTemp = "select * FROM medicalrecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' ORDER BY CAST(addTime AS UNSIGNED) DESC";
 		}
 
 		try {
-			ResultSet rs = conn.runSql(searchTemp);
-			
+			Statement st = conn.createStatement();
+			ResultSet rs = st.executeQuery(searchTemp);
 			while (rs.next()) {
+				medicalRecordList.add(rs.getString("medicalRecordID"));//0
+				medicalRecordList.add(rs.getString("addTime"));//1
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			  if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}		
+		return medicalRecordList;
+	}
+	public static String checkMedicalRecordID(Connection conn, String doctorID, String patientID, String medicalRecordID) {
+		String returnString = "";
 		
-				searchResult.add(rs.getString("date"));
-				
-			}
-			
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM medicalrecord where doctorID='"+doctorID+"' and patientID = '"+patientID+"' and medicalRecordID = '"+medicalRecordID+"'");
+		    if(rs.next()) {
+		        returnString = "Yes";
+		    }
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return searchResult;		
+		return returnString;
 	}
-	
-	public static int sendNewMR(DBConnection conn, String doctorID, String patientID, String medicalrecord) {
-		int dbReturn = 0;
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		Calendar now = Calendar.getInstance(); 
+	public static ArrayList getMedicalRecord(Connection conn, String doctorID, String patientID, String medicalRecordID, ArrayList medicalRecordList){	
 
 		try {
-			dbReturn = conn.updateSql("INSERT INTO medicalrecord (date,patientID,doctorID,content) VALUES('"+sdf.format(now.getTime())+"','"+patientID+"','"+doctorID+"','"+medicalrecord+"')");
-		} catch (SQLException e) {
-				
-			System.out.println("QuestionnaireServer錯誤");
-		}
-
-		return dbReturn;
-	}
-
-	public static String getMedicalRecord(DBConnection conn, String doctorID, String patientID, String dateTime) {
-		String mr="";
-
-		try {
-			ResultSet rs = conn.runSql("select content FROM medicalRecord where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' and date = '"+dateTime+"'");
-			
+			Statement st = conn.createStatement();
+			ResultSet rs = st.executeQuery("select * FROM medicalrecord where doctorID='"+doctorID+"' and patientID = '"+patientID+"' and medicalRecordID = '"+medicalRecordID+"'");
 			while (rs.next()) {
-				mr = rs.getString("content");
+				medicalRecordList.add(rs.getString("addTime"));//0
+				medicalRecordList.add(rs.getString("editTime"));//1
+				medicalRecordList.add(rs.getString("content"));//2
 			}
-			
+			rs.close();
+			st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}	
-
-		return mr;
-	}	
-	
-	public static int saveOldMR(DBConnection conn, String doctorID, String patientID, String medicalrecord, String dateTime) {
-		int dbReturn = 0;
-
+			e.printStackTrace();
+		} finally {
+			  if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}		
+		return medicalRecordList;
+	}
+	public static int editMedicalRecord(Connection conn, String doctorID, String patientID, String medicalRecordID, String medicalRecord) {
+		int returnInt = 0;
+		java.text.DateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar now = Calendar.getInstance();
 		try {
-			dbReturn = conn.updateSql("UPDATE medicalrecord SET content = '"+medicalrecord+"' where doctorID = '"+doctorID+"' and patientID = '"+patientID+"' and date = '"+dateTime+"'");
+			Statement st = conn.createStatement();	
+			returnInt = st.executeUpdate("UPDATE medicalrecord SET editTime = '"+sdf.format(now.getTime())+"' , content = '"+medicalRecord+"' WHERE medicalRecordID = '"+medicalRecordID+"'");
+		    st.close();
 		} catch (SQLException e) {
-				
-			System.out.println("QuestionnaireServer錯誤");
-		}
-
-		return dbReturn;
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}	
+		return returnInt;
 	}
 }

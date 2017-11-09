@@ -8,12 +8,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.tomcat.jdbc.pool.DataSource;
+import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 import com.google.gson.Gson;
 
-import bbdp.db.model.DBConnection;
 import bbdp.doctor.model.HealthTrackingServer;
-
 
 @WebServlet("/HealthTrackingServlet")
 public class HealthTrackingServlet extends HttpServlet {
@@ -22,11 +24,21 @@ public class HealthTrackingServlet extends HttpServlet {
     }
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
-
-		// 所需參數	//HealthTracking.html
+		Gson gson = new Gson();	
+		//連接資料庫
+		DataSource datasource = (DataSource) getServletContext().getAttribute("db");
+		HealthTrackingServer healthTrackingServer=new HealthTrackingServer();
+		
+		/*******************************************************************************************/
+		
+		// 所需參數
+		HttpSession session = request.getSession();	
+		String doctorID = (String) session.getAttribute("doctorID");
+		
+		//HealthTracking.html
 		String state = request.getParameter("state");
-		String doctorID = request.getParameter("doctorID");
 		String select = request.getParameter("select");
+		
 		//NewHealthTracking.html
 		String modelName = request.getParameter("modelName");
 		String typeName = request.getParameter("typeName");
@@ -37,86 +49,68 @@ public class HealthTrackingServlet extends HttpServlet {
 		String[] upperLimitList = request.getParameterValues("upperLimitList[]");
 		String[] lowerLimitList = request.getParameterValues("lowerLimitList[]");
 		String cycle = request.getParameter("cycle");
+		String chart = request.getParameter("chart");
+		String selfDescription = request.getParameter("selfDescription");
+
 		//EditHealthTracking.html
 		String itemID = request.getParameter("itemID");
 		String[] detailArray = request.getParameterValues("detailArray[]");
 		
-		HealthTrackingServer healthTrackingServer=new HealthTrackingServer();
-		Gson gson = new Gson();	
+		/*******************************************************************************************/
 		
-		HashMap result = new HashMap();				 // 結果
 		HashMap allItem = new HashMap();			 // 所有項目結果
 		HashMap typeSelect = new HashMap();			 // 選取分類後的項目結果
 		HashMap addItemStorage = new HashMap();		 // 儲存新增
-		HashMap editDefault = new HashMap();		 // 選取分類後的項目結果
+		HashMap editDefault = new HashMap();		 // 編輯前的原本值
+		HashMap updateItemStorage = new HashMap();	 // 修改儲存
 		HashMap deleteItemStorage = new HashMap();	 // 刪除結果
 		
-		//連接資料庫
-		DBConnection db = (DBConnection) getServletContext().getAttribute("db");
+		/*******************************************************************************************/
 		
-		//一進來取得所有項目//HealthTracking.html
+		//取得所有項目//HealthTracking.html
 		if (state.equals("allItem")) {
-			System.out.println("在servlet中的傳入參數 state:"+ state +" doctorID:"+doctorID);
-			allItem = healthTrackingServer.allItemDefault(db, doctorID);	//取得項目
-
-			System.out.println("在Servlet中的allItem : " + allItem);
-			result = allItem; 
-			// 回傳json型態
-			response.getWriter().write(gson.toJson(result));
+			allItem = healthTrackingServer.getItemIDName(datasource, "select itemID, name from healthtrackingitem where doctorID='" + doctorID + "' ORDER BY (itemID+0) DESC");		//取得項目id跟name
+			allItem.put("typeList", healthTrackingServer.getItemType(datasource, doctorID));	//取得項目type
+			response.getWriter().write(gson.toJson(allItem));	// 回傳
 		}
 		
 		//選取分類後的項目//HealthTracking.html
 		if (state.equals("typeSelect")) {
-			System.out.println("在servlet中的傳入參數 state:"+ state +" doctorID:"+doctorID+" select:"+select);
-			typeSelect = healthTrackingServer.typeSelect(db, doctorID, select);	//取得項目
-
-			System.out.println("在Servlet中的typeSelect : " + typeSelect);
-			result = typeSelect; 
-			// 回傳json型態
-			response.getWriter().write(gson.toJson(result));
+			typeSelect = healthTrackingServer.getItemIDName(datasource,"select name, itemID from healthtrackingitem where doctorID='" + doctorID + "' and type='" + select + "' ORDER BY itemID DESC");	//取得項目id跟name
+			response.getWriter().write(gson.toJson(typeSelect));	// 回傳
 		}
+		
+		/*******************************************************************************************/
 		
 		//儲存//NewHealthTracking.html
 		if (state.equals("storage")) {
-			System.out.println("在servlet中的傳入參數 state:"+ state +" doctorID:"+doctorID+" modelName:"+modelName+" typeName:"+typeName);
-			addItemStorage = healthTrackingServer.addItemStorage(db, doctorID, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle);
-
-			result = addItemStorage;
-			// 回傳json型態
-			response.getWriter().write(gson.toJson(result));
+			addItemStorage = healthTrackingServer.addItemStorage(datasource, doctorID, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle, chart, selfDescription);
+			response.getWriter().write(gson.toJson(addItemStorage));	// 回傳
 		}
 		
+		/*******************************************************************************************/
 		
 		//取得原本的值//EditHealthTracking.html
 		if (state.equals("editDefault")) {
-			System.out.println("在servlet中的傳入參數 state:"+ state +" doctorID:"+doctorID+" itemID:"+itemID);	
-			editDefault = healthTrackingServer.editDefault(db, doctorID, itemID);
-
-			System.out.println("在Servlet中的editDefault : " + editDefault);
-			result = editDefault; 
-			// 回傳json型態
-			response.getWriter().write(gson.toJson(result));
+			editDefault = healthTrackingServer.editDefault(datasource, doctorID, itemID);
+			response.getWriter().write(gson.toJson(editDefault));	// 回傳
 		}
 		
 		//更新修改後的值//EditHealthTracking.html
 		if (state.equals("update")) {
-			System.out.println("在servlet中的傳入參數 state:"+ state +" itemID:"+itemID+" doctorID:"+doctorID+" modelName:"+modelName+" typeName:"+typeName);
-			healthTrackingServer.updateItemStorage(db, doctorID, itemID, detailArray, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle);
-
-			// 回傳json型態
-			response.getWriter().write(gson.toJson(result));
+			updateItemStorage = healthTrackingServer.updateItemStorage(datasource, doctorID, itemID, detailArray, modelName, typeName, nameList, unitList, range_1_List, range_2_List, upperLimitList, lowerLimitList, cycle, chart, selfDescription);
+			response.getWriter().write(gson.toJson(updateItemStorage));	// 回傳
 		}
 		
 		//刪除//EditHealthTracking.html
 		if (state.equals("deleteItem")) {
-			System.out.println("在servlet中的傳入參數 state:"+ state +" itemID:"+itemID+" doctorID:"+doctorID+" modelName:"+modelName+" typeName:"+typeName);			
-			deleteItemStorage = healthTrackingServer.deleteItemStorage(db, doctorID, itemID, detailArray);
-
-			result = deleteItemStorage;
-			// 回傳json型態
-			response.getWriter().write(gson.toJson(result));
+			deleteItemStorage = healthTrackingServer.deleteItemStorage(datasource, doctorID, itemID, detailArray);
+			response.getWriter().write(gson.toJson(deleteItemStorage));	// 回傳
 		}
-		// 新增紀錄結果
-		//System.out.println("在servlet中的result : " + result);
+		
+		//檢查itemID//EditHealthTracking.html
+		if(state.equals("checkItemID")){
+			response.getWriter().write(gson.toJson(healthTrackingServer.checkItemID(datasource, doctorID, itemID)));	// 回傳
+		}
 	}
 }

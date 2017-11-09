@@ -1,28 +1,33 @@
 package bbdp.doctor.model;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.Period;
 
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import bbdp.db.model.DBConnection;
-
 public class HomepageServer {
-	public static String getHomepageData(DBConnection conn, String doctorID) {
-		return "{" + getQuestionnaireList(conn, doctorID) + ", " + getFolderList(conn, doctorID) + "}";
-	}
-	public static String getQuestionnaireList(DBConnection conn, String doctorID) {
-		//SELECT answer.patientID, patient.name as patientName, answer.answerID, questionnaire.questionnaireID, questionnaire.name as questionnaireName, answer.date FROM questionnaire, answer, patient WHERE questionnaire.questionnaireID = answer.questionnaireID AND questionnaire.doctorID = 1 AND answer.doctorID is NULL AND answer.patientID = patient.patientID ORDER BY date DESC
+	//取得首頁資料
+	public static String getHomepageData(DataSource datasource, String doctorID) {
+		Connection con = null;
 		String result = "";
-		JSONArray QList = new JSONArray();
+		
 		try {
-			ResultSet resultSet = conn.runSql("SELECT answer.patientID, patient.name as patientName, answer.answerID, questionnaire.questionnaireID, questionnaire.name as questionnaireName, answer.date FROM questionnaire, answer, patient WHERE questionnaire.questionnaireID = answer.questionnaireID AND questionnaire.doctorID = '" + doctorID + "' AND answer.doctorID is NULL AND answer.patientID = patient.patientID ORDER BY date DESC");
-			while (resultSet.next()) {
-				if(isToday(resultSet.getString("date"))) {
+			JSONObject HP = new JSONObject();
+			JSONArray QList = new JSONArray();
+			JSONArray FList = new JSONArray();
+		    con = datasource.getConnection();
+		    Statement statement = con.createStatement();
+		    //取得今日問卷資料
+		    ResultSet resultSet = statement.executeQuery("SELECT answer.patientID, patient.name as patientName, answer.answerID, questionnaire.questionnaireID, questionnaire.name as questionnaireName, answer.date FROM questionnaire, answer, patient WHERE questionnaire.questionnaireID = answer.questionnaireID AND questionnaire.doctorID = '" + doctorID + "' AND answer.doctorID is NULL AND answer.patientID = patient.patientID ORDER BY date DESC");
+		    while (resultSet.next()) {
+				if(isToday(resultSet.getString("date").substring(0, 10))) {
 					JSONObject QItem = new JSONObject();
 					QItem.put("patientID", resultSet.getString("patientID"));
 					QItem.put("patientName", resultSet.getString("patientName"));
@@ -34,38 +39,16 @@ public class HomepageServer {
 				} else {
 					break;
 				}
-			}
-			result = "\"QList\": " + QList.toString();
-			if(result.equals("") || result.equals("\"QList\": []")) {
-				System.out.println("HomepageServer getQuestionnaireList empty");
-				result = "\"QList\": \"今日目前尚未有問卷資料\"";
-			}
-			if (resultSet != null) resultSet.close();
-			return result;
-		} catch (SQLException e) {
-			System.out.println("HomepageServer getQuestionnaireList SQLException: " + e);
-			result = "\"QList\": \"今日目前尚未有問卷資料\"";
-			return result;
-		} catch (JSONException e) {
-			System.out.println("HomepageServer getQuestionnaireList JSONException: " + e);
-			result = "\"QList\": \"今日目前尚未有問卷資料\"";
-			return result;
-		}
-	}
-	
-	public static String getFolderList(DBConnection conn, String doctorID) {
-		//SELECT patientID, name, time, picture, video, description FROM file NATURAL JOIN patient where doctorID = 1 ORDER BY time DESC
-		String result = "";
-		JSONArray FList = new JSONArray();
-		try {
-			ResultSet resultSet = conn.runSql("SELECT patientID, name, time, video, description FROM file NATURAL JOIN patient where doctorID = '" + doctorID + "' ORDER BY time DESC");
-			while (resultSet.next()) {
-				if(isToday(resultSet.getString("time").substring(0, 10))) {
+		    }
+		    //取得今日檔案資料
+		    resultSet = statement.executeQuery("SELECT patientID, name, time, video, description FROM file NATURAL JOIN patient where doctorID = '" + doctorID + "' ORDER BY time DESC");
+		    while (resultSet.next()) {
+		    	if(isToday(resultSet.getString("time").substring(0, 10))) {
 					JSONObject FItem = new JSONObject();
 					FItem.put("patientID", resultSet.getString("patientID"));
 					FItem.put("patientName", resultSet.getString("name"));
 					FItem.put("time", resultSet.getString("time"));
-					if(resultSet.getString("video").equals(null) || resultSet.getString("video").equals("")) {
+					if(resultSet.getString("video") == null || resultSet.getString("video").equals("")) {
 						FItem.put("pictureOrVideo", "picture");
 					} else {
 						FItem.put("pictureOrVideo", "video");
@@ -75,26 +58,27 @@ public class HomepageServer {
 				} else {
 					break;
 				}
-			}
-			result = "\"FList\": " + FList.toString();
-			if(result.equals("") || result.equals("\"FList\": []")) {
-				System.out.println("HomepageServer getFolderList empty");
-				result = "\"FList\": \"今日目前尚未有檔案資料\"";
-			}
-			if (resultSet != null) resultSet.close();
-			return result;
+		    }
+		    HP.put("QList", QList);
+		    HP.put("FList", FList);
+			result = HP.toString();
+			resultSet.close();
+			statement.close();
 		} catch (SQLException e) {
-			System.out.println("HomepageServer getFolderList SQLException: " + e);
-			result = "\"FList\": \"今日目前尚未有檔案資料\"";
-			return result;
+			System.out.println("BBDPDoctor HomepageServer getHomepageData SQLException: " + e);
+			result = "";
 		} catch (JSONException e) {
-			System.out.println("HomepageServer getFolderList JSONException: " + e);
-			result = "\"FList\": \"今日目前尚未有檔案資料\"";
-			return result;
+			System.out.println("BBDPDoctor HomepageServer getHomepageData JSONException: " + e);
+			result = "";
+		} finally {
+			if (con != null) try {con.close();}catch (Exception ignore) {}
 		}
+		//System.out.println(result);
+		return result;
 	}
 	
-	public static boolean isToday(String inputDate) {		//判斷日期是否為今日
+	//判斷日期是否為今日
+	public static boolean isToday(String inputDate) {
 		int year = Integer.valueOf(inputDate.substring(0, 4));
 		int month = Integer.valueOf(inputDate.substring(5, 7));
 		int date = Integer.valueOf(inputDate.substring(8));

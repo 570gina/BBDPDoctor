@@ -1,8 +1,10 @@
 package bbdp.doctor.model;
 
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -15,23 +17,24 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import bbdp.db.model.DBConnection;
 import bbdp.doctor.model.HealthTrackingServer.ItemDetail;
-import bbdp.push.fcm.PushToFCM;
+
+import org.apache.tomcat.jdbc.pool.DataSource;
+import org.apache.tomcat.jdbc.pool.PoolProperties;
+
 
 public class PatientHealthTrackingServer {
 
 	//一進來取得所有項目//PatientHealthTracking.html//已關資料庫
-	public HashMap allItemDefault(DBConnection conn, String doctorID, String patientID) {
+	public HashMap allItemDefault(DataSource datasource, String doctorID, String patientID) {
 		Gson gson = new Gson();
 		HashMap allItem = new HashMap();
-		try {
-			ResultSet rs = conn.runSql("SELECT healthTrackingID, itemID, name, detail FROM healthtracking NATURAL JOIN healthtrackingitem WHERE patientID = '"
-							+ patientID + "' and doctorID = '" + doctorID + "' ORDER BY itemID ASC");
-			System.out.println("Listener runSql 成功");
+		Connection con = null;
 
-			//String healthTrackingID, itemID, name, detail;
-			String itemID, time = null, value, name;
+		try {
+			con = datasource.getConnection();
+		    Statement st = con.createStatement();
+			ResultSet rs;
 
 			ArrayList itemIDList = new ArrayList(); 				// itemID List
 			ArrayList itemNameList = new ArrayList(); 				// item name List
@@ -39,72 +42,46 @@ public class PatientHealthTrackingServer {
 			int record = 0;
 			ArrayList itemLastTimeList = new ArrayList(); 			// item last time record List
 			ArrayList itemLastValueList = new ArrayList(); 			// item last value record List
-			
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
 			//////////////////////////取得item id、name、lastValue、lastTime(開始)////////////////////////////////////////////////////
-			rs = conn.runSql("SELECT itemID, time, value, name FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
+			st = con.createStatement();
+			rs = st.executeQuery("SELECT itemID, time, value, name FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
 							+ patientID + "' and doctorID = '" + doctorID + "'ORDER BY healthTrackingID ASC");
+			
 			while (rs.next()) {
-				itemID = rs.getString("itemID");
-				time = rs.getString("time");
-				value = rs.getString("value");
-				name = rs.getString("name");
-				time = time.substring(0, 16);
-				
 				//近一個月的history紀錄
-				if (isRecent(time.substring(0, 10))) {
-					//System.out.println("\n///////////////////////itemID : " + itemID);
-					//System.out.println("///////////////////////time : " + time);
-					//System.out.println("//////////////////////value : " + value);
-					//System.out.println("//////////////////////name : " + name);
-
+				if (isRecent(rs.getString("time").substring(0, 10))) {
 					if (itemIDList.size() == 0) { // 都還沒有項目
 						itemRecordList.add(1);
-						itemIDList.add(itemID);
-						itemLastTimeList.add(time);
-						itemLastValueList.add(value);
-						itemNameList.add(name);
-						//System.out.println("都還沒有項目 itemRecordList : " + itemRecordList);
-						//System.out.println("itemIDList : " + itemIDList);
-						//System.out.println("itemLastTimeList : " + itemLastTimeList);
-						//System.out.println("itemLastValueList : " + itemLastValueList);
-						//System.out.println("itemNameList : " + itemNameList);
+						itemIDList.add(rs.getString("itemID"));
+						itemLastTimeList.add(rs.getString("time").substring(0, 16));
+						itemLastValueList.add(rs.getString("value"));
+						itemNameList.add(rs.getString("name"));
 					} else { // 有項目了
 						for (int i = 0; i < itemIDList.size(); i++) {
-							if (itemIDList.get(i).equals(itemID)) { // 判斷是不是已有這個項目在陣列裡//是的話項目number加加
+							if (itemIDList.get(i).equals(rs.getString("itemID"))) { // 判斷是不是已有這個項目在陣列裡//是的話項目number加加
 								record = (int) itemRecordList.get(i);
 								record += 1;
-								//System.out.println("record : " + record);
 								itemRecordList.set(i, record);	//修改紀錄的資料總數+1
 								
-								if(isDateBigger(time, (String)itemLastTimeList.get(i))){	//如果新的時間比較晚，就紀錄較晚的時間
-									itemLastTimeList.set(i, time);
-									itemLastValueList.set(i, value);
+								if(isDateBigger(rs.getString("time").substring(0, 16), (String)itemLastTimeList.get(i))){	//如果新的時間比較晚，就紀錄較晚的時間
+									itemLastTimeList.set(i, rs.getString("time").substring(0, 16));
+									itemLastValueList.set(i, rs.getString("value"));
 								}
-								//System.out.println("判斷是不是已有這個項目在陣列裡//是的話項目number加加 itemRecordList : " + itemRecordList);
-								//System.out.println("itemIDList : " + itemIDList);
-								//System.out.println("itemLastTimeList : " + itemLastTimeList);
-								//System.out.println("itemLastValueList : " + itemLastValueList);
 								break;
 							}
 							if (i == itemIDList.size() - 1) { // 判斷是不是已有這個項目在陣列裡//不是的話新增項目進陣列
 								itemRecordList.add(1);
-								itemIDList.add(itemID);
-								itemLastTimeList.add(time);
-								itemLastValueList.add(value);
-								itemNameList.add(name);
-								//System.out.println("判斷是不是已有這個項目在陣列裡//不是的話新增項目進陣列 itemRecordList : " + itemRecordList);
-								//System.out.println("itemIDList : " + itemIDList);
-								//System.out.println("itemLastTimeList : " + itemLastTimeList);
-								//System.out.println("itemLastValueList : " + itemLastValueList);
-								//System.out.println("itemNameList : " + itemNameList);
+								itemIDList.add(rs.getString("itemID"));
+								itemLastTimeList.add(rs.getString("time").substring(0, 16));
+								itemLastValueList.add(rs.getString("value"));
+								itemNameList.add(rs.getString("name"));
 								break;
 							}
 						}
 					}
 				}
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
+			rs.close();//關閉rs
 			//////////////////////////取得item id、name、lastValue、lastTime(結束)////////////////////////////////////////////////////
 			///////////////////////////解析history last value json(開始)////////////////////////////////////////////////////
 			ArrayList detailIDList = new ArrayList();
@@ -115,25 +92,16 @@ public class PatientHealthTrackingServer {
 				ArrayList tempDetailValueList = new ArrayList();	//必須再回圈內重新宣告，不然存進去地值會被刷掉
 				
 				HistoryValue historyValue = gson.fromJson((String) itemLastValueList.get(i), HistoryValue.class);
-				//System.out.println(i + "historyValue itemID : " + historyValue.itemID);
 				List<Detail> tempList = historyValue.detail;
 				for(int k = 0; k < tempList.size(); k++){
 					tempDetailIDList.add(tempList.get(k).detailID);			//取得解析後的detailID
 					tempDetailValueList.add(tempList.get(k).detailValue);	//取得解析後的detailValue
 				}
-				//System.out.println("historyValue detailID detailIDList before: " + detailIDList);
-				//System.out.println("historyValue detailValue detailValueList before: " + detailValueList);
 				detailIDList.add(tempDetailIDList);			//放到陣列裡
 				detailValueList.add(tempDetailValueList);	//放到陣列裡
-				//System.out.println("historyValue detailID tempDetailIDList : " + tempDetailIDList);
-				//System.out.println("historyValue detailValue tempDetailValueList: " + tempDetailValueList);
-				//System.out.println("historyValue detailID detailIDList: " + detailIDList);
-				//System.out.println("historyValue detailValue detailValueList: " + detailValueList);
 				//tempDetailIDList.clear();		//清空暫存
 				//tempDetailValueList.clear();	//清空暫存
 			}
-			//System.out.println("historyValue detailID detailIDList: " + detailIDList);
-			//System.out.println("historyValue detailValue detailValueList: " + detailValueList);
 			///////////////////////////解析history last value json(結束)////////////////////////////////////////////////////
 			///////////////////////////透過detail id取得detail name 跟 unit(開始)////////////////////////////////////////////////////
 			String detailID;
@@ -148,41 +116,34 @@ public class PatientHealthTrackingServer {
 				
 				for(int k = 0; k < tempList1.size(); k++){
 					detailID = tempList1.get(k).toString();		
-					//System.out.println("detailID : " + detailID);
-					rs = conn.runSql("SELECT detailID, name, unit FROM healthtrackingdetail WHERE detailID = '" + detailID + "' ");
+					st = con.createStatement();
+					rs = st.executeQuery("SELECT detailID, name, unit FROM healthtrackingdetail WHERE detailID = '" + detailID + "' ");
 					while (rs.next()) {
 						tempList2.add(rs.getString("name"));
 						tempList3.add(rs.getString("unit"));
 					}
+					rs.close();//關閉rs
 				}
 				detailNameList.add(tempList2);
 				detailUnitList.add(tempList3);
 			}
-			//System.out.println("detailIDList: " + detailIDList);
-			//System.out.println("detailNameList : " + detailNameList);
-			//System.out.println("detailUnitList : " + detailUnitList);
 			///////////////////////////透過detail id取得detail name 跟 unit(結束)////////////////////////////////////////////////////
 			///////////////////////////如果病患沒有紀錄的話 放空值進去(開始)////////////////////////////////////////////////////
 			boolean judge;
-			rs = conn.runSql("SELECT itemID, name FROM healthtracking NATURAL JOIN healthtrackingitem WHERE patientID = '"
+			st = con.createStatement();
+			rs = st.executeQuery("SELECT itemID, name FROM healthtracking NATURAL JOIN healthtrackingitem WHERE patientID = '"
 					+ patientID + "' and doctorID = '" + doctorID + "'ORDER BY healthTrackingID ASC");
 			while (rs.next()) {
 				judge = false;
-				itemID = rs.getString("itemID");
-				name = rs.getString("name");
-				//System.out.println("itemID : "+itemID);
 				for(int i = 0; i < itemIDList.size(); i++){	//從有紀錄的項目陣列尋找
-					if(itemID.equals(itemIDList.get(i))){	//醫生有給病患此項目，病患有新增過紀錄
-						//System.out.println("itemID "+itemIDList.get(i)+" 有");
+					if(rs.getString("itemID").equals(itemIDList.get(i))){	//醫生有給病患此項目，病患最近一個月有新增過紀錄
 						judge = true;
 						break;
 					}
 				}
-				if(judge == false){							//醫生有給病患此項目，但病患並沒有新增任何紀錄
-					//System.out.println("itemID : "+itemID + " 沒有喔喔喔喔");	
-					
-					itemIDList.add(itemID);
-					itemNameList.add(name);
+				if(judge == false){//醫生有給病患此項目，但最近一個月病患並沒有新增任何紀錄
+					itemIDList.add(rs.getString("itemID"));
+					itemNameList.add(rs.getString("name"));
 					itemRecordList.add(0);
 					itemLastTimeList.add("...");
 					detailValueList.add("");
@@ -191,8 +152,10 @@ public class PatientHealthTrackingServer {
 					detailUnitList.add("");
 				}
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
+			rs.close();//關閉rs
 			///////////////////////////如果病患沒有紀錄的話 放空值進去(結束)////////////////////////////////////////////////////
+			
+		    st.close();//關閉st
 			
 			allItem.put("itemIDList", itemIDList);
 			allItem.put("itemNameList", itemNameList);
@@ -202,11 +165,11 @@ public class PatientHealthTrackingServer {
 			allItem.put("detailIDList", detailIDList);
 			allItem.put("detailNameList", detailNameList);
 			allItem.put("detailUnitList", detailUnitList);
-
-			System.out.println("Server allItemDefault : " + allItem);
-
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer allItemDefault Exception :" + e.toString());
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
 		return allItem;
 	}
@@ -263,22 +226,27 @@ public class PatientHealthTrackingServer {
 		}
 	}
 
+	/*******************************************************************************************/
+	
 	//取得分類下拉選單的值//NewPatientHealthTracking.html//已關資料庫
-	public HashMap allTypeDefault(DBConnection conn, String doctorID, String patientID){
+	public HashMap allTypeDefault(DataSource datasource, String doctorID, String patientID){
 		HashMap allType = new HashMap();
+		Connection con = null;
 		try {
-			ResultSet rs = conn.runSql("select distinct type, doctorID from healthtrackingitem where doctorID = '"+doctorID+"' ORDER BY itemID DESC");
-			System.out.println("Listener runSql 成功");
+			con = datasource.getConnection();
+		    Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery("select distinct type, doctorID from healthtrackingitem where doctorID = '"+doctorID+"' ORDER BY itemID DESC");
 
 			ArrayList typeList = new ArrayList(); // item type List
 
 			while (rs.next()) {
 				typeList.add(rs.getString("type")); // 取得使用者的項目type
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
+			rs.close();//關閉rs
+			
 			// 取得所有項目的name
-			rs = conn.runSql("select itemID, name from healthtrackingitem where doctorID = '"+doctorID+"' ORDER BY itemID DESC");
-			System.out.println("Listener runSql 成功");
+			st = con.createStatement();
+			rs = st.executeQuery("select itemID, name from healthtrackingitem where doctorID = '"+doctorID+"' ORDER BY itemID DESC");
 			
 			ArrayList itemIDList = new ArrayList(); // item itemID List
 			ArrayList nameList = new ArrayList(); // item name List
@@ -287,28 +255,32 @@ public class PatientHealthTrackingServer {
 					nameList.add(rs.getString("name")); // 取得使用者的項目name
 					itemIDList.add(rs.getString("itemID"));	// 取得使用者的項目itemID	
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
+			rs.close();//關閉rs
 			
+		    st.close();//關閉st
+
 			allType.put("typeList", typeList);
 			allType.put("itemIDList", itemIDList);
 			allType.put("nameList", nameList);
-
-			System.out.println("Server allTypeDefault : " + allType);
-
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer allTypeDefault Exception :" + e.toString());
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
 		return allType;
 		
 	}
 	
 	//選什麼分類，得到該分類的項目//NewPatientHealthTracking.html//已關資料庫
-	public HashMap typeSelectItem(DBConnection conn, String doctorID, String patientID, String select){
+	public HashMap typeSelectItem(DataSource datasource, String doctorID, String patientID, String select){
 		HashMap typeSelectItem = new HashMap();
+		Connection con = null;
 		try {
-			ResultSet rs = conn.runSql("select name, itemID from healthtrackingitem where doctorID='" + doctorID
+			con = datasource.getConnection();
+		    Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery("select name, itemID from healthtrackingitem where doctorID='" + doctorID
 					+ "' and type='" + select + "' ORDER BY itemID DESC");
-			System.out.println("Listener runSql 成功");
 
 			ArrayList nameList = new ArrayList(); // item name List
 			ArrayList itemIDList = new ArrayList(); // item itemID List
@@ -317,59 +289,87 @@ public class PatientHealthTrackingServer {
 				nameList.add(rs.getString("name")); // 取得項目名稱
 				itemIDList.add(rs.getString("itemID")); // 取得項目id
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
+			rs.close();//關閉rs
+
+		    st.close();//關閉st
 
 			typeSelectItem.put("itemIDList", itemIDList);
 			typeSelectItem.put("nameList", nameList);
-			System.out.println("Server typeSelectItem : " + typeSelectItem);
-
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer typeSelectItem Exception :" + e.toString());
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
 		return typeSelectItem;
 	}
 	
 	//按下後新增項目給病患//NewPatientHealthTracking.html//已關資料庫
-	public HashMap addItemToPatient(DBConnection conn, String doctorID, String patientID, String itemSelect){
+	public HashMap addItemToPatient(DataSource datasource, String doctorID, String patientID, String itemSelect){
 		HashMap addItemToPatient = new HashMap();
-		String result = "請重新嘗試";
+		Connection con = null;
+		String result = "";
 		try {
+			con = datasource.getConnection();
+		    Statement st = con.createStatement();
 			itemSelect = (String) itemSelect.subSequence(4, itemSelect.length());	//取得選擇的項目id
 			//////////////////////////////確認並沒有新增給病患過(開始)///////////////////////////////////////
-			ResultSet rs = conn.runSql("select patientID, itemID from healthtracking Where patientID='"+patientID+"' ORDER BY healthTrackingID DESC");
-			System.out.println("Listener runSql 成功");
+			ResultSet rs = st.executeQuery("select patientID, itemID, hideHealthtracking from healthtracking Where patientID='"+patientID+"' and itemID='"+itemSelect+"' ORDER BY healthTrackingID DESC");
 			
 			boolean isUsed = false;	//判斷是否新增過
 			LocalDate today = LocalDate.now();
-			System.out.println("現在時間 : " + today);
+			String hideHealthtracking = null;
 			
 			while (rs.next()) {
-				if(rs.getString("itemID").equals(itemSelect)){
+				hideHealthtracking = rs.getString("hideHealthtracking");
+				if(hideHealthtracking.equals("0")){
 					isUsed = true;
-					result = "已新增過此模板給病患!";
+					result = "已新增過此模板給病患";
 				}
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}	//關閉ResultSet
+			rs.close();//關閉rs
 			//////////////////////////////確認並沒有新增給病患過(結束)///////////////////////////////////////
 			//////////////////////////////確認並未新增給病患過後開始新增，並去item那裏把used改成1，表示已經使用過(開始)///////////////////////////////////////
 			if(!isUsed){	
 				//新增給病患
-				String insertSQL = "insert into healthtracking(healthTrackingID, patientID, itemID, next)"
-						+ "select ifNULL(max(healthTrackingID+0),0)+1, '"+patientID+"', '"+itemSelect+"', '"+today+"' From healthtracking";
-				int insert = conn.updateSql(insertSQL);
-				System.out.println("Listener insertHealthtracking : " + insert);		
-				result = "新增成功!";
+				st = con.createStatement();
+				int insert = 0;
+				if(hideHealthtracking != null){	//曾新增過
+					insert = st.executeUpdate("update healthtracking SET hideHealthtracking = 0 where patientID='"+patientID+"' and itemID='"+itemSelect+"' ");
+				}
+				else{	//第一次新增
+					insert = st.executeUpdate("insert into healthtracking(healthTrackingID, patientID, itemID, next, hideHealthtracking)"
+							+ "select ifNULL(max(healthTrackingID+0),0)+1, '"+patientID+"', '"+itemSelect+"', '"+today+"', '0' From healthtracking");
+				}
+				
+				if(insert>0)
+					result = "新增成功";
+				else
+					result = "新增不成功";
+				
 				//把項目used改為1
-				String updateSQL = "update healthtrackingitem SET uesd = 1 WHERE itemID = '"+itemSelect+"' ";
-				int update = conn.updateSql(updateSQL);
-				System.out.println("Listener updateUsed : " + update);	
+				int update = st.executeUpdate("update healthtrackingitem SET used = 1 WHERE itemID = '"+itemSelect+"' ");
+				
+			    //取得項目名稱
+			    String itemName = null;
+				st = con.createStatement();
+				rs = st.executeQuery("select name from healthtrackingitem Where itemID='"+itemSelect+"' ");
+				while (rs.next()) {
+					itemName = rs.getString("name");
+				}
+				rs.close();//關閉rs
 				
 				//推播給病患
-				PushToFCM.sendNotification("健康追蹤填寫提醒", "請記得按時填寫", patientID);
+				bbdp.push.fcm.PushToFCM.sendNotification("BBDP", "新增健康狀況追蹤項目", patientID, "SelectItemHealthTracking.html");
+				
+			    st.close();//關閉st
 			}
 			//////////////////////////////確認並未新增給病患過後開始新增，並去item那裏把used改成1，表示已經使用過(結束)///////////////////////////////////////
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer addItemToPatient Exception :" + e.toString());
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
 		addItemToPatient.put("result", result);
 		return addItemToPatient;
@@ -381,42 +381,57 @@ public class PatientHealthTrackingServer {
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String currentTime = simpleDateFormat.format(timestamp);
-		//System.out.println("currentTime : " + currentTime);
 		return currentTime;
 	}
 	
+	/*******************************************************************************************/
+
 	//取得該項目一些基本資料//EditPatientHealthTracking.html//已關資料庫
-	public HashMap itemAllDetail(DBConnection conn, String doctorID, String patientID, String itemID){
+	public HashMap itemAllDetail(DataSource datasource, String doctorID, String patientID, String itemID){
 		Gson gson = new Gson();
+		Connection con = null;
 		HashMap itemAllDetail = new HashMap();
 		try {
+			con = datasource.getConnection();
+		    Statement st = con.createStatement();
 			ResultSet rs;
 
-			String time, value, name = null;
+			String name = null, chart = null, selfDescription = null, dateStart = getNowDate().substring(0, 10);
 
 			ArrayList itemTimeList = new ArrayList(); 			// item time record List
 			ArrayList itemValueList = new ArrayList(); 			// item value record List
-			//////////////////////////取得item name(開始)////////////////////////////////////////////////////
-			rs = conn.runSql("SELECT name FROM healthtrackingitem WHERE doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ");
-			System.out.println("Listener runSql 成功");
+			ArrayList selfDescriptionValueList = new ArrayList(); 	// selfDescriptionValue List
+			
+			//////////////////////////取得item name、chart、 selfDescription(開始)////////////////////////////////////////////////////
+			rs = st.executeQuery("SELECT name, chart, selfDescription FROM healthtrackingitem WHERE doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ");
 			while (rs.next()) {
 				name = rs.getString("name");
+				chart = rs.getString("chart"); 						// 取得項目chart	
+				selfDescription = rs.getString("selfDescription"); 	// 取得項目selfDescription	
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}
-			//////////////////////////取得item Value、Time(開始)////////////////////////////////////////////////////
-			rs = conn.runSql("SELECT time, value FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
+			rs.close();//關閉rs
+			//////////////////////////取得item name、chart、 selfDescription(結束)////////////////////////////////////////////////////
+			//////////////////////////取得min(date)(開始)////////////////////////////////////////////////////
+			st = con.createStatement();
+			rs = st.executeQuery("SELECT min(time) FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
 							+ patientID + "' and doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ORDER BY time ASC");
-			System.out.println("Listener runSql 成功");
 			while (rs.next()) {
-				time = rs.getString("time");
-				value = rs.getString("value");
-				time = time.substring(0, 16);
-				
-				itemTimeList.add(time);
-				itemValueList.add(value);
+				if(rs.getString("min(time)") != null)
+					dateStart = rs.getString("min(time)").substring(0, 10);
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}
-			//////////////////////////取得item Value、Time(結束)////////////////////////////////////////////////////
+			rs.close();//關閉rs
+			//////////////////////////取得min(date)(結束)////////////////////////////////////////////////////
+			//////////////////////////取得item Value、Time、selfDescriptionValue(開始)////////////////////////////////////////////////////
+			st = con.createStatement();
+			rs = st.executeQuery("SELECT time, value, selfDescriptionValue FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
+							+ patientID + "' and doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ORDER BY time ASC");
+			while (rs.next()) {
+				itemTimeList.add(rs.getString("time").substring(0, 16));
+				itemValueList.add(rs.getString("value"));
+				selfDescriptionValueList.add(rs.getString("selfDescriptionValue"));
+			}
+			rs.close();//關閉rs
+			//////////////////////////取得item Value、Time、selfDescriptionValue(結束)////////////////////////////////////////////////////
 			//////////////////////////解析history value json(開始)////////////////////////////////////////////////////
 			//ArrayList detailIDList = new ArrayList();
 			ArrayList detailValueList = new ArrayList();
@@ -437,15 +452,15 @@ public class PatientHealthTrackingServer {
 			///////////////////////////解析history value json(結束)////////////////////////////////////////////////////
 			///////////////////////////透過item id取得detail name 跟 id(開始)////////////////////////////////////////////////////
 			//取得item
-			rs = conn.runSql("select detail from healthtrackingitem where itemID = '"+itemID+"' and doctorID = '" + doctorID + "' ");
-			System.out.println("Listener runSql 成功");
+			st = con.createStatement();
+			rs = st.executeQuery("select detail from healthtrackingitem where itemID = '"+itemID+"' and doctorID = '" + doctorID + "' ");
 			
 			String detail = null;
 			
 			while (rs.next()) {
 				detail = rs.getString("detail"); 	// 取得項目detail	
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}
+			rs.close();//關閉rs
 			//取得detail
 			ItemDetail detailClass = gson.fromJson(detail, ItemDetail.class);
 			String detailID;
@@ -454,63 +469,73 @@ public class PatientHealthTrackingServer {
 			
 			for(int i = 0; i< detailClass.detailID.size(); i++){
 				detailID = detailClass.detailID.get(i);
-				rs = conn.runSql("select detailID, name from healthtrackingdetail where detailID = '"+detailID+"'");
+				st = con.createStatement();
+				rs = st.executeQuery("select detailID, name from healthtrackingdetail where detailID = '"+detailID+"'");
 				while (rs.next()) {
 					detailIDList.add(rs.getString("detailID"));				// 取得細項detailID
 					detailNameList.add(rs.getString("name")); 				// 取得細項name
-		
 				}
+				rs.close();//關閉rs
 			}
 			///////////////////////////透過detail id取得detail name 跟 id(結束)////////////////////////////////////////////////////
 			
+		    st.close();//關閉st
+
 			itemAllDetail.put("itemName", name);
+			itemAllDetail.put("chart", chart);
+			itemAllDetail.put("dateStart", dateStart);
 			itemAllDetail.put("itemTimeList", itemTimeList);
 			//itemAllDetail.put("itemValueList", itemValueList);
 			itemAllDetail.put("detailIDList", detailIDList);
 			itemAllDetail.put("detailValueList", detailValueList);
 			itemAllDetail.put("detailNameList", detailNameList);
-
-			System.out.println("Server itemAllDetail : " + itemAllDetail);
-
+			itemAllDetail.put("selfDescription", selfDescription);
+			itemAllDetail.put("selfDescriptionValueList", selfDescriptionValueList);
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer itemAllDetail Exception :" + e.toString());
-		}
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
+		}	
 		return itemAllDetail;
 	}
 	
-	//改變圖表//EditPatientHealthTracking.html//已關資料庫
-	public HashMap changeChart(DBConnection conn, String doctorID, String patientID, String itemID, String dateStart, String dateEnd, String[] checkArray){
+	//改變日期//EditPatientHealthTracking.html//已關資料庫
+	public HashMap changeChart(DataSource datasource, String doctorID, String patientID, String itemID, String dateStart, String dateEnd){
 		HashMap changeChart = new HashMap();
+		Connection con = null;
 		Gson gson = new Gson();
-
-		System.out.println("checkArray: "+ gson.toJson(checkArray));
 		
 		try {
+			con = datasource.getConnection();
+		    Statement st = con.createStatement();
 			ResultSet rs;
 
-			String time, value;
+			String selfDescription = null;
 			boolean dateIsBetween;		//判斷時間是否介於開始日期及結束日期之間
 
-			ArrayList itemTimeList = new ArrayList(); 			// item time record List
-			ArrayList itemValueList = new ArrayList(); 			// item value record List
-
-			//////////////////////////取得item Value、Time(開始)////////////////////////////////////////////////////
-			rs = conn.runSql("SELECT time, value FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
-							+ patientID + "' and doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ORDER BY time ASC");
-			System.out.println("Listener runSql 成功");
+			ArrayList itemTimeList = new ArrayList(); 				// item time record List
+			ArrayList itemValueList = new ArrayList(); 				// item value record List
+			ArrayList selfDescriptionValueList = new ArrayList(); 	// selfDescriptionValue List
+			//////////////////////////取得item selfDescription(開始)////////////////////////////////////////////////////
+			rs = st.executeQuery("SELECT selfDescription FROM healthtrackingitem WHERE doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ");
 			while (rs.next()) {
-				time = rs.getString("time");
-				value = rs.getString("value");
-				time = time.substring(0, 16);
-				
-				if(betweenDate(dateStart, dateEnd, time.substring(0, 10))){			//如果介於開始與結束日期之間
-					itemTimeList.add(time);
-					itemValueList.add(value);
-					//System.out.println("betweenDate : " + time.substring(0, 10));
+				selfDescription = rs.getString("selfDescription"); 	// 取得項目selfDescription	
+			}
+			rs.close();//關閉rs
+			//////////////////////////取得item selfDescription(結束)////////////////////////////////////////////////////
+			//////////////////////////取得item Value、Time、selfDescriptionValue(開始)////////////////////////////////////////////////////
+			rs = st.executeQuery("SELECT time, value, selfDescriptionValue FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
+							+ patientID + "' and doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ORDER BY time ASC");
+			while (rs.next()) {	
+				if(betweenDate(dateStart, dateEnd, rs.getString("time").substring(0, 10))){			//如果介於開始與結束日期之間
+					itemTimeList.add(rs.getString("time").substring(0, 16));
+					itemValueList.add(rs.getString("value"));
+					selfDescriptionValueList.add(rs.getString("selfDescriptionValue")); 	
 				}
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}
-			//////////////////////////取得item Value、Time(結束)////////////////////////////////////////////////////
+			rs.close();//關閉rs
+			//////////////////////////取得item Value、Time、selfDescriptionValue(結束)////////////////////////////////////////////////////
 			//////////////////////////解析history value json(開始)////////////////////////////////////////////////////
 			//ArrayList detailIDList = new ArrayList();
 			ArrayList detailValueList = new ArrayList();
@@ -528,15 +553,15 @@ public class PatientHealthTrackingServer {
 			///////////////////////////解析history value json(結束)////////////////////////////////////////////////////
 			///////////////////////////透過item id取得detail name 跟 id(開始)////////////////////////////////////////////////////
 			//取得item
-			rs = conn.runSql("select detail from healthtrackingitem where itemID = '"+itemID+"' and doctorID = '" + doctorID + "' ");
-			System.out.println("Listener runSql 成功");
+			st = con.createStatement();
+			rs = st.executeQuery("select detail from healthtrackingitem where itemID = '"+itemID+"' and doctorID = '" + doctorID + "' ");
 			
 			String detail = null;
 			
 			while (rs.next()) {
 				detail = rs.getString("detail"); 	// 取得項目detail	
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}
+			rs.close();//關閉rs
 			//取得detail
 			ItemDetail detailClass = gson.fromJson(detail, ItemDetail.class);
 			String detailID;
@@ -545,24 +570,30 @@ public class PatientHealthTrackingServer {
 			
 			for(int i = 0; i< detailClass.detailID.size(); i++){
 				detailID = detailClass.detailID.get(i);
-				rs = conn.runSql("select detailID, name from healthtrackingdetail where detailID = '"+detailID+"'");
+				st = con.createStatement();
+				rs = st.executeQuery("select detailID, name from healthtrackingdetail where detailID = '"+detailID+"'");
 				while (rs.next()) {
 					detailIDList.add(rs.getString("detailID"));				// 取得細項detailID
 					detailNameList.add(rs.getString("name")); 				// 取得細項name
-		
 				}
+				rs.close();//關閉rs
 			}
 			///////////////////////////透過detail id取得detail name 跟 id(結束)////////////////////////////////////////////////////
+			
+		    st.close();//關閉st
 			
 			changeChart.put("itemTimeList", itemTimeList);
 			changeChart.put("detailIDList", detailIDList);
 			changeChart.put("detailValueList", detailValueList);
 			changeChart.put("detailNameList", detailNameList);
-
-			System.out.println("Server changeChart : " + changeChart);
-
+			changeChart.put("selfDescription", selfDescription);
+			changeChart.put("selfDescriptionValueList", selfDescriptionValueList);
+			
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer changeChart Exception :" + e.toString());
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
 		return changeChart;
 	}
@@ -587,54 +618,104 @@ public class PatientHealthTrackingServer {
 	}
 	
 	//刪除該追蹤項目//EditPatientHealthTracking.html//已關資料庫
-	public HashMap deleteHealthTracking(DBConnection conn, String doctorID, String patientID, String itemID){
+	public HashMap deleteHealthTracking(DataSource datasource, String doctorID, String patientID, String itemID){
 		HashMap deleteHealthTracking = new HashMap();
+		Connection con = null;
 		String result = "請重新嘗試";
 		try {
+		    con = datasource.getConnection();
+		    Statement st = con.createStatement();		    
+
+			st = con.createStatement();
+			int hide = st.executeUpdate("Update healthtracking"+
+					" SET hideHealthtracking='1' "+
+					" WHERE itemID = '"+itemID+"' and patientID = '"+patientID+"' ");
+
+			if(hide > 0){
+				result="健康追蹤項目刪除成功";
+			}
 			/////////////////////////// 判斷history裡面病患是否有填過健康追蹤項目 開始 ///////////////////////////
-			ResultSet rs = conn.runSql("SELECT healthTrackingID, time, value FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
+			/*ResultSet rs = st.executeQuery("SELECT healthTrackingID, time, value FROM healthtracking NATURAL JOIN healthtrackingitem NATURAL JOIN history WHERE patientID = '"
 					+ patientID + "' and doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ORDER BY time ASC");
 			
 			boolean patientUsed = false;	//病患尚未紀錄過健康追蹤項目//false
 			while (rs.next()) {				
-				System.out.println("追蹤項目id : " + rs.getString("healthTrackingID"));				// 取得healthTrackingID
 				patientUsed = true;			//病患已紀錄過健康追蹤項目//true
 				break;
 			}
-			if (rs != null){ try {rs.close(); System.out.println("關閉ResultSet");} catch (SQLException ignore) {}}
+			rs.close();//關閉rs*/
 			/////////////////////////// 判斷history裡面病患是否有填過健康追蹤項目 結束 ///////////////////////////
 			/////////////////////////// 刪除HealthTracking 開始 ///////////////////////////
-			if(patientUsed){
+			/*if(patientUsed){
 				result = "病患已記錄過，無法刪除該追蹤項目";
 			}
 			else{
 				//刪除健康追蹤項目
-				String deleteHealthTrackingSQL = "Delete FROM healthtracking"+
+				String deleteHealthTrackingSQL = "Delete healthtracking"+
 						" WHERE itemID = '"+itemID+"' and patientID = '"+patientID+"' "; 
-			
-				int delete = conn.updateSql(deleteHealthTrackingSQL);
-				System.out.println("Listener deleteHealthTracking : " + delete);
-				if(delete > 0){
-					//更改項目used變為0，也就是未使用過
-					String updateSQL = "update healthtrackingitem SET uesd = 0 WHERE itemID = '"+itemID+"' ";
-					int update = conn.updateSql(updateSQL);
-					System.out.println("Listener updateUsed : " + update);	
-					if(update>0){
-						result="健康追蹤項目刪除成功";
-					}
-				}
-			}
-			/////////////////////////// 刪除HealthTracking 結束 ///////////////////////////
-		
-			deleteHealthTracking.put("result", result);
-			System.out.println("deleteHealthTracking : " + deleteHealthTracking);
+				st = con.createStatement();
+				int delete = st.executeUpdate(deleteHealthTrackingSQL);
 
+				if(delete > 0){
+					result="健康追蹤項目刪除成功";
+				}
+				
+				//此健康追蹤項目醫生是否有發給其他病患
+				boolean otherPatientUsed = false;	//此健康追蹤項目醫生沒有發給其他病患//false
+				
+				st = con.createStatement();
+				rs = st.executeQuery("SELECT * FROM healthtracking NATURAL JOIN healthtrackingitem WHERE doctorID = '" + doctorID + "' and itemID = '"+itemID+"' ");
+				while (rs.next()) {				
+					otherPatientUsed = true;		//此健康追蹤項目醫生有發給其他病患//true
+					break;
+				}
+				rs.close();//關閉rs
+				
+				//此健康追蹤項目醫生沒有發給其他病患//更改項目used變為0，也就是未使用過
+				if(!otherPatientUsed){
+					st = con.createStatement();
+					int update = st.executeUpdate("update healthtrackingitem SET used = 0 WHERE itemID = '"+itemID+"' ");
+				}
+			}*/
+			/////////////////////////// 刪除HealthTracking 結束 ///////////////////////////
+		    
+			st.close();//關閉st
+		    
+			deleteHealthTracking.put("result", result);
 		} catch (SQLException e) {
 			System.out.println("PatientHealthTrackingServer deleteHealthTracking Exception :" + e.toString());
+			e.printStackTrace();
+		} finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
 		return deleteHealthTracking;
 	}
 	
+	/*******************************************************************************************/
+
+	//檢查itemID//EditPatientInstruction.html
+	public boolean checkItemID(DataSource datasource, String doctorID, String itemID, String patientID) {
+		Connection con = null;
+		try {
+			con = datasource.getConnection();
+			Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery("select * from healthtracking NATURAL JOIN healthtrackingitem  where doctorID='"+doctorID+"' and itemID='"+itemID+"' and patientID='"+patientID+"' ");
+			while (rs.next()) {
+				return false;
+			}
+			rs.close();//關閉rs
+			st.close();//關閉st			
+		} catch (SQLException e) {
+			System.out.println("PatientHealthTrackingServer checkItemID Exception :" + e.toString());
+			e.printStackTrace();
+		}finally {
+		      if (con!=null) try {con.close();}catch (Exception ignore) {}
+		}
+		return true;
+	}
+	
+	/*******************************************************************************************/
+
 	public static void main(String[] args) {
 		/*
 		String temp = "item123";

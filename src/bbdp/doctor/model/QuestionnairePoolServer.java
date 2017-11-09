@@ -1,180 +1,299 @@
 package bbdp.doctor.model;
+
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import bbdp.db.model.DBConnection;
+import java.sql.Statement;
 import java.util.ArrayList;
 
-
 public class QuestionnairePoolServer {
-	
-	public static int addQuestion(DBConnection conn, String doctorID, String QPname, String QType, String QPType, String QPAnswer) {
-		int dbReturn=-2;
+
+	public static int newQuestion(Connection conn, String doctorID, String questionID, String questionName, String questionType, String questionOptionType, String questionOption) {
+		int returnInt = 0;
 		String result;
 		
 		try {
-				ResultSet rs = conn.runSql("select * FROM question where doctorID='"+doctorID+"'and question = '"+QPname+"'");
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"'and question = '"+questionName+"'");
 			if(rs.next()){
-				result = rs.getString("display");
-				dbReturn=0;
-				if(result.equals("0")){
-					dbReturn = conn.updateSql("UPDATE question SET display= 1 WHERE doctorID='"+doctorID+"'and question = '"+QPname+"'");
-					dbReturn=-1;		
-				}
+				returnInt = 2;	//題目重複
+			}else{
+				returnInt = st.executeUpdate("INSERT INTO question (questionID,doctorID,type,kind,question,option) VALUES('"+questionID+"','"+doctorID+"','"+questionType+"','"+questionOptionType+"','"+questionName+"','"+questionOption+"')");	
 			}
-			
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-		if(dbReturn!=0 && dbReturn!=-1){
-			try {
-				dbReturn = conn.updateSql("INSERT INTO question (questionID,doctorID,type,kind,question,option) select ifNULL(max(questionID+0),0)+1,'"+doctorID+"','"+QType+"','"+QPType+"','"+QPname+"','"+QPAnswer+"'FROM question");
-			} catch (SQLException e) {
-				
-				System.out.println("QuestionnaireServer錯誤");
-			}
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return dbReturn;
+		return returnInt;
 	}
-
-	public static int updateQuestion(DBConnection conn, String doctorID, String QPname, String QType, String QPType, String QPAnswer, String questionID, String MR) {
-		int dbReturn=-1;
+	public static String getMaxQuestionID(Connection conn, String doctorID) {
+		String returnString = "";
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select ifNULL(max(questionID+0),0)+1 FROM question where doctorID='"+doctorID+"'");
+		    while (rs.next()) {
+		        returnString = rs.getString("ifNULL(max(questionID+0),0)+1");
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnString;
+	}
+	public static ArrayList searchType(Connection conn, String doctorID, ArrayList typeList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select distinct type FROM question where doctorID='"+doctorID+"'ORDER BY CAST(questionID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	typeList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return typeList;
+	}
+	public static ArrayList searchAllQuestion(Connection conn, String doctorID, ArrayList questionList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"'ORDER BY CAST(questionID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+				questionList.add(rs.getString("questionID"));
+		    	questionList.add(rs.getString("question"));
+				questionList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
+	}
+	public static ArrayList searchQuestion(Connection conn, String doctorID, String type, ArrayList questionList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and type='"+type+"'ORDER BY CAST(questionID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+				questionList.add(rs.getString("questionID"));
+		    	questionList.add(rs.getString("question"));
+				questionList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
+	}
+	public static String getQuestion(Connection conn, String doctorID, String questionID, String item) {
+		String returnString = "";
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select "+item+" FROM question where doctorID='"+doctorID+"' and questionID = '"+questionID+"'");
+		    while (rs.next()) {
+		        returnString = rs.getString(item);
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnString;
+	}
+	public static String getMedicalRecord(Connection conn, String doctorID, String questionID, String item) {
+		String returnString = "";
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select medicalRecord FROM question where doctorID='"+doctorID+"' and questionID = '"+questionID+"' and medicalRecord IS NOT NULL");
+		    while (rs.next()) {
+		        returnString = rs.getString(item);
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnString;
+	}
+	public static int deleteQuestion(Connection conn, String doctorID, String questionID) {
+		int returnInt = 0;
+		
+		try {
+			Statement st = conn.createStatement();
+			returnInt = st.executeUpdate("DELETE FROM question where doctorID='"+doctorID+"'and questionID = '"+questionID+"'");
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnInt;
+	}
+	public static int allowUpdateQuestion(Connection conn, String doctorID, String questionID) {
+		int returnInt = 0;
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionsort natural join questionnaire where doctorID = '"+doctorID+"' and questionID = '"+questionID+"'");
+			if(rs.next()){
+				returnInt = 1;	//題目使用中
+			}
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnInt;
+	}
+	public static int updateQuestion(Connection conn, String doctorID, String questionID, String questionName, String questionType, String questionOptionType, String questionOption, String medicalRecord) {
+		int returnInt = 0;
 		String result;
 		
 		try {
-			ResultSet rs = conn.runSql("select * FROM question where doctorID='"+doctorID+"'and question = '"+QPname+"'");
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"'and questionID <> '"+questionID+"' and question = '"+questionName+"'");
 			if(rs.next()){
-				result = rs.getString("questionID");
-				if(!result.equals(questionID)) dbReturn=0;
-			}		
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}		
-		if(dbReturn!=0){
-			try {
-				dbReturn = conn.updateSql("UPDATE question SET question = '"+QPname+"', type = '"+QType+"', kind = '"+QPType+"', option = '"+QPAnswer+"', medicalRecord = '"+MR+"' WHERE questionID = '"+questionID+"'");	
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
+				returnInt = 2;	//題目重複
+			}else{
+				returnInt = st.executeUpdate("UPDATE question SET question= '"+questionName+"' , type = '"+questionType+"' , kind = '"+questionOptionType+"', option ='"+questionOption+"', medicalRecord = '"+medicalRecord+"' WHERE questionID = '"+questionID+"' and doctorID = '"+doctorID+"'");	
 			}
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return dbReturn;
-	}	
-	
-	public static ArrayList searchQPType(DBConnection conn, String doctorID) {
-		ArrayList searchResult = new ArrayList();
-		
+		return returnInt;
+	}
+	public static int addTempStorage(Connection conn, String doctorID, String questionArray) {
+		int returnInt = 0;
+		String[] tempArray = questionArray.split(",");
 		try {
-			ResultSet rs = conn.runSql("select distinct type FROM question where doctorID='"+doctorID+"' and display = 1");
-			
-			while (rs.next()) {
-				searchResult.add(rs.getString("type"));
+			Statement st = conn.createStatement();
+			for(int i=0; i<tempArray.length; i++){
+				returnInt += st.executeUpdate("UPDATE question SET tempstorage = 1 WHERE doctorID = '"+doctorID+"' and tempstorage = 0  and questionID = '"+tempArray[i]+"'");	
 			}
-			
+			st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-		
-		return searchResult;
-	}	
-
-	public static ArrayList selectQPType(DBConnection conn, String doctorID, String QPType) {
-		ArrayList selectResult = new ArrayList();
-		
-		if(QPType.equals("all")){
-			try {
-				ResultSet rs = conn.runSql("select question FROM question where doctorID = '"+doctorID+"' and display = 1 ORDER BY CAST(questionID AS UNSIGNED) DESC");
-				while (rs.next()) {
-					selectResult.add(rs.getString("question"));
-				}
-			
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}
-		}else
-			try {
-				ResultSet rs = conn.runSql("select question FROM question where type='"+QPType+"' and doctorID = '"+doctorID+"' and display = 1 ORDER BY CAST(questionID AS UNSIGNED) DESC");
-			
-				while (rs.next()) {
-					selectResult.add(rs.getString("question"));
-				}
-			
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}			
-		
-		return selectResult;
-	}
-	public static String editNoJson(DBConnection conn, String doctorID, String questionID, String search) {
-		String result="";
-		
-		try {
-			ResultSet rs = conn.runSql("select "+search+" FROM question where doctorID = '"+doctorID+"' and questionID = '"+questionID+"'");
-			while (rs.next()) {
-				result = rs.getString(search);
-			}			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}			
-		
-		return result;
-	}
-
-	public static String editJson(DBConnection conn, String doctorID, String questionID) {
-		String result="";
-		
-		try {
-			ResultSet rs = conn.runSql("select option FROM question where doctorID = '"+doctorID+"' and questionID = '"+questionID+"'");
-			while (rs.next()) {
-				result = rs.getString("option");
-			}			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}			
-		
-		return result;
-	}
-	
-	public static String selectQPID(DBConnection conn, String doctorID, String question) {
-		String QPID="";	
-		try {
-			ResultSet rs = conn.runSql("select questionID FROM question where doctorID = '"+doctorID+"' and question = '"+question+"'");
-			while (rs.next()) {
-				QPID = rs.getString("questionID");
-	
-			}
-			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}			
-		return QPID;
-	}
-	
-	public static int hideQuestion(DBConnection conn, String doctorID, String nowQP) {
-		int dbReturn=-1;
-		
-		try {
-			dbReturn = conn.updateSql("UPDATE question SET display= 0 , tempstorage = 0 WHERE questionID = '"+nowQP+"'");	
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+			  if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return dbReturn;
+		return returnInt;
 	}
-
-	public static int addTempStorage(DBConnection conn, String doctorID, String questionArray) {
-		int dbReturn=-1;
-		int times = 0;
-		String[] QArray = questionArray.split(",");
-		for(int i=0;i<QArray.length;i++){
-			try {
-				dbReturn = conn.updateSql("UPDATE question SET tempstorage = 1 WHERE doctorID = '"+doctorID+"' and tempstorage = 0  and question = '"+QArray[i]+"'");	
-				times+=dbReturn;
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}		
-			
+	public static ArrayList searchTempStorageType(Connection conn, String doctorID, ArrayList typeList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select distinct type FROM question where doctorID='"+doctorID+"' and tempstorage = 1 ORDER BY CAST(questionID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	typeList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return times;
-	}	
-	
-	
+		return typeList;
+	}
+	public static ArrayList searchAllTempStorage(Connection conn, String doctorID, ArrayList questionList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and tempstorage = 1 ORDER BY CAST(questionID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+				questionList.add(rs.getString("questionID"));
+		    	questionList.add(rs.getString("question"));
+				questionList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
+	}
+	public static ArrayList searchTempStorageQuestion(Connection conn, String doctorID, String type, ArrayList questionList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and type='"+type+"' and tempstorage = 1 ORDER BY CAST(questionID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+				questionList.add(rs.getString("questionID"));
+		    	questionList.add(rs.getString("question"));
+				questionList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
+	}
+	public static int removeTempStorage(Connection conn, String doctorID, String questionArray) {
+		int returnInt = 0;
+		String[] tempArray = questionArray.split(",");
+		try {
+			Statement st = conn.createStatement();
+			for(int i=0; i<tempArray.length; i++){
+				returnInt += st.executeUpdate("UPDATE question SET tempstorage = 0 WHERE doctorID = '"+doctorID+"' and questionID = '"+tempArray[i]+"'");	
+			}
+			st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			  if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnInt;
+	}
+	public static String checkID(Connection conn, String doctorID, String questionID) {
+		String returnString = "";
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and questionID = '"+questionID+"'");
+		    if(rs.next()) {
+		        returnString = "Yes";
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnString;
+	}
 }

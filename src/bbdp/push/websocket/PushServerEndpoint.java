@@ -16,7 +16,7 @@ import javax.websocket.server.ServerEndpoint;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-//json form example: {"doctorID":"1","patientID":"1000"}, if send from doctor, the form will be {"doctorID":"1","patientID":"doctor"}
+//json form example: {"doctorID":"1","patientID":"1000"}, if the messsage send from doctor, the form will be {"doctorID":"1","patientID":"doctor"}
 
 @ServerEndpoint("/PushServerEndpoint")
 public class PushServerEndpoint {
@@ -25,7 +25,7 @@ public class PushServerEndpoint {
 	@OnOpen
 	public void onOpen(Session userSession) {
 		usernameList.add(userSession);
-		System.out.println("onOpen!");
+		//System.out.println("websocket onOpen!");
 	}
 
 	@OnMessage
@@ -64,14 +64,14 @@ public class PushServerEndpoint {
 	
 	@OnError
 	public void OnError(Session userSession, Throwable t) {
-		System.out.println("OnError: " + (String) userSession.getUserProperties().get("username"));
-		System.out.println("OnError Throwable: " + t);
+		System.out.println("websocket OnError: " + (String) userSession.getUserProperties().get("username"));
+		System.out.println("websocket OnError Throwable: " + t);
 		usernameList.remove(userSession);
 	}
 	
 	@OnClose
 	public void onClose(Session userSession) {
-		System.out.println("onClose: " + (String) userSession.getUserProperties().get("username"));
+		//System.out.println("websocket onClose: " + (String) userSession.getUserProperties().get("username"));
 		usernameList.remove(userSession);
 	}
 }

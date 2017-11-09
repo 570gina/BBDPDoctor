@@ -1,15 +1,53 @@
-/*Àx¦sªù¶E®É¶¡*/
-function saveClinicHours() {
-	location.href="ClinicHours.html";
-}
-
-/*§R°£³Æµù¶µ¥Ø*/
-function deletePSItem(id) {
-	
-}
-
-/*·s¼W³Æµù¶µ¥Ø*/
-function newPS() {
-	
-}
-
+//å–å¾—é–€è¨ºæ™‚é–“
+$(document).ready(function(){
+	$.ajax({
+		type: "POST",
+		url: "ClinicHoursServlet",
+		data: {
+			option: "getClinicHours"
+		},
+		dataType: "json",
+		success: function(response) {
+			if(JSON.stringify(response) == "{}") {
+				location.href = "EditClinicHours.html";
+			}
+			//é€£çµ¡é›»è©±
+			$("#phone").html(response.CHPhone);
+			//å‚™è¨»
+			$("#ps").empty();
+			for(var i=0; i<response.CHPS.length; i++) {
+				$("#ps").append("<div style='margin-top: 1vh; margin-bottom: 1vh;'><span class='glyphicon glyphicon-pencil'></span>&nbsp;&nbsp;&nbsp;" + response.CHPS[i] + "</div>");
+			}
+			//é–€è¨ºæ™‚é–“
+			$("#ch > tr:first > td:first").html(response.CHTime.morning.time);
+			$("#ch > tr:eq(1) > td:first").html(response.CHTime.afternoon.time);
+			$("#ch > tr:last > td:first").html(response.CHTime.evening.time);
+			for(var i=0; i<7; i++) {
+				//morning
+				if(response.CHTime.morning.week[i].yesOrNo == "yes" &&ã€€response.CHTime.morning.week[i].ps != "") {
+					$("#ch > tr:first > td:eq(" + (i+1) + ")").html("<i class='fa fa-check'></i><div>å‚™è¨»ï¼š" + response.CHTime.morning.week[i].ps + "</div>");
+				}
+				else if(response.CHTime.morning.week[i].yesOrNo == "yes" &&ã€€response.CHTime.morning.week[i].ps == "") {
+					$("#ch > tr:first > td:eq(" + (i+1) + ")").html("<i class='fa fa-check'></i>");
+				}
+				//afternoon
+				if(response.CHTime.afternoon.week[i].yesOrNo == "yes" &&ã€€response.CHTime.afternoon.week[i].ps != "") {
+					$("#ch > tr:eq(1) > td:eq(" + (i+1) + ")").html("<i class='fa fa-check'></i><div>å‚™è¨»ï¼š" + response.CHTime.afternoon.week[i].ps + "</div>");
+				}
+				else if(response.CHTime.afternoon.week[i].yesOrNo == "yes" &&ã€€response.CHTime.afternoon.week[i].ps == "") {
+					$("#ch > tr:eq(1) > td:eq(" + (i+1) + ")").html("<i class='fa fa-check'></i>");
+				}
+				//evening
+				if(response.CHTime.evening.week[i].yesOrNo == "yes" &&ã€€response.CHTime.evening.week[i].ps != "") {
+					$("#ch > tr:last > td:eq(" + (i+1) + ")").html("<i class='fa fa-check'></i><div>å‚™è¨»ï¼š" + response.CHTime.evening.week[i].ps + "</div>");
+				}
+				else if(response.CHTime.evening.week[i].yesOrNo == "yes" &&ã€€response.CHTime.evening.week[i].ps == "") {
+					$("#ch > tr:last > td:eq(" + (i+1) + ")").html("<i class='fa fa-check'></i>");
+				}
+			}
+		},
+		error: function() {
+			console.log("clinicHours.js getClinicHours error");
+		}
+	});
+});

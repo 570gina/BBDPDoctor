@@ -1,6 +1,7 @@
-$("#page-wrapper>.row:first").prepend(
+//prepend 深藍色病患資訊nav-tabs
+$("#page-wrapper > .row:first").prepend(
 "<ul class='nav nav-tabs'>"
-	 + "<li id='patientNameOnTab'></li>"
+	 + "<li id='patientNameOnTab'>病患姓名</li>"
 	 + "<li id='basicInformation'><a href='PatientBasicInformation.html'><b>基本資料</b></a></li>"
 	 + "<li id='medicalRecord'><a href='PatientMedicalRecord.html'><b>病歷摘要</b></a></li>"
 	 + "<li id='Questionnaire'><a href='PatientQuestionnaire.html'><b>問卷區</b></a></li>"
@@ -38,6 +39,7 @@ $(function(){
 		break;
 	case "PatientHealthTracking":
 	case "EditPatientHealthTracking":
+	case "EditPatientHealthTrackingData":
 	case "NewPatientHealthTracking":
 		document.getElementById("healthTracking").className = "active";
 		break;
@@ -50,21 +52,19 @@ $(function(){
 		break;
 	}
 });
-
 //取得病患姓名
 $(document).ready(function(){
 	$.ajax({
-		type : "POST",
-		//url : "http://localhost:8080/BBDPDoctor/PatientBasicInformationServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/PatientBasicInformationServlet",
-		data : {
-			doctorID : "IWantToGetPatientName"
+		type: "POST",
+		url: "PatientBasicInformationServlet",
+		data: {
+			option: "patientName"
 		},
-		dataType : "text",
-		success : function(response) {
-			$("#patientNameOnTab").html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + response + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		dataType: "text",
+		success: function(response) {
+			$("#patientNameOnTab").html("&nbsp;&nbsp;&nbsp;" + response + "&nbsp;&nbsp;&nbsp;");
 		},
-		error : function() {
+		error: function() {
 			console.log("patientBasicInformationFrame.js error");
 			$("#patientNameOnTab").html("病患姓名");
 		}

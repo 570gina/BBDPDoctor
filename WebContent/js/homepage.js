@@ -1,119 +1,161 @@
+var data;
 //init
 $(document).ready(function() {
-	$("#todayQuestionnairePanel>a").attr("href", "javascript: todayQuestionnaireList('show');");
-	$("#todayQuestionnairePanel>a>.panel-body").html("<span class='pull-left' style='color: black;'>查看列表</span><span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-down'></i></span>");
-	$("#todayQuestionnairePanel").append("<div class='panel-footer' style='display: none; background-color: white; min-height: 53vh; max-height: 53vh; overflow-y: auto;'><div class='list-group'></div></div>");	
-	$("#todayFolderPanel").append("<div class='panel-footer' style='display: none; background-color: white; min-height: 53vh; max-height: 53vh; overflow-y: auto;'><div class='list-group'></div></div>");
-	getQData();
-	getFData();
+	getData();
+	updateQList();
+	updateFList();
 });
 
 //顯示或隱藏問卷列表
-function todayQuestionnaireList(state) {
+function clickQBody(state) {
 	if(state == "show") {
-		$("#todayQuestionnairePanel>a").attr("href", "javascript: todayQuestionnaireList('hide');");
-		$("#todayQuestionnairePanel>a>.panel-body").html("<span class='pull-left' style='color: black;'>收回列表</span><span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-up'></i></span>");
-		$("#todayQuestionnairePanel>.panel-footer").fadeIn("slow");
+		$("#todayQuestionnairePanel > .panel-body").attr("onclick", "clickQBody('hide');");
+		$("#todayQuestionnairePanel > .panel-body > span:first").html("收回列表");
+		$("#todayQuestionnairePanel > .panel-body > span > i").attr("class", "fa fa-arrow-circle-up");
 	}
 	else if(state == "hide") {
-		$("#todayQuestionnairePanel>a").attr("href", "javascript: todayQuestionnaireList('show');");
-		$("#todayQuestionnairePanel>a>.panel-body").html("<span class='pull-left' style='color: black;'>查看列表</span><span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-down'></i></span>");
-		$("#todayQuestionnairePanel>.panel-footer").fadeOut("slow");
+		$("#todayQuestionnairePanel > .panel-body").attr("onclick", "clickQBody('show');");
+		$("#todayQuestionnairePanel > .panel-body > span:first").html("查看列表");
+		$("#todayQuestionnairePanel > .panel-body > span > i").attr("class", "fa fa-arrow-circle-down");
 	}
 }
 
 //顯示或隱藏檔案列表
-function todayFolderList(state) {
+function clickFBody(state) {
 	if(state == "show") {
-		$("#todayFolderPanel>a").attr("href", "javascript: todayFolderList('hide');");
-		$("#todayFolderPanel>a>.panel-body").html("<span class='pull-left' style='color: black;'>收回列表</span><span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-up'></i></span>");
-		$("#todayFolderPanel>.panel-footer").fadeIn("slow");
+		$("#todayFolderPanel > .panel-body").attr("onclick", "clickFBody('hide');");
+		$("#todayFolderPanel > .panel-body > span:first").html("收回列表");
+		$("#todayFolderPanel > .panel-body > span > i").attr("class", "fa fa-arrow-circle-up");
 	}
 	else if(state == "hide") {
-		$("#todayFolderPanel>a").attr("href", "javascript: todayFolderList('show');");
-		$("#todayFolderPanel>a>.panel-body").html("<span class='pull-left' style='color: black;'>查看列表</span><span class='pull-right' style='color: black;'><i class='fa fa-arrow-circle-down'></i></span>");
-		$("#todayFolderPanel>.panel-footer").fadeOut("slow");
+		$("#todayFolderPanel > .panel-body").attr("onclick", "clickFBody('show');");
+		$("#todayFolderPanel > .panel-body > span:first").html("查看列表");
+		$("#todayFolderPanel > .panel-body > span > i").attr("class", "fa fa-arrow-circle-down");
 	}
 }
 
-function getQData() {
+//取得資料
+function getData() {
 	$.ajax({
-		type : "POST",
-		//url : "http://localhost:8080/BBDPDoctor/HomepageServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/HomepageServlet",
-		data : {
-			doctorID : localStorage.getItem("login")
+		type: "POST",
+		url: "HomepageServlet",
+		async: false,
+		dataType: "json",
+		success: function(response) {
+			data = response;
 		},
-		dataType : "json",
-		success : function(response) {
-			if(response.QList == "今日目前尚未有問卷資料" || response.QList == "" || response.QList == null) {
-				$("#todayQuestionnaireNum").html("0");
-			}
-			else {
-				$("#todayQuestionnaireNum").html(response.QList.length);
-				for(var i=0;  i<response.QList.length; i++) {
-					var questionnaireName;
-					if(response.QList[i].questionnaireName.length > 14) description = response.QList[i].questionnaireName.substring(0, 14) + "...";
-					else questionnaireName = response.QList[i].questionnaireName;
-					$("#todayQuestionnairePanel>.panel-footer>.list-group").append("<a href='javascript: clickQItem(\"" + response.QList[i].patientID + "\");' class='list-group-item' style='background-color: #F8B1B0; border: 2px solid white;'><div class='media'><div class='media-left'><img src='picture/patientPhoto/" + setTempPhoto(response.QList[i].patientID) + ".png' class='media-object' /></div><div class='media-body'><h4 class='list-group-item-heading media-heading'><b>" + response.QList[i].patientName + "</b></h4><p class='list-group-item-text'>" + questionnaireName + "</p><p class='list-group-item-text pull-right'>" + response.QList[i].date + "</p></div></div></a>");		//大頭貼!!
-				}
-			}
-		},
-		error : function() {
+		error: function() {
 			console.log("homepage.js getData error");
 		}
 	});
 }
 
-function getFData() {
-	$.ajax({
-		type : "POST",
-		//url : "http://localhost:8080/BBDPDoctor/HomepageServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/HomepageServlet",
-		data : {
-			doctorID : localStorage.getItem("login")
-		},
-		dataType : "json",
-		success : function(response) {
-			if(response.FList == "今日目前尚未有檔案資料" || response.FList == "" || response.FList == null) {
-				$("#todayFolderNum").html("0");
-			}
-			else {
-				$("#todayFolderNum").html(response.FList.length);
-				for(var i=0;  i<response.FList.length; i++) {
-					var description;
-					if(response.FList[i].description.length > 14) description = response.FList[i].description.substring(0, 14) + "...";
-					else if(response.FList[i].description.length == 0) description = "無文字說明";
-					else description = response.FList[i].description;
-					var image = "";
-					if(response.FList[i].pictureOrVideo == "video") image = "<div class='media-left'><img src='picture/homepage/video-player.png' class='media-object' /></div>";
-					else if(response.FList[i].pictureOrVideo == "picture") image = "<div class='media-left'><img src='picture/homepage/picture.png' class='media-object' /></div>";
-					$("#todayFolderPanel>.panel-footer>.list-group").append("<a href='javascript: clickFItem(\"" + response.FList[i].patientID + "\");' class='list-group-item' style='background-color: #dabfff; border: 2px solid white;'><div class='media'>" + image + "<div class='media-body'><h4 class='list-group-item-heading media-heading'><b>" + response.FList[i].patientName + "</b></h4><p class='list-group-item-text'>" + description + "</p><p class='list-group-item-text pull-right'>" + response.FList[i].time.substring(0, 16) + "</p></div></div></a>");
-				}
-			}
-		},
-		error : function() {
-			console.log("homepage.js getData error");
+//更新問卷列表
+function updateQList() {
+	$("#todayQuestionnaireNum").html(data.QList.length);
+	$("#todayQuestionnairePanel > div > .panel-footer > .list-group").empty();
+	if(data.QList.length == 0) {
+		$("#todayQuestionnairePanel > div > .panel-footer > .list-group").append("今日尚無問卷");
+	}
+	else {
+		for(var i=0; i<data.QList.length; i++) {
+			$("#todayQuestionnairePanel > div > .panel-footer > .list-group").append(
+"												<a onclick='clickQItem(\"" + data.QList[i].patientID + "\", \"" + data.QList[i].answerID + "\")' class='list-group-item left-list-item questionnairePink' style='cursor: pointer;'>" + "\n" + 
+"													<div class='media'>" + "\n" + 
+"														<div class='media-left media-top'>" + "\n" + 
+"															<div id='profilePicture" + i + "'>" + "\n" + 
+"																<img src='http://140.121.197.130:8004/BBDPPatient/ProfilePictureServlet?option=getProfilePicture&patientID=" + data.QList[i].patientID + "' onerror='failToLoadHomepagePatientPicture(\"" + i + "\");' class='media-object' style='width: 64px;' />" + "\n" + 
+"															</div>" + "\n" + 
+"														</div>" + "\n" + 
+"														<div class='media-body'>" + "\n" + 
+"															<h4 class='list-group-item-heading'>" + data.QList[i].patientName + "</h4>" + "\n" + 
+"															<p>" + data.QList[i].questionnaireName + "</p>" + "\n" + 
+"														</div>" + "\n" + 
+"													</div>" + "\n" + 
+"												</a>" + "\n");
 		}
-	});
+	}
 }
 
-function clickQItem(patientID) {
-	//放session
-	putSession(patientID, "PatientQuestionnaire.html");
+//更新檔案列表
+function updateFList() {
+	$("#todayFolderNum").html(data.FList.length);
+	$("#todayFolderPanel > div > .panel-footer > .list-group").empty();
+	if(data.FList.length == 0) {
+		$("#todayFolderPanel > div > .panel-footer > .list-group").append("今日尚無檔案");
+	}
+	else {
+		for(var i=0; i<data.FList.length; i++) {
+			$("#todayFolderPanel > div > .panel-footer > .list-group").append(
+"												<a onclick='clickFItem(\"" + data.FList[i].patientID + "\", \"" + data.FList[i].time + "\")' class='list-group-item left-list-item patientFolder' style='cursor: pointer;'>" + "\n" + 
+"													<div class='media'>" + "\n" + 
+"														<div class='media-left media-top'>" + "\n" + 
+"															<img src='img/patientFolder/" + data.FList[i].pictureOrVideo + ".png' class='media-object' style='width: 64px;'>" + "\n" + 
+"														</div>" + "\n" + 
+"														<div class='media-body'>" + "\n" + 
+"															<h4 class='list-group-item-heading'>" + data.FList[i].patientName + "</h4>" + "\n" + 
+"															<p>" + data.FList[i].description + "</p>" + "\n" + 
+"														</div>" + "\n" + 
+"													</div>" + "\n" + 
+"												</a>" + "\n");
+		}
+	}
 }
 
-function clickFItem(patientID) {
-	//放session
-	putSession(patientID, "PatientFolder.html");
-}
-
+//點擊問卷列表的重新整理
 function refreshQPanel() {
-	$("#todayQuestionnairePanel>.panel-footer>.list-group").empty();
-	getQData();
+	getData();
+	updateQList();
 }
 
+//點擊檔案列表的重新整理
 function refreshFPanel() {
-	$("#todayFolderPanel>.panel-footer>.list-group").empty();
-	getFData();
+	getData();
+	updateFList();
+}
+
+//點擊問卷列表裡的項目
+function clickQItem(patientID, answerID) {
+	$.ajax({
+		type: "POST",
+		url: "NotificationServlet",
+		async: false,
+		data: {
+			option: "clickNotification", 
+			patientID: patientID
+		},
+		dataType: "text",
+		success: function(response) {
+			location.href = "EditPatientQuestionnaire.html?num=" + answerID;
+		},
+		error: function() {
+			console.log("homepage.js clickQItem error");
+		}
+	});
+}
+
+//點擊檔案列表裡的項目
+function clickFItem(patientID, time) {
+	$.ajax({
+		type: "POST",
+		url: "NotificationServlet",
+		async: false,
+		data: {
+			option: "clickNotification", 
+			patientID: patientID
+		},
+		dataType: "text",
+		success: function(response) {
+			location.href = "EditPatientFolder.html?time=" + time;
+		},
+		error: function() {
+			console.log("homepage.js clickFItem error");
+		}
+	});
+}
+
+function failToLoadHomepagePatientPicture(i) {
+	console.log("in failToLoadHomepagePatientPicture!");
+	$("#profilePicture" + i).empty();
+	$("#profilePicture" + i).append("<img src='img/frame/user.png' class='media-object' style='width: 64px;'/>");
 }

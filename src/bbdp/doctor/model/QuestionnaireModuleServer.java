@@ -1,315 +1,379 @@
 package bbdp.doctor.model;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
-
-import bbdp.db.model.DBConnection;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class QuestionnaireModuleServer {
 
-	public static ArrayList searchQMType(DBConnection conn, String doctorID) {
-		ArrayList searchResult = new ArrayList();
+	public static ArrayList searchType(Connection conn, String doctorID, ArrayList typeList) {
 		
 		try {
-			ResultSet rs = conn.runSql("select distinct type FROM questionnaire where doctorID='"+doctorID+"'");
-			
-			while (rs.next()) {
-				searchResult.add(rs.getString("type"));
-			}
-			
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select distinct type FROM questionnaire where doctorID='"+doctorID+"'ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	typeList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-		
-		return searchResult;
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return typeList;
 	}
-	
-	public static ArrayList selectQMType(DBConnection conn, String doctorID, String QMType) {
-		ArrayList selectResult = new ArrayList();
-		if(QMType.equals("all")){
-			try {
-				ResultSet rs = conn.runSql("select name FROM questionnaire where doctorID = '"+doctorID+"' ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
-				while (rs.next()) {
-					selectResult.add(rs.getString("name"));
+	public static ArrayList addTempStorageQuestion(Connection conn, String doctorID, ArrayList questionList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and tempstorage = 1");
+		    while (rs.next()) {
+				questionList.add(rs.getString("questionID"));
+		    	questionList.add(rs.getString("question"));
+				questionList.add(rs.getString("option"));
+		    }
+			int returnInt = st.executeUpdate("UPDATE question SET tempstorage = 0 WHERE doctorID = '"+doctorID+"' and tempstorage = 1");
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
+	}
+	public static int newQuestionnaire(Connection conn, String doctorID, String questionnaireName, String questionnaireType, String partArray, String partName, String scoring) {
+		int returnInt = 0;
+		int insertSort;
+		String result = null;
+		int sortCount = 1;
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"'and name = '"+questionnaireName+"'");
+			if(rs.next()){
+				returnInt = 2;	//題目重複
+			}else{
+				rs = st.executeQuery("select ifNULL(max(questionnaireID+0),0)+1 FROM questionnaire");
+				if(rs.next()){
+					result = rs.getString("ifNULL(max(questionnaireID+0),0)+1");
 				}
-			
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}
-		}else
-			try {
-				ResultSet rs = conn.runSql("select name FROM questionnaire where type='"+QMType+"' and doctorID = '"+doctorID+"' ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
-				while (rs.next()) {
-					selectResult.add(rs.getString("name"));
-				}
-			
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}			
-		
-		return selectResult;
-	}
-	public static ArrayList getQuestionnaireTempStorage(DBConnection conn, String doctorID) {
-		ArrayList selectResult = new ArrayList();
-		
-		try {
-			ResultSet rs = conn.runSql("select * FROM question where doctorID = '"+doctorID+"' and 	tempstorage = 1 ORDER BY CAST(questionID AS UNSIGNED)");
-			while (rs.next()) {
-				selectResult.add(rs.getString("questionID"));
-				selectResult.add(rs.getString("question"));
-				selectResult.add(rs.getString("kind"));
-				selectResult.add(rs.getString("option"));
-			}		
-			int	dbReturn = conn.updateSql("UPDATE question SET tempstorage = 0 where doctorID = '"+doctorID+"' and 	tempstorage");
+				returnInt = st.executeUpdate("INSERT INTO questionnaire (questionnaireID,doctorID,name,type,partName,medicalRecord,scoring) select '"+result+"','"+doctorID+"','"+questionnaireName+"','"+questionnaireType+"','"+partName+"','','"+scoring+"'");
+				JSONArray questionArray = null;
+				try {
+					questionArray = new JSONArray(partArray);
+					for(int i=0; i<questionArray.length(); i++){
+						String[] tokens = questionArray.getString(i).split(",");
+						for (int j=0; j<tokens.length; j++){
+							if(tokens[j].length() > 0){
+								insertSort = st.executeUpdate("INSERT INTO questionsort (questionnaireID, questionID, partNumber, sortNumber) VALUES ('"+result+"', '"+tokens[j]+"', '"+i+"', '"+sortCount+"')");
+								sortCount += 1;
+							}
+						}
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}	
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return selectResult;
+		return returnInt;
 	}
-
-	public static int addQuestionnaire(DBConnection conn, String doctorID, String QMname, String QMType, String questions, String scoring) {
-		int dbReturn=-2;
-		String result;
-		int score = Integer.parseInt(scoring);
+	public static ArrayList searchAllQuestionnaire(Connection conn, String doctorID, ArrayList questionnaireList) {
+		
 		try {
-				ResultSet rs = conn.runSql("select * FROM questionnaire where doctorID='"+doctorID+"'and name = '"+QMname+"'");
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"'ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	questionnaireList.add(rs.getString("questionnaireID"));
+				questionnaireList.add(rs.getString("name"));
+				questionnaireList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionnaireList;
+	}
+	public static ArrayList searchQuestionnaire(Connection conn, String doctorID, String type, ArrayList questionnaireList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"' and type='"+type+"'ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	questionnaireList.add(rs.getString("questionnaireID"));
+		    	questionnaireList.add(rs.getString("name"));
+		    	questionnaireList.add(rs.getString("type"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionnaireList;
+	}
+	public static String getQuestionnaire(Connection conn, String doctorID, String questionnaireID, String item) {
+		String returnString = "";
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select "+item+" FROM questionnaire where doctorID='"+doctorID+"' and questionnaireID = '"+questionnaireID+"'");
+		    while (rs.next()) {
+		        returnString = rs.getString(item);
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnString;
+	}
+	public static ArrayList getQuestionList(Connection conn, String doctorID, String questionnaireID, ArrayList questionnaireList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionsort where questionnaireID = '"+questionnaireID+"' ORDER BY CAST(sortNumber AS UNSIGNED)");
+		    while (rs.next()) {
+		    	questionnaireList.add(rs.getString("partNumber"));
+		    	questionnaireList.add(rs.getString("questionID"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionnaireList;
+	}
+	public static ArrayList searchQuestion(Connection conn, String doctorID, String questionID, ArrayList questionList) {
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and questionID = '"+questionID+"'");
+		    while (rs.next()) {
+		    	questionList.add(rs.getString("questionID"));
+		    	questionList.add(rs.getString("question"));
+				questionList.add(rs.getString("option"));
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
+	}
+	public static int updateQuestionnaire(Connection conn, String doctorID, String questionnaireID, String questionnaireName, String questionnaireType, String partArray, String partName, String scoring, String medicalRecord) {
+		int returnInt = 0;
+		int insertSort;
+		int sortCount = 1;
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"'and questionnaireID <> '"+questionnaireID+"' and name = '"+questionnaireName+"'");
 			if(rs.next()){
-				dbReturn=0;
-			}
-			
+				returnInt = 2;	//問卷名稱重複
+			}else{
+				returnInt = st.executeUpdate("UPDATE questionnaire SET name = '"+questionnaireName+"' , type = '"+questionnaireType+"' , partName = '"+partName+"', scoring ='"+scoring+"', medicalRecord = '"+medicalRecord+"' WHERE questionnaireID = '"+questionnaireID+"'");
+				int temp = st.executeUpdate("DELETE FROM questionsort where questionnaireID = '"+questionnaireID+"'");
+				JSONArray questionArray = null;
+				try {
+					questionArray = new JSONArray(partArray);
+					for(int i=0; i<questionArray.length(); i++){
+						String[] tokens = questionArray.getString(i).split(",");
+						for (int j=0; j<tokens.length; j++){
+							if(tokens[j].length() > 0){
+								insertSort = st.executeUpdate("INSERT INTO questionsort (questionnaireID, questionID, partNumber, sortNumber) VALUES ('"+questionnaireID+"', '"+tokens[j]+"', '"+i+"', '"+sortCount+"')");
+								sortCount += 1;
+							}
+						}
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}	
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-		if(dbReturn!=0 && dbReturn!=-1){
-			try {
-				dbReturn = conn.updateSql("INSERT INTO questionnaire (questionnaireID,doctorID,name,type,question,scoring) select ifNULL(max(questionnaireID+0),0)+1,'"+doctorID+"','"+QMname+"','"+QMType+"','"+questions+"','"+score+"' FROM questionnaire");
-			} catch (SQLException e) {
-				
-				System.out.println("QuestionnaireServer錯誤");
-			}
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return dbReturn;
-	}	
-
-	public static int updateQuestionnaire(DBConnection conn, String doctorID, String QMname, String QMType, String questions, String questionnaireID,String scoring,String medicalRecord) {
-		int dbReturn=-1;
-		String result;
-		int score = Integer.parseInt(scoring);
-		try {
-			ResultSet rs = conn.runSql("select * FROM questionnaire where doctorID='"+doctorID+"'and name = '"+QMname+"'");
-			if(rs.next()){
-				result = rs.getString("questionnaireID");
-				if(!result.equals(questionnaireID)) dbReturn=0;
-			}		
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}		
-		if(dbReturn!=0){
-			try {
-				dbReturn = conn.updateSql("UPDATE questionnaire SET name = '"+QMname+"', type = '"+QMType+"', question = '"+questions+"', scoring ='"+score+"', medicalRecord = '"+medicalRecord+"' WHERE questionnaireID = '"+questionnaireID+"'");	
-			} catch (SQLException e) {
-				System.out.println("QuestionnaireServer錯誤");
-			}
-		}
-		return dbReturn;
-	}	
-	
-	public static String selectQID(DBConnection conn, String doctorID, String name) {
-		String QID="";
-		try {
-			ResultSet rs = conn.runSql("select questionnaireID FROM questionnaire where doctorID = '"+doctorID+"' and name = '"+name+"'");
-			while (rs.next()) {
-				QID = rs.getString("questionnaireID");
-	
-			}			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}				
-		return QID;
-	}	
-
-	public static String editNoJson(DBConnection conn, String doctorID, String questionnaireID, String search) {
-		String result="";
-		
-		try {
-			ResultSet rs = conn.runSql("select "+search+" FROM questionnaire where questionnaireID = '"+questionnaireID+"' and doctorID = '"+doctorID+"'");
-			while (rs.next()) {
-				result = rs.getString(search);
-			}			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}			
-		
-		return result;
+		return returnInt;
 	}
-
-	public static String editJson(DBConnection conn, String doctorID, String questionnaireID) {
-		String result="";
+	public static String allowUpdateQuestionnaire(Connection conn, String doctorID, String questionnaireID) {
+		String returnString = "";
 		
 		try {
-			ResultSet rs = conn.runSql("select question FROM questionnaire where questionnaireID = '"+questionnaireID+"' and doctorID = '"+doctorID+"'");
-			while (rs.next()) {
-				result = rs.getString("question");
-			}			
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select occupied FROM questionnaire where doctorID='"+doctorID+"'and questionnaireID = '"+questionnaireID+"'");
+		    while (rs.next()) {
+		        returnString = rs.getString("occupied");
+		    }
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return result;
+		return returnString;
 	}
-	
-	public static ArrayList selectQP(DBConnection conn, String doctorID ,String questionID) {
-		ArrayList selectResult = new ArrayList();
+	public static ArrayList searchSymptom(Connection conn, String doctorID, ArrayList symptomList) {
 		
 		try {
-			ResultSet rs = conn.runSql("select * FROM question where doctorID = '"+doctorID+"' and 	questionID = '"+questionID+"'");
-			while (rs.next()) {
-				selectResult.add(rs.getString("questionID"));
-				selectResult.add(rs.getString("question"));
-				selectResult.add(rs.getString("kind"));
-				selectResult.add(rs.getString("option"));
-			}
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select symptom FROM questionnaire where doctorID='"+doctorID+"' ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	symptomList.add(rs.getString("symptom"));
+		    }
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return selectResult;
+		return symptomList;
 	}
-
-	public static int deleteQuestionnaire(DBConnection conn, String doctorID, String questionnaireID) {
-		int dbReturn=-1;
-		
+	public static int addFirstVisitQuestionnaire(Connection conn, String doctorID, String questionnaireID, String symptom) {
+		int returnInt = 0;
 		try {
-			dbReturn = conn.updateSql("delete from questionnaire WHERE display = 0 and questionnaireID = '"+questionnaireID+"'");	
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"'and symptom = '"+symptom+"'");
+			System.out.printf("select * FROM questionnaire where doctorID='"+doctorID+"'and symptom = '"+symptom+"'");
+		    if(rs.next()){
+				returnInt = 2;	//重複
+			}else{
+				returnInt = st.executeUpdate("UPDATE questionnaire SET symptom = '"+symptom+"' WHERE doctorID='"+doctorID+"' and questionnaireID = '"+questionnaireID+"'");
+				System.out.printf("UPDATE questionnaire SET symptom = '"+symptom+"' WHERE doctorID='"+doctorID+"' and questionnaireID = '"+questionnaireID+"'");
+			}	
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		return dbReturn;
+		return returnInt;
 	}
-	
-	public static ArrayList searchSymptom(DBConnection conn, String doctorID) {
-		ArrayList searchResult = new ArrayList();
+	public static int updateFirstVisitQuestionnaire(Connection conn, String doctorID, String questionnaireID, String symptom) {
+		int returnInt = 0;
 		try {
-			ResultSet rs = conn.runSql("select symptom.name FROM symptom join doctor where doctorID = '"+doctorID+"' and doctor.department = symptom.department");
-			
-			while (rs.next()) {
-				searchResult.add(rs.getString("symptom.name"));
-			}
-			
+			Statement st = conn.createStatement();
+			returnInt = st.executeUpdate("UPDATE questionnaire SET symptom = NULL WHERE doctorID='"+doctorID+"' and symptom = '"+symptom+"'");	
+			returnInt = st.executeUpdate("UPDATE questionnaire SET symptom = '"+symptom+"' WHERE doctorID='"+doctorID+"' and questionnaireID = '"+questionnaireID+"'");	
+			st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-		
-		return searchResult;
-	}
-	
-	public static ArrayList searchFVQ(DBConnection conn, String doctorID) {
-		ArrayList searchResult = new ArrayList();
-	 
-		try {
-			ResultSet rs = conn.runSql("select * FROM questionnaire join symptom where questionnaire.symptomID = symptom.symptomID and doctorID = '"+doctorID+"' ORDER BY CAST(questionnaireID AS UNSIGNED)");
-
-			
-			while (rs.next()) {
-				searchResult.add(rs.getString("symptom.name"));
-				searchResult.add(rs.getString("questionnaire.name"));
-			}
-			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-		
-		return searchResult;
-	}
-	
-	public static int addQFVQ(DBConnection conn, String doctorID, String QMname, String QMSymptom) {
-		int dbReturn=-1;
-		String result="";
-		String department="";
-		try {
-			ResultSet rs = conn.runSql("select department FROM doctor where doctorID = '"+doctorID+"'");
-			rs.next();
-			department = rs.getString("department");
-		
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		try {
-			ResultSet rs = conn.runSql("select symptomID FROM symptom where name = '"+QMSymptom+"' and department = '"+department+"'");
-			if(rs.next()){
-			}
-			else{
-				dbReturn = conn.updateSql("INSERT INTO symptom (symptomID,department,name) select ifNULL(max(symptomID+0),0)+1,'"+department+"','"+QMSymptom+"'FROM symptom");
-			}
-			
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}
-		try {
-			ResultSet rs = conn.runSql("select symptomID FROM symptom where name = '"+QMSymptom+"' and department = '"+department+"'");
-			if(rs.next()){
-				result = rs.getString("symptomID");
-			}
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}		
-	
-		
-		try {
-			ResultSet rs = conn.runSql("select * FROM questionnaire where symptomID = '"+result+"' and doctorID = '"+doctorID+"'");
-			if(rs.next())
-				dbReturn = 0;
-			else
-				dbReturn = conn.updateSql("UPDATE questionnaire SET symptomID = '"+result+"' WHERE doctorID = '"+doctorID+"' and name = '"+QMname+"'");	
-						
-		
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}
-		
-		return dbReturn;
+		return returnInt;
 	}
-	
-	public static int deleteQFVQ(DBConnection conn, String doctorID, String QMname) {
-		int dbReturn=-1;
-		String result="";
+	public static int deleteQuestionnaire(Connection conn, String doctorID, String questionnaireID) {
+		int returnInt = 0;
+		String symptomID ="";
+		int temp;
 		try {
-			ResultSet rs = conn.runSql("select symptomID FROM questionnaire where name = '"+QMname+"' and doctorID = '"+doctorID+"'");
-			if(rs.next()){
-				result = rs.getString("symptomID");
-			}
+			Statement st = conn.createStatement();
+			returnInt = st.executeUpdate("DELETE FROM questionsort where questionnaireID = '"+questionnaireID+"'");
+			temp = st.executeUpdate("DELETE FROM questionnaire where doctorID='"+doctorID+"'and questionnaireID = '"+questionnaireID+"'");	
+			st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}			
-		
-		try {
-			dbReturn = conn.updateSql("UPDATE questionnaire SET symptomID = NULL WHERE doctorID = '"+doctorID+"' and name = '"+QMname+"'");	
-		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-
+		return returnInt;
+	}
+	public static ArrayList getFirstVisitQuestionnaire(Connection conn, String doctorID, ArrayList questionnaireList) {
+		
 		try {
-			dbReturn = conn.updateSql("DELETE FROM symptom WHERE symptomID = '"+result+"'");	
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"'and symptom is not null ORDER BY CAST(questionnaireID AS UNSIGNED) DESC");
+		    while (rs.next()) {
+		    	questionnaireList.add(rs.getString("questionnaireID"));
+		    	questionnaireList.add(rs.getString("name"));
+		    	questionnaireList.add(rs.getString("symptom"));
+		    }
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
-		
-		
-		return dbReturn;
+		return questionnaireList;
 	}
-	public static String clickScoring(DBConnection conn, String doctorID, String questionnaireID) {
-		String result="";
+	public static int removeFirstVisitQuestionnaire(Connection conn, String doctorID, String questionnaireID) {
+		int returnInt = 0;
+		String symptomID ="";
+		int temp;
+		try {
+			Statement st = conn.createStatement();
+			returnInt = st.executeUpdate("UPDATE questionnaire SET symptom = NULL WHERE doctorID='"+doctorID+"' and questionnaireID = '"+questionnaireID+"'");	
+			st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnInt;
+	}
+	public static ArrayList searchQuestionMedicalRecord(Connection conn, String doctorID, String questionID, ArrayList questionList) {
 		
 		try {
-			ResultSet rs = conn.runSql("select scoring FROM questionnaire where questionnaireID = '"+questionnaireID+"' and doctorID = '"+doctorID+"'");
-			while (rs.next()) {
-				result = rs.getString("scoring");
-			}			
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM question where doctorID='"+doctorID+"' and questionID = '"+questionID+"'");
+		    while (rs.next()) {
+				questionList.add(rs.getString("option"));
+				questionList.add(rs.getString("medicalRecord"));
+		    }
+			rs.close();
+		    st.close();
 		} catch (SQLException e) {
-			System.out.println("QuestionnaireServer錯誤");
-		}			
-		
-		return result;
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return questionList;
 	}
-
+	public static String checkID(Connection conn, String doctorID, String questionnaireID) {
+		String returnString = "";
+		
+		try {
+			Statement st = conn.createStatement();
+		    ResultSet rs = st.executeQuery("select * FROM questionnaire where doctorID='"+doctorID+"' and questionnaireID = '"+questionnaireID+"'");
+		    if(rs.next()) {
+		        returnString = "Yes";
+		    }
+			rs.close();
+		    st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
+		}
+		return returnString;
+	}
 }

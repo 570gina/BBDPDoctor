@@ -1,269 +1,215 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport"
-	content="width=device-width, height=device-height, initial-scale=1">
-<meta name="description" content="">
-<meta name="author" content="">
-
-<title>BBDP</title>
-
-<!-- Shortcut Icon -->
-<link rel="Shortcut Icon" type="image/x-icon"
-	href="picture/doctor-frame/icon.ico">
-
-<!-- Bootstrap Core CSS -->
-<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- MetisMenu CSS -->
-<link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
-
-<!-- Custom CSS -->
-<link href="dist/css/sb-admin-2.css" rel="stylesheet">
-
-<!-- Custom Fonts -->
-<link href="vendor/font-awesome/css/font-awesome.min.css"
-	rel="stylesheet" type="text/css">
-
-<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-<!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-<!-- jQuery -->
-<!-- <script src="vendor/jquery/jquery.min.js"></script> -->
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-<!-- Bootstrap Core JavaScript -->
-<!-- 有關下拉式選單 -->
-<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-
-<!-- Metis Menu Plugin JavaScript -->
-<!-- 有關下拉式選單 -->
-<script src="vendor/metisMenu/metisMenu.min.js"></script>
-<script src="https://cdn.jsdelivr.net/clipboard.js/1.6.0/clipboard.min.js"></script>
-<!-- Custom Theme JavaScript -->
-<!-- 有關下拉式選單 -->
-<script src="dist/js/sb-admin-2.js"></script>
-<script src="js/patientMedicalRecordFrame.js"></script>
-<!-- 醫生端框架css -->
-<link href="css/doctorFrame.css" rel="stylesheet" type="text/css">
-
-	<style type="text/css">
-		.lattice {
-				border: 3px solid #f0f0f0;
-			}
-	 a{
-		text-decoration: none;color:black;
-	}
-	
-	a:link{
-           color: #000000;
-    }
-
-	a:visited{
-		color: #000000;
-	}
-
-	a:hover{
-		color: #000000;
-	}
-
-    a:active{
-		color: #000000;
-	}
-
-	#item{
-		height:70px;
-		width:100%;
-		margin-bottom:10px;
-		text-align:left;
-		vertical-align:middle;
-		font-size:15px;
-		border:none;
-		text-overflow: ellipsis;
-		overflow : hidden;
-		border-radius: 5px;
-	}	
-	</style>
-<script src="js/modalGenerator.js"></script>
-<script>
-	//一進來就先判斷是否已經登入，沒有的話自動跳轉至登入頁面
-	$(document).ready(function() {
-		if (!(window.localStorage.getItem('login'))) {
-			
-			window.location.href = 'Login.html';
-		}
-	});
-</script>
-	
-<script>
-	var user = window.localStorage.getItem('login');
-	var url = window.location.href;
- 	var temp1 = url.split("?");
- 	var temp2 = temp1[1].split("=");
-	var temp3 = temp2[1].split("%20");
-	var dateTime = temp3[0]+" "+temp3[1];
-
-function newMR(){
-	window.location.href = 'NewPatientMedicalRecord.html';
-}
-
-function editOldMR(){
-	
-	$("#MRcomment").prop("readonly",false);
-	$("#changeBtn").empty();
-	$("#changeBtn").append('<input type="button" onclick="saveOldMR()" class="btn btn-default" value="儲存" style="background-color:#f0f0f0;font-size:13px;float:right;">');
-
-}
-function saveOldMR(){
-
-	$.ajax({
-		url : "http://140.121.197.130:8000/BBDPDoctor/PatientMedicalRecordServlet",
-		data : {
-			state : "saveOldMR",
-			MRcomment : $("#MRcomment").val(),
-			dateTime : dateTime,
-			doctorID : user
-		},
-		
-		success : function(response) {
-			window.location.reload();
-		},
-		error : function() {
-			console.log("錯誤訊息");
-		}
-	});
-
-}
-
-$(document).ready(function() {
-	$("#title1").empty();
-	var date = dateTime.split(".");
-	$("#title1").append(date[0]+"<img src='picture/copy.png' class='pull-right copyImg' height='25' width='25'/>");
-
-	$.ajax({
-		url : "http://140.121.197.130:8000/BBDPDoctor/PatientMedicalRecordServlet",
-		data : {
-			state : "getMedicalRecord",
-			dateTime : dateTime,
-			doctorID : user
-		},
-			
-		success : function(response) {
-
-			$("#MRcomment").empty();
-
-			$("#MRcomment").append(response);
-		},
-		error : function() {
-			console.log("錯誤訊息");
-		}
-	});
-
-});
-
-
-</script>	
-</head>
-
-<body>
-
-
-	<div id="wrapper">
-
-		<!-- Navigation -->
-		<nav class="navbar navbar-default navbar-static-top" role="navigation"
-			style="margin-bottom: 0"></nav>
-
-		<!-- page-wrapper -->
-		<div id="page-wrapper">
-			<div class="row">
-				<div class = "col-sm-4">
-					<br>
-					<div class = "col-sm-12">
-					<div>
-					<button type="button" class="btn btn-default" style="background-color:#f0f0f0;font-size:13px;" onclick="newMR()">新增病歷摘要</button>
-					</div>
-					<br>
-					    <div class="panel panel-default lattice left-list" style="border: 4px solid #f0f0f0;">
-							<div class="panel-heading">							
-								<form>
-									<select class="form-control" id="MRdateRange" style="width:30%;display: inline-block;">
-										<option value="all" >請選擇</option>
-										<option value="year">年</option>
-										<option value="month">月</option>
-									</select>	
-									<select class="form-control" id="MRdate" style="width:40%;display: inline-block;" onchange="changeMR()">
-										<option value="all">所有時間</option>
-									</select>	
-								</form>
+	<head>
+		<meta charset="utf-8"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>BBDP</title>
+		<link rel="Shortcut Icon" type="image/x-icon" href="img/frame/icon.ico">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link href="frame/metisMenu/metisMenu.css" rel="stylesheet">
+		<script src="frame/metisMenu/metisMenu.js"></script>
+		<link href="frame/sb-admin-2/sb-admin-2.css" rel="stylesheet">
+		<script src="frame/sb-admin-2/sb-admin-2.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<script src="https://cdn.rawgit.com/zenorocha/clipboard.js/v1.6.0/dist/clipboard.min.js"></script>
+		<!-- 醫生端框架 css -->
+		<link href="css/doctorFrame.css" rel="stylesheet">
+		<script src="js/PatientMedicalRecord.js"></script>
+	</head>
+	<body>
+		<div id="wrapper">
+			<!-- prepend navbar in doctorFrame.js -->
+			<div id="page-wrapper">
+				<div class="row">
+					<!-- 內容 -->
+					<div class="col-md-12">
+						<div class="row">
+							<!-- 左邊灰框 -->
+							<div class="col-md-4" style="margin-top: 3vh; margin-bottom: 3vh;">
+								<div class="row">
+									<div class="col-md-12">
+										<button type="button" class="btn btn-default" onclick="location.href='NewPatientMedicalRecord.html'">新增病歷摘要</button>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-12">
+										<br />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-12">
+										<div class="panel panel-default left-list" style="min-height: 68vh; max-height: 68vh;">
+											<div class="panel-heading">
+													<!-- 左邊灰框上面的選單 -->
+												<div class="form-group row" style="margin-bottom: 0;">
+													<div class="col-md-6 col-sm-6" style="margin-bottom: 0.5vh; margin-top: 0.5vh;">
+														<select class="form-control" id = "medicalRecordDateRange">
+															<option value="">請選擇</option>
+															<option value="year">年</option>
+															<option value="month">月</option>
+														</select>
+													</div>
+													<div class="col-md-6 col-sm-6" style="margin-bottom: 0.5vh;margin-top: 0.5vh;">
+														<select class="form-control" id = "medicalRecordDate">
+															<option value="">所有時間</option>
+														</select>
+													</div>
+												</div>
+											</div>
+											<div class="panel-body" style="overflow-y: auto;">
+												<div class="list-group" id="medicalRecordList">
+													<!-- 左邊灰框下面的項目(動態產生) -->
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
-							<div class="panel-body" style="min-height: 66vh; max-height: 66vh; overflow-y: auto;" id="MedicalRecordList">
-								
+							<div class="col-md-8" style="margin-top: 3vh; margin-bottom: 3vh;" id = "allArea">
+								<div class="row">
+									<div class="col-md-9 col-sm-9 col-xs-9">
+										<!-- 右邊灰框上面的藍框的標題 -->
+										<div class="list-group list-group-horizontal" id = "medicalRecordTitle">
+						
+										</div>										
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<!-- 右上角的更多按鈕 -->
+										<div class="btn-group pull-right">
+											<button type="button" class="btn btn-default" onclick="send()">儲存</button>
+											<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+												<span class="caret"></span>
+											</button>
+											<ul class="dropdown-menu" role="menu">
+												<li><a class="copyButton" onclick="" style="cursor: pointer;">複製</a></li>
+											</ul>
+										</div>	
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-12">
+										<br />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-12">
+										<!-- 右邊灰框 -->
+										<div class="panel panel-default right-content" style="min-height: 68vh; max-height: 68vh;">
+											<div class="panel-body" style="overflow-y: auto;">
+												<!-- 右邊灰框裡的病歷摘要內容 -->
+												<textarea class="form-control editInput" style="height: 60vh;" id = "medicalRecordContent" placeholder="請輸入病歷摘要內容..."></textarea>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
-
 					</div>
 				</div>
-			
-				<div class = "col-sm-8">
-					<br>
-					<div id = "changeBtn">
-						<input type="button" onclick="editOldMR()" class="btn btn-default" value="修改" style="background-color:#f0f0f0;font-size:13px;float:right;">
-					</div>
-					<div style="height:52px;"></div>
-				    <div class="panel panel-default lattice right-content" style="border: 4px solid #f0f0f0;">
-						<div class="panel-heading" style="background-color:#FFFFFF;">							
-							<li class="list-group-item" id = "title1" style="background-color: #A3E7FC; border: 1px solid #A3E7FC;font-weight:bold;"></li>
-						</div>
-							
-						<div class="panel-body"  style="min-height: 66vh; max-height: 66vh; overflow-y: auto;">
-							<textarea class="form-control" rows="20"  style="resize:none;background-color:#FFFFFF;border: 1px solid #A3E7FC;"id="MRcomment"readonly="readonly"></textarea>
-						</div>
-					</div>	
-				</div>			
-			
-			
-			
-			
-						
 			</div>
 		</div>
+		
+		<!-- 醫生端框架 js -->
+		<script src="js/doctorFrame.js"></script>
+		<script src="js/modalGenerator.js"></script>
+		<!--  病患資訊框架 js -->
+		<script src="js/patientInformationFrame.js"></script>
+		<!-- 計算高度 -->
+		<script>
+			var url = window.location.href;
+			var medicalRecordID = url.split("?")[1].split("=")[1];	//病歷ID
+			var changed = false;
+			$(document).ready(function(){
+				$.ajax({
+					url : "PatientMedicalRecordServlet",
+					data : {
+						state : "checkMedicalRecordID",
+						medicalRecordID : medicalRecordID
+					},
+					success : function(response){
+						if(response)
+							getMedicalRecord();
+						else{
+							modalGenerator("警告", "網址錯誤，病歷不存在");	
+							$("#allArea").empty();
+						}
+					},
+					error : function() {
+						console.log("錯誤訊息");
+					}
+				});
+				$(".editInput").change(function() {		//偵測頁面上任一個文字輸入欄位有沒有被修改
+					changed = true;
+				});
+			});		
 
-	</div>
-
-
-	<!-- 醫生端框架js -->
-	<script src="js/doctorFrame.js"></script>
-
-	<!-- 醫生端病患資訊框架js -->
-	<script src="js/patientInformationFrame.js"></script>
-	<script>
-
-		var clipboard = new Clipboard('.copyImg', {
-			text: function() {
-				return $('#MRcomment').text();
+			function getMedicalRecord(){
+				$.ajax({
+					url : "PatientMedicalRecordServlet",
+					data : {
+						state : "getMedicalRecord",
+						medicalRecordID : medicalRecordID
+					},
+					dataType : "json",
+					success : function(response){
+						var temp = response[2].replace(/<br>/g, "\n");	
+						$("#medicalRecordTitle").empty().append('<li class="list-group-item pinkTitle" style="background-color:#A3E7FC; border-color: #A3E7FC;">'+response[0].substr(0,16)+'</li><li class="list-group-item pinkTitle" style="background-color:#FFFFFF;color:#A3E7FC; border-color: #A3E7FC;">最後修改時間：'+response[1].substr(0,16)+'</li>');
+						$("#medicalRecordContent").empty().append(temp);
+					},
+					error : function() {
+						console.log("錯誤訊息");
+					}
+				});				
 			}
-		});
+			
+			function send(){
+				if($('#medicalRecordContent').val()){
+					if($('#medicalRecordContent').val().length < 2000){
+						var temp = $('#medicalRecordContent').val().replace(/\n/g, "<br>");							
+						$.ajax({
+							url : "PatientMedicalRecordServlet",
+							data : {
+								state : "editMedicalRecord",
+								medicalRecordID : medicalRecordID,						
+								medicalRecord : htmlEscapeCharacter(temp)
+							},
+							success : function(response){
+								changed = false;
+								window.location.reload();
+							},
+							error : function() {
+								console.log("錯誤訊息");
+							}
+						});	
+					}else
+						modalGenerator("提示", "病歷字數超過限制");	
+				}else{
+					modalGenerator("提示", "病歷不能為空");		
+				}	
+			}
+			$(window).on("beforeunload", function() {
+				if(changed) return "尚有未儲存的修改。";
+			});			
+			var clipboard = new Clipboard('.copyButton', {
+				text: function() {
+					return $('#medicalRecordContent').val();
+				}
+			});
 
-		clipboard.on('success', function(e) {
-			console.log(e);
-		});
+			clipboard.on('success', function(e) {
+				console.log(e);
+			});
 
-		clipboard.on('error', function(e) {
-			console.log(e);
-		});
-	
-</script>
-</body>
-
-
+			clipboard.on('error', function(e) {
+				console.log(e);
+			});
+			//左邊灰框的panel-body高度
+			$(".left-list > .panel-body").css("min-height", "55vh");
+			$(".left-list > .panel-body").css("max-height", "55vh");
+			//右邊灰框的panel-body高度
+			$(".right-content > .panel-body").css("height", $(".right-content").outerHeight() - $(".right-content > .panel-heading").outerHeight() - 38 - $(".right-content > .panel-footer").outerHeight());
+		</script>
+	</body>
 </html>

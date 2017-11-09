@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name="BBDPDoctor">
+    <wb-module deploy-name="BBDPDoctor_20171011_PatientInstruction8">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <property name="context-root" value="BBDPDoctor"/>
-        <property name="java-output-path" value="/BBDPDoctor/build/classes"/>
+        <property name="java-output-path" value="/BBDPDoctor_20171011_PatientInstruction8/build/classes"/>
+        <property name="context-root" value="BBDPDoctor_20171011_PatientInstruction8"/>
     </wb-module>
 </project-modules>

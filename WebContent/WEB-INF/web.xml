@@ -2,12 +2,7 @@
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
   <display-name>BBDPDoctor</display-name>
   <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
-    <welcome-file>index.htm</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>default.html</welcome-file>
-    <welcome-file>default.htm</welcome-file>
-    <welcome-file>default.jsp</welcome-file>
+    <welcome-file>Login.html</welcome-file>
   </welcome-file-list>
   <filter>
     <filter-name>CorsFilter</filter-name>
@@ -17,6 +12,135 @@
     <filter-name>CorsFilter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
+  <listener>
+    <listener-class>bbdp.db.controller.ServletListener</listener-class>
+  </listener>
+  <listener>
+    <listener-class>bbdp.doctor.controller.QuestionImageServletListener</listener-class>
+  </listener>
+  <listener>
+    <listener-class>bbdp.doctor.controller.InstructionFroalaServletListener</listener-class>
+  </listener>
+  <context-param>
+    <param-name>url</param-name>
+    <param-value>jdbc:mysql://localhost/</param-value>
+  </context-param>
+  <context-param>
+    <param-name>database</param-name>
+    <param-value>bbdp</param-value>
+  </context-param>
+  <context-param>
+    <param-name>user_name</param-name>
+    <param-value>root</param-value>
+  </context-param>
+  <context-param>
+    <param-name>password</param-name>
+    <param-value>15192353</param-value>
+  </context-param>
+  <servlet>
+    <servlet-name>QuestionnairePoolServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.QuestionnairePoolServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QuestionnairePoolServlet</servlet-name>
+    <url-pattern>/QuestionnairePoolServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>QuestionnaireModuleServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.QuestionnaireModuleServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QuestionnaireModuleServlet</servlet-name>
+    <url-pattern>/QuestionnaireModuleServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>QuestionImageServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.QuestionImageServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QuestionImageServlet</servlet-name>
+    <url-pattern>/QuestionImageServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PatientQuestionnaireServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientQuestionnaireServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PatientQuestionnaireServlet</servlet-name>
+    <url-pattern>/PatientQuestionnaireServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PatientMedicalRecordServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientMedicalRecordServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PatientMedicalRecordServlet</servlet-name>
+    <url-pattern>/PatientMedicalRecordServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PatientSearchServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientSearchServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PatientSearchServlet</servlet-name>
+    <url-pattern>/PatientSearchServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PatientFolderServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientFolderServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PatientFolderServlet</servlet-name>
+    <url-pattern>/PatientFolderServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>DoctorProfilePictureServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.DoctorProfilePictureServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DoctorProfilePictureServlet</servlet-name>
+    <url-pattern>/DoctorProfilePictureServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PatientBasicInformationServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientBasicInformationServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PatientBasicInformationServlet</servlet-name>
+    <url-pattern>/PatientBasicInformationServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>NotificationServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.NotificationServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>NotificationServlet</servlet-name>
+    <url-pattern>/NotificationServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>ClinicHoursServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.ClinicHoursServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ClinicHoursServlet</servlet-name>
+    <url-pattern>/ClinicHoursServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>HomepageServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.HomepageServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HomepageServlet</servlet-name>
+    <url-pattern>/HomepageServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PushTimerServlet</servlet-name>
+    <servlet-class>bbdp.push.fcm.PushTimerServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PushTimerServlet</servlet-name>
+    <url-pattern>/PushTimerServlet</url-pattern>
+  </servlet-mapping>
   <servlet>
     <description></description>
     <display-name>LoginVerificationServlet.java</display-name>
@@ -47,65 +171,6 @@
     <servlet-name>LogoutServlet.java</servlet-name>
     <url-pattern>/LogoutServlet.java</url-pattern>
   </servlet-mapping>
-  <listener>
-    <listener-class>bbdp.db.controller.ServletListener</listener-class>
-  </listener>
-  <context-param>
-    <param-name>url</param-name>
-    <param-value>jdbc:mysql://localhost/</param-value>
-  </context-param>
-  <context-param>
-    <param-name>database</param-name>
-    <param-value>bbdp</param-value>
-  </context-param>
-  <context-param>
-    <param-name>user_name</param-name>
-    <param-value>root</param-value>
-  </context-param>
-  <context-param>
-    <param-name>password</param-name>
-    <param-value>15192353</param-value>
-  </context-param>
-  <servlet>
-    <servlet-name>PatientSearchServlet</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PatientSearchServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PatientSearchServlet</servlet-name>
-    <url-pattern>/PatientSearchServlet</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>NotificationServlet</servlet-name>
-    <servlet-class>bbdp.doctor.controller.NotificationServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>NotificationServlet</servlet-name>
-    <url-pattern>/NotificationServlet</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>PushServlet</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PushServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PushServlet</servlet-name>
-    <url-pattern>/PushServlet</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>PatientBasicInformationServlet</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PatientBasicInformationServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PatientBasicInformationServlet</servlet-name>
-    <url-pattern>/PatientBasicInformationServlet</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>PatientFolderServlet</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PatientFolderServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PatientFolderServlet</servlet-name>
-    <url-pattern>/PatientFolderServlet</url-pattern>
-  </servlet-mapping>
   <servlet>
     <description></description>
     <display-name>HealthTrackingServlet.java</display-name>
@@ -127,71 +192,27 @@
     <url-pattern>/PatientHealthTrackingServlet.java</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description></description>
-    <display-name>QuestionnaireTempStorageServlet.java</display-name>
-    <servlet-name>QuestionnaireTempStorageServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.QuestionnaireTempStorageServlet.java</servlet-class>
+    <servlet-name>PatientInstructionServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.PatientInstructionServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>QuestionnaireTempStorageServlet.java</servlet-name>
-    <url-pattern>/QuestionnaireTempStorageServlet.java</url-pattern>
+    <servlet-name>PatientInstructionServlet</servlet-name>
+    <url-pattern>/PatientInstructionServlet</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description></description>
-    <display-name>QuestionnairePoolServlet.java</display-name>
-    <servlet-name>QuestionnairePoolServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.QuestionnairePoolServlet.java</servlet-class>
+    <servlet-name>InstructionFroalaServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.InstructionFroalaServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>QuestionnairePoolServlet.java</servlet-name>
-    <url-pattern>/QuestionnairePoolServlet.java</url-pattern>
+    <servlet-name>InstructionFroalaServlet</servlet-name>
+    <url-pattern>/InstructionFroalaServlet</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description></description>
-    <display-name>QuestionnaireModuleServlet.java</display-name>
-    <servlet-name>QuestionnaireModuleServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.QuestionnaireModuleServlet.java</servlet-class>
+    <servlet-name>NoticeServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.NoticeServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>QuestionnaireModuleServlet.java</servlet-name>
-    <url-pattern>/QuestionnaireModuleServlet.java</url-pattern>
+    <servlet-name>NoticeServlet</servlet-name>
+    <url-pattern>/NoticeServlet</url-pattern>
   </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>FirstVisitQuestionnaireModuleServlet.java</display-name>
-    <servlet-name>FirstVisitQuestionnaireModuleServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.FirstVisitQuestionnaireModuleServlet.java</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>FirstVisitQuestionnaireModuleServlet.java</servlet-name>
-    <url-pattern>/FirstVisitQuestionnaireModuleServlet.java</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>PatientMedicalRecordServlet.java</display-name>
-    <servlet-name>PatientMedicalRecordServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PatientMedicalRecordServlet.java</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PatientMedicalRecordServlet.java</servlet-name>
-    <url-pattern>/PatientMedicalRecordServlet.java</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>PatientQuestionnaireServlet.java</display-name>
-    <servlet-name>PatientQuestionnaireServlet.java</servlet-name>
-    <servlet-class>bbdp.doctor.controller.PatientQuestionnaireServlet.java</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PatientQuestionnaireServlet.java</servlet-name>
-    <url-pattern>/PatientQuestionnaireServlet.java</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>HomepageServlet</servlet-name>
-    <url-pattern>/HomepageServlet</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>HomepageServlet</servlet-name>
-    <servlet-class>bbdp.doctor.controller.HomepageServlet</servlet-class>
-  </servlet>
 </web-app>

@@ -1,24 +1,25 @@
-//取得設定資料
+//修改設定資料
 $(document).ready(function() {
+	getSetting();	//取得設定資料
+	accountSetting(); //修改帳戶設定
+	personalSetting();	//修改個人資料
+});
+
+/********************************************************************************/
+//取得設定資料
+function getSetting(){
 	$("#account").empty();
 	$("#name").empty();
 	$("#hospital").empty();
 	$("#password").empty();
 	$("#passwordCheck").empty();
 	$("#department").empty();
-	//一進來先得到存在local storage的doctorID值並顯示出來
-	var doctorID = window.localStorage.getItem('login');
-	
-	//$("#account").append(window.localStorage.getItem('login'));
-	//把local storage的account值設定給那個account欄位
-	//$("#account").val(window.localStorage.getItem('login'));
 	
 	$.ajax({
-		//url : "http://localhost:8080/BBDPDoctor/AccountSettingServlet",
-		url : "http://140.121.197.130:8000/BBDPDoctor/AccountSettingServlet",
+		type : "POST",
+		url : "AccountSettingServlet",
 		data : {
 			state : "Default",
-			doctorID : doctorID
 		},
 		dataType : "json",
 
@@ -26,58 +27,139 @@ $(document).ready(function() {
 			$("#account").val(response.account);
 			$("#name").val(response.name);
 			$("#hospital").val(response.hospital);
-			$("#password").val(response.password);
-			$("#passwordCheck").val(response.passwordCheck);
+			$("#password").val(b64_to_utf8(response.password));	//解密
+			$("#passwordCheck").val(b64_to_utf8(response.passwordCheck));	//解密
 			$("#department").val(response.department);
+			$("#doctorQR").attr("src", response.QRCode);
+			$("#doctorQRCodeDownload").attr("href", response.QRCode);
 		},
 		error : function() {
 			console.log("錯誤訊息");
 		}
 	});
-});
+}
 
-//修改設定資料
-$(document).ready(function() {
+/********************************************************************************/
+//修改帳戶設定
+function accountSetting(){
 	$("#change").click(function() {
-		//一進來先得到存在local storage的doctorID值並顯示出來
-		var doctorID = window.localStorage.getItem('login');
-		
-		$.ajax({
-			//url : "http://localhost:8080/BBDPDoctor/AccountSettingServlet",
-			url : "http://140.121.197.130:8000/BBDPDoctor/AccountSettingServlet",
-			data : {
-				state : "Change",
-				doctorID : doctorID,
-				account : $("#account").val(),
-				name : $("#name").val(),
-				hospital : $("#hospital").val(),
-				password : $("#password").val(),
-				passwordCheck : $("#passwordCheck").val(),
-				department : $("#department").val()
-			},
-			dataType : "json",
-
-			success : function(response) {
-				//$("#display").empty();
-				//$("#display").append("<h3>" + response.show + "</h3>");
-				modalGenerator("帳戶設定修改", response.show);	//模組產生器
-				
-				$("#name").empty();
-				$("#hospital").empty();
-				$("#password").empty();
-				$("#passwordCheck").empty();
-				$("#department").empty();
-				
-				$("#name").val(response.name);
-				$("#hospital").val(response.hospital);
-				$("#password").val(response.password);
-				$("#passwordCheck").val(response.passwordCheck);
-				$("#department").val(response.department);
-			},
-			error : function() {
-				console.log("錯誤訊息");
-			}
-		});
+		if(checkAccountSetting()){	//檢查帳戶設置
+			$.ajax({
+				type : "POST",
+				url : "AccountSettingServlet",
+				data : {
+					state : "Change",
+					password : utf8_to_b64($("#password").val()),	//加密
+					passwordCheck : $("#passwordCheck").val(),
+				},
+				dataType : "json",
+	
+				success : function(response) {
+					modalGenerator("帳戶設定修改", response.show);	//模組產生器
+					
+					$("#password").empty();
+					$("#passwordCheck").empty();
+					
+					$("#password").val(response.password);
+					$("#passwordCheck").val(response.passwordCheck);
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
 	});
-});
+}
+//檢查帳戶設置
+function checkAccountSetting(){
+	if($("#password").val() == ""){
+		modalGenerator("帳戶設定修改", "請輸入密碼");
+		return false;
+	}
+	else if($("#passwordCheck").val() == ""){
+		modalGenerator("帳戶設定修改", "請輸入確認密碼");
+		return false;
+	}
+	else if($("#password").val().length<6 || $("#password").val().length>15){
+		modalGenerator("帳戶設定修改", "密碼長度錯誤");
+		return false;
+	}
+	else if(!checkEnNum($("#password").val())){
+		modalGenerator("帳戶設定修改", "密碼請輸入英文或數字");
+		return false;
+	}
+	else if($("#password").val() != $("#passwordCheck").val()){
+		modalGenerator("帳戶設定修改", "確認密碼錯誤");
+		return false;
+	}
+	return true;
+		
+}
 
+/********************************************************************************/
+//修改個人資料
+function personalSetting(){
+	$("#change2").click(function() {
+		if(checkPersonalSetting()){	//檢查個人資料
+			$.ajax({
+				type : "POST",
+				url : "AccountSettingServlet",
+				data : {
+					state : "Change2",
+					name : $("#name").val(),
+					hospital : $("#hospital").val(),
+					department : $("#department").val()
+				},
+				dataType : "json",
+	
+				success : function(response) {
+					modalGenerator("個人資料修改", response.show);	//模組產生器
+					
+					$("#name").empty();
+					$("#hospital").empty();
+					$("#department").empty();
+					
+					$("#name").val(response.name);
+					$("#hospital").val(response.hospital);
+					$("#department").val(response.department);
+				},
+				error : function() {
+					console.log("錯誤訊息");
+				}
+			});
+		}
+	});
+}
+//檢查個人資料
+function checkPersonalSetting(){
+	if($("#name").val()==""){
+		modalGenerator("個人資料修改", "請輸入姓名");
+		return false;
+	}
+	else if($("#department").val()==""){
+		modalGenerator("個人資料修改", "請輸入科別");
+		return false;
+	}
+	else if(!checkCnEnNum($("#name").val()) || !checkCnEnNum($("#department").val())){
+		modalGenerator("個人資料修改", "請輸入中文、英文或數字");
+		return false;
+	}
+	return true;
+}
+
+/********************************************************************************/
+//只能輸入英文數字
+function checkEnNum(string) {
+	var re = /^[a-zA-Z\d]+$/;
+	if (!re.test(string))
+		return false;
+	return true;
+}
+
+//只能輸入中文英文數字
+function checkCnEnNum(string) {
+	var re = /^[a-zA-Z\d\u4E00-\u9FA5]+$/;
+	if (!re.test(string))
+		return false;
+	return true;
+}

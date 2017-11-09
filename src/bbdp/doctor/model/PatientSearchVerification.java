@@ -1,20 +1,22 @@
 package bbdp.doctor.model;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import bbdp.db.model.DBConnection;
-
 public class PatientSearchVerification {
 
-	public static String searchVerification(DBConnection conn, String inputID){
+	public static String searchVerification(Connection conn, String inputID){
 		String result = "";
 		String patient = "";
+		PreparedStatement statement = null;
+		
+		
 		try {
-			ResultSet resultSet = conn.runSql("SELECT patientID,account,name FROM patient WHERE account LIKE '_____" + inputID + "'");
+			Statement st = conn.createStatement();
+			ResultSet resultSet = st.executeQuery("SELECT patientID,account,name FROM patient WHERE account LIKE '_____" + inputID + "'");
 			//搜尋成功
 			while (resultSet.next()) {
 				//第一個物件
@@ -35,11 +37,17 @@ public class PatientSearchVerification {
 			if(result.equals("")){	
 				result = "fail";
 			}
-			if (resultSet != null) try { resultSet.close();System.out.println("搜尋病患後關閉ResultSet"); } catch (SQLException ignore) {}
+			
+			if (resultSet != null) try { resultSet.close();} catch (SQLException ignore) {}
+			st.close();
 			return result;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			result = "SQLException";
 			return result;
+		}
+		finally {
+		      if (conn!=null) try {conn.close();}catch (Exception ignore) {}
 		}
 		
 	}

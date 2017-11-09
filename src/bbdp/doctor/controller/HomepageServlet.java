@@ -5,8 +5,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import bbdp.db.model.DBConnection;
+import org.apache.tomcat.jdbc.pool.DataSource;
+
 import bbdp.doctor.model.HomepageServer;
 
 public class HomepageServlet extends HttpServlet {
@@ -14,9 +16,10 @@ public class HomepageServlet extends HttpServlet {
     
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
-		String doctorID = request.getParameter("doctorID");
-		DBConnection db = (DBConnection) getServletContext().getAttribute("db");
-		System.out.println("HomepageServlet getHomepageData: " + HomepageServer.getHomepageData(db, doctorID));
-		response.getWriter().println(HomepageServer.getHomepageData(db, doctorID));
+		DataSource datasource = (DataSource) getServletContext().getAttribute("db");
+		HttpSession session = request.getSession();
+		//session.setAttribute("doctorID", "1");		//先放假的
+		String doctorID = (String) session.getAttribute("doctorID");
+		response.getWriter().print(HomepageServer.getHomepageData(datasource, doctorID));
 	}
 }
