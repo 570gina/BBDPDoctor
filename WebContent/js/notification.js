@@ -158,6 +158,9 @@ websocket.onmessage = function(evt) {
 	else if(message.doctorID == doctorID && message.patientID == "doctor") {
 		console.log("is from this doctor!");
 	}
+	else if(message.doctorID == doctorID && message.patientID == "BBDPAdmin" && message.option == "administratorPush" && message.type == "administratorPush") {
+		administratorPush(evt.data);
+	}
 	else {
 		console.log("not this doctor!");
 	}
@@ -313,26 +316,22 @@ var browser = function() {
 
 //提醒推播
 function remindPush(messageString) {
-	//存提醒推播通知
-	/*$.ajax({
-		type: "POST",
-		url: "NotificationServlet",
-		data: {
-			option: "newRemindPush",
-			message: messageString
-		},
-		dataType: "text",
-		success: function(response) {
-			
-		},
-		error: function() {
-			console.log("notification.js remindPush error");
-		}
-	});*/
 	var message = JSON.parse(messageString);
 	//取得病患姓名
 	var patientName = getPatientName(message.patientID);
-	if (browser() == 'Chrome') {
+	Lobibox.notify('default', {
+		title: message.title,
+		msg: message.body,
+		img: "http://140.121.197.130:8004/BBDPPatient/ProfilePictureServlet?option=getProfilePicture&patientID=" + message.patientID,
+		continueDelayOnInactiveTab: true,
+		delayIndicator: false,
+		sound: false,
+		onClick: function(){
+			clickNotification(message.hyperlink, message.patientID);
+		}
+	});
+	
+	/*if (browser() == 'Chrome') {
 		Lobibox.notify('default', {
 			title: message.title,
 			msg: message.body,
@@ -356,10 +355,9 @@ function remindPush(messageString) {
 			clickNotification(message.hyperlink, message.patientID);
 			notification.close();
 		};
-	}
+	}*/
 }
 
-// html5 notification
 //點擊通知
 function clickNotification(hyperlink, patientID) {
 	$.ajax({
@@ -395,6 +393,22 @@ function getNotificationSetting() {
 		},
 		error: function() {
 			console.log("notificationSetting.js getNotificationSetting error");
+		}
+	});
+}
+
+//管理者介面推播
+function administratorPush(messageString) {
+	var message = JSON.parse(messageString);
+	Lobibox.notify('default', {
+		title: message.title,
+		msg: message.body,
+		img: "img/frame/icon.png",
+		continueDelayOnInactiveTab: true,
+		delayIndicator: false,
+		sound: false,
+		onClick: function(){
+			location.href = message.hyperlink;
 		}
 	});
 }
