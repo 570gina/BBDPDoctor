@@ -215,4 +215,12 @@
     <servlet-name>GetSessionServlet</servlet-name>
     <url-pattern>/GetSessionServlet</url-pattern>
   </servlet-mapping>
+  	<servlet>
+    <servlet-name>DoctorSuggestionServlet</servlet-name>
+    <servlet-class>bbdp.doctor.controller.DoctorSuggestionServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DoctorSuggestionServlet</servlet-name>
+    <url-pattern>/DoctorSuggestionServlet</url-pattern>
+  </servlet-mapping>
 </web-app>
