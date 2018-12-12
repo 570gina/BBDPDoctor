@@ -146,7 +146,40 @@ function checkPersonalSetting(){
 	}
 	return true;
 }
+/********************************************************************************/
+//系統回報
+function sendQuestion(){
+	if(checkSendQuestion()){	//系統回報
+		$.ajax({
+			url : "DoctorSuggestionServlet",
+			data : {
+				state : "newDoctorSuggestion",
+				email : $("#email").val(),
+				content : htmlEscapeCharacter($("#question").val())
+			},
 
+			success : function(response) {
+				modalGenerator("系統回報", "已成功送出，我們將盡快回覆！");	//模組產生器
+				$("#email").val("");
+				$('#question').val("");
+			},
+			error : function() {
+				console.log("錯誤訊息");
+			}
+		});
+	}
+}
+//檢查問題輸入
+function checkSendQuestion(){
+	if($("#email").val()==""){
+		modalGenerator("系統回報", "請輸入電子信箱");
+		return false;
+	}else if($("#question").val()==""){
+		modalGenerator("系統回報", "請輸入回報問題");
+		return false;
+	}
+	return true;
+}
 /********************************************************************************/
 //只能輸入英文數字
 function checkEnNum(string) {
@@ -162,4 +195,11 @@ function checkCnEnNum(string) {
 	if (!re.test(string))
 		return false;
 	return true;
+}
+
+function htmlEscapeCharacter(str){
+	str = str.replace(/\'/g, "&#39;");
+	str = str.replace(/\"/g, "&#34;");
+	str = str.replace(/\\/g, "&#92;");
+	return str;
 }

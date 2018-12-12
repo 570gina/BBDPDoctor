@@ -65,6 +65,7 @@
 									<li><a href="#tab2default" data-toggle="tab"><b>個人資料</b></a></li>
 									<li><a href="#tab3default" data-toggle="tab"><b>系統設定</b></a></li>
 									<li><a href="#tab4default" data-toggle="tab"><b>QR code</b></a></li>
+									<li><a href="#tab5default" data-toggle="tab"><b>系統回報</b></a></li>
 								</ul>
 							</div>
 							<div class="tab-content">
@@ -85,7 +86,7 @@
 										</div>
 										<div class="row">
 											<div class="col-md-12">
-												<h5><b>密碼</b>&nbsp&nbsp(介於6~15字元間)</h5>
+												<h5><b>密碼</b>&nbsp;&nbsp;(介於6~15字元間)</h5>
 											</div>
 										</div>
 										<div class="row">
@@ -193,22 +194,22 @@
 										</div>
 										<div class="row">
 											<div class="col-md-12">
-												<label style="font-weight: normal;"><input id="clinicPushCheckbox" type="checkbox">&nbsp&nbsp接收來自病患的診間推播通知</label>
+												<label style="font-weight: normal;"><input id="clinicPushCheckbox" type="checkbox">&nbsp;&nbsp;接收來自病患的診間推播通知</label>
 											</div>
 										</div>
 										<div class="row">
 											<div class="col-md-12">
-												<label style="font-weight: normal;"><input id="questionnaireCheckbox" type="checkbox">&nbsp&nbsp接收來自病患的問卷通知</label>
+												<label style="font-weight: normal;"><input id="questionnaireCheckbox" type="checkbox">&nbsp;&nbsp;接收來自病患的問卷通知</label>
 											</div>
 										</div>
 										<div class="row">
 											<div class="col-md-12">
-												<label style="font-weight: normal;"><input id="folderCheckbox" type="checkbox">&nbsp&nbsp接收來自病患的檔案夾通知</label>
+												<label style="font-weight: normal;"><input id="folderCheckbox" type="checkbox">&nbsp;&nbsp;接收來自病患的檔案夾通知</label>
 											</div>
 										</div>
 										<div class="row">
 											<div class="col-md-12">
-												<label style="font-weight: normal;"><input id="patientInstructionCheckbox" type="checkbox">&nbsp&nbsp接收來自病患的衛教文章留言通知</label>
+												<label style="font-weight: normal;"><input id="patientInstructionCheckbox" type="checkbox">&nbsp;&nbsp;接收來自病患的衛教文章留言通知</label>
 											</div>
 										</div>
 										<hr>
@@ -250,6 +251,39 @@
 														<a download="BBDP_APP_Download_QRCode" href="https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=http://140.121.197.130:8004/DownloadBBDPApp&choe=UTF-8"><button type="button" class="btn btn-sm btn-default">下載</button></a>
 													</div>
 												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="tab-pane fade" id="tab5default">
+									<div class="panel-body">
+										<div class="row">
+											<div class="col-md-12">
+												<h5><b>電子郵件</b></h5>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-6">
+												<div class="input-group" style="margin-bottom: 1vh;">
+													<span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+													<input id="email" type="email" class="form-control" placeholder="請輸入電子信箱..." />
+												</div>
+											</div>
+										</div>
+									<div class="row">
+											<div class="col-md-12">
+												<h5><b>回報問題</b></h5>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-6">
+												<textarea id="question" class="form-control" rows="5" id="comment" maxlength="150" placeholder="問題描述請限制字數於150字內"></textarea>
+											</div>
+										</div>
+										<hr>
+										<div class="row">
+											<div class="col-md-12">
+												<button type="button" class="btn btn-default" onclick="sendQuestion()">送出</button>
 											</div>
 										</div>
 									</div>
