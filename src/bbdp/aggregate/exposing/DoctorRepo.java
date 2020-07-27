@@ -103,7 +103,7 @@ public class DoctorRepo {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.out.println("'getDoctorInfoById' Exception :" + e.toString());
+			System.out.println("'getDoctorsByHospitalAndDepartment' Exception :" + e.toString());
 		} finally {
 		      if (con!=null) try {con.close();}catch (Exception ignore) {}
 		}
