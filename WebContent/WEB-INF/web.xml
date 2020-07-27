@@ -223,4 +223,12 @@
     <servlet-name>DoctorSuggestionServlet</servlet-name>
     <url-pattern>/DoctorSuggestionServlet</url-pattern>
   </servlet-mapping>
+   <servlet>
+    <servlet-name>DoctorAggregateAPI</servlet-name>
+    <servlet-class>bbdp.aggregate.exposing.DoctorAggregateAPI</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DoctorAggregateAPI</servlet-name>
+    <url-pattern>/DoctorAggregateAPI</url-pattern>
+  </servlet-mapping>
 </web-app>
