@@ -43,8 +43,9 @@
 	
 		//var serverURL = "http://localhost:8080/BBDPDoctor/";
 		//var serverURL = "http://140.121.197.130:8000/BBDPDoctor/";
-		var fileServerURL = "http://140.121.197.130:8600/BBDPFolderServer/FolderServlet";	
+		//var fileServerURL = "http://140.121.197.130:8600/BBDPFolderServer/FolderServlet";	
 		//var fileServerURL = "http://localhost:8080/BBDPFolderServer/FolderServlet";
+		var fileServerURL = "http://140.121.197.129:2100/";
 		
 		$(document).ready(function(){	
 			$.getScript("js/judgeLogin.js");		//判斷登入	
@@ -77,8 +78,8 @@
 		function initialPhotoList(){
 			$.ajax({
 				type: "GET",
-				url: fileServerURL,	 
-				data: {option:"getDoctorFileInfo", patientID:patientID, doctorID:doctorID},
+				url: fileServerURL+"getDoctorFileInfo",	 
+				data: {patientID:patientID, doctorID:doctorID},
 				dataType: "json",
 													
 				success : function(response){
@@ -100,8 +101,8 @@
 				patientID = response[i]["patientID"];
 				timeArray[i] = response[i]["time"];
 				descriptionArray[i] = response[i]["description"];
-				imgArray[i] = fileServerURL + "?patientID=" + patientID + "&time=" + timeArray[i] + "&option=getPhoto";
-				imgSmallArray[i] = fileServerURL + "?patientID=" + patientID + "&time=" + timeArray[i] + "&option=getSmallPhoto";
+				imgArray[i] = fileServerURL + "getPhoto?patientID=" + patientID + "&time=" + timeArray[i];
+				imgSmallArray[i] = fileServerURL + "getSmallPhoto?patientID=" + patientID + "&time=" + timeArray[i];
 				videoArray[i] = response[i]["video"];
 							
 				var dateString = timeArray[i].substr(0,19);

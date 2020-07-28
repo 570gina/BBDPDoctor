@@ -42,8 +42,9 @@
 	
 		//var serverURL = "http://localhost:8080/BBDPDoctor/";
 		//var serverURL = "http://140.121.197.130:8000/BBDPDoctor/";
-		var fileServerURL = "http://140.121.197.130:8600/BBDPFolderServer/FolderServlet";
+		//var fileServerURL = "http://140.121.197.130:8600/BBDPFolderServer/FolderServlet";
 		//var fileServerURL = "http://localhost:8080/BBDPFolderServer/FolderServlet";	
+		var fileServerURL = "http://140.121.197.129:2100/";
 		
 		var url = decodeURI(window.location.href);
 		
@@ -83,8 +84,8 @@
 		function showSelectFile(){
 			$.ajax({
 			type: "GET",
-			url: fileServerURL,	 
-			data: {option:"getSelectFileInfo", patientID:patientID, time:time},
+			url: fileServerURL+"getSelectFileInfo",	 
+			data: {patientID:patientID, time:time},
 			dataType: "json",
 												
 			success : function(response){
@@ -97,12 +98,12 @@
 					var item = "";
 
 					if(selectVideo=='null'||selectVideo==''){	//圖片
-						item = "<center><img class='img-responsive' src='"+fileServerURL+"?patientID="+patientID+"&time=" + selectTime + "&option=getPhoto' style='height: 50vh;' /></center>";
+						item = "<center><img class='img-responsive' src='"+fileServerURL+"getPhoto?patientID="+patientID+"&time=" + selectTime + "' style='height: 50vh;' /></center>";
 					}
 					else{	//影片
 						item = "<center>"+
 								"<video style='height: 50vh;' controls playsinline>" + 
-								"<source src='"+fileServerURL+"?option=getVideo&videoPath=" + selectVideo + "' >"+
+								"<source src='"+fileServerURL+"getVideo?videoPath=" + selectVideo + "' >"+
 								"Your browser does not support the video tag."+
 								"</video>"+
 								"</center>";
@@ -131,8 +132,8 @@
 		function initialPhotoList(){
 			$.ajax({
 				type: "GET",
-				url: fileServerURL,	 
-				data: {option:"getDoctorFileInfo", patientID:patientID, doctorID:doctorID},
+				url: fileServerURL+"getDoctorFileInfo",	 
+				data: {patientID:patientID, doctorID:doctorID},
 				dataType: "json",
 													
 				success : function(response){
@@ -154,8 +155,8 @@
 				patientID = response[i]["patientID"];
 				timeArray[i] = response[i]["time"];
 				descriptionArray[i] = response[i]["description"];
-				imgArray[i] = fileServerURL + "?patientID=" + patientID + "&time=" + timeArray[i] + "&option=getPhoto";
-				imgSmallArray[i] = fileServerURL + "?patientID=" + patientID + "&time=" + timeArray[i] + "&option=getSmallPhoto";
+				imgArray[i] = fileServerURL + "getPhoto?patientID=" + patientID + "&time=" + timeArray[i];
+				imgSmallArray[i] = fileServerURL + "getSmallPhoto?patientID=" + patientID + "&time=" + timeArray[i];
 				videoArray[i] = response[i]["video"];
 							
 				var dateString = timeArray[i].substr(0,19);

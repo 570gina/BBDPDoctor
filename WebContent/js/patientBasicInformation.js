@@ -44,9 +44,8 @@ $.ajax({
 		//$("#recentFolderNum").html(response.FNum);
 		$.ajax({
 			type: "POST",
-			url: "http://140.121.197.130:8600/BBDPFolderServer/PatientBasicInformationFolderNumServlet",	 
+			url: "http://140.121.197.129:2100/getTheAmountOfFiles",	 
 			data: {
-				option: "getFNum",
 				patientID: patientID,
 				doctorID: doctorID
 			},

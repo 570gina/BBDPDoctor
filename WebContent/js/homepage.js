@@ -95,7 +95,7 @@ function updateQList() {
 function updateFList() {
 	$.ajax({
 		type: "GET",
-		url: "http://140.121.197.130:8600/BBDPFolderServer/HomepageFolderDataServlet",
+		url: "http://140.121.197.129:2100/getHomepageFolderData",
 		data: {
 			doctorID: doctorID
 		},
