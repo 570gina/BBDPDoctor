@@ -44,7 +44,7 @@ $.ajax({
 		//$("#recentFolderNum").html(response.FNum);
 		$.ajax({
 			type: "POST",
-			url: "http://140.121.197.129:2100/getTheAmountOfFiles",	 
+			url: "http://140.121.197.129:2020/folder/getTheAmountOfFiles",	 
 			data: {
 				patientID: patientID,
 				doctorID: doctorID
